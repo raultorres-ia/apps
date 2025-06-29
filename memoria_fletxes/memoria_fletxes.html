@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joc de Memòria de Fletxes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            touch-action: manipulation;
+        }
+        .arrow-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 1rem;
+            width: 300px;
+            height: 300px;
+        }
+        .arrow-box {
+            background-color: #374151;
+            border-radius: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+        }
+        .arrow-box:hover {
+             background-color: #4b5563;
+        }
+        .arrow-box.up { grid-area: 1 / 2 / 2 / 3; }
+        .arrow-box.left { grid-area: 2 / 1 / 3 / 2; }
+        .arrow-box.right { grid-area: 2 / 3 / 3 / 4; }
+        .arrow-box.down { grid-area: 3 / 2 / 4 / 3; }
+
+        .arrow-box.lit {
+            background-color: #f59e0b;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #f59e0b;
+        }
+
+        .arrow-box.correct {
+            background-color: #22c55e;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #22c55e;
+        }
+
+        .arrow-box.incorrect {
+            background-color: #ef4444;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ef4444;
+        }
+        
+        .arrow-svg {
+            width: 60%;
+            height: 60%;
+            stroke: white;
+            stroke-width: 8;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4 pb-16">
+
+    <!-- Botón de cambio de idioma -->
+    <div class="absolute top-4 right-4">
+        <button id="lang-switcher" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+            ES
+        </button>
+    </div>
+
+    <div class="text-center mb-6">
+        <h1 id="game-title" class="text-4xl md:text-5xl font-bold text-amber-400"></h1>
+        <p id="game-subtitle" class="text-gray-400 mt-2"></p>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <span id="level-label" class="text-gray-400"></span>
+                <span id="level" class="font-bold text-2xl text-white ml-2">1</span>
+            </div>
+            <div class="text-right w-1/2">
+                 <span id="time-label" class="text-gray-400"></span>
+                 <div id="timer-container" class="w-full bg-gray-600 rounded-full h-4 mt-1 overflow-hidden">
+                     <div id="timer-bar" class="bg-green-500 h-4 rounded-full transition-all duration-100 ease-linear"></div>
+                 </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center">
+            <div class="arrow-grid">
+                <div id="ArrowUp" class="arrow-box up"><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+                <div id="ArrowLeft" class="arrow-box left"><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+                <div id="ArrowRight" class="arrow-box right"><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+                <div id="ArrowDown" class="arrow-box down"><svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="message-box" class="mt-6 text-center h-14 flex items-center justify-center">
+        <p id="message" class="text-xl font-semibold"></p>
+    </div>
+    
+    <div class="flex flex-col items-center mt-4 space-y-3">
+        <button id="start-button" class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-3 px-8 rounded-full text-xl transition-transform transform hover:scale-105 shadow-lg"></button>
+    </div>
+    
+    <footer class="absolute bottom-4 text-center w-full text-xs text-gray-500">
+        <p id="author-line"></p>
+        <p id="license-line"></p>
+    </footer>
+
+    <script>
+        const translations = {
+            es: {
+                lang: 'es', htmlLang: 'es', title: 'Memoria de Flechas', subtitle: 'Repite la secuencia antes de que se acabe el tiempo.',
+                level: 'Nivel', time: 'Tiempo', startButton: 'Empezar a Jugar', startButtonFocus: '¡Concéntrate!', startButtonAgain: 'Volver a Jugar',
+                messageInitial: 'Pulsa el botón para empezar', messageMemorize: 'Memoriza la secuencia...', messageYourTurn: '¡Tu turno!',
+                messageCorrect: '¡Correcto! Siguiente nivel...', messageError: '¡Error! La secuencia era otra.', messageTimeout: '¡Se acabó el tiempo!',
+                authorLine: "Aplicación hecha por Raül Torres", licenseLine: 'Esta obra está bajo una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="hover:text-gray-300 underline">licencia Creative Commons BY-SA</a>.',
+                langSwitchTo: 'CA'
+            },
+            ca: {
+                lang: 'ca', htmlLang: 'ca', title: 'Memòria de Fletxes', subtitle: "Repeteix la seqüència abans que s'acabi el temps.",
+                level: 'Nivell', time: 'Temps', startButton: 'Començar a Jugar', startButtonFocus: "Concentra't!", startButtonAgain: 'Tornar a Jugar',
+                messageInitial: 'Prem el botó per començar', messageMemorize: 'Memoritza la seqüència...', messageYourTurn: 'El teu torn!',
+                messageCorrect: 'Correcte! Següent nivell...', messageError: 'Error! La seqüència era una altra.', messageTimeout: "S'ha acabat el temps!",
+                authorLine: "Aplicació feta per Raül Torres", licenseLine: 'Aquesta obra està sota una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="hover:text-gray-300 underline">llicència Creative Commons BY-SA</a>.',
+                langSwitchTo: 'ES'
+            }
+        };
+        let currentLang = 'ca';
+
+        const startButton = document.getElementById('start-button');
+        const messageEl = document.getElementById('message');
+        const levelEl = document.getElementById('level');
+        const timerBar = document.getElementById('timer-bar');
+        const langSwitcher = document.getElementById('lang-switcher');
+        const gameTitleEl = document.getElementById('game-title');
+        const gameSubtitleEl = document.getElementById('game-subtitle');
+        const levelLabelEl = document.getElementById('level-label');
+        const timeLabelEl = document.getElementById('time-label');
+        const authorLineEl = document.getElementById('author-line');
+        const licenseLineEl = document.getElementById('license-line');
+        
+        const arrowBoxes = { ArrowUp: document.getElementById('ArrowUp'), ArrowDown: document.getElementById('ArrowDown'), ArrowLeft: document.getElementById('ArrowLeft'), ArrowRight: document.getElementById('ArrowRight') };
+        const arrowKeys = Object.keys(arrowBoxes);
+
+        let level = 1;
+        let sequence = [];
+        let playerSequenceIndex = 0;
+        let gameState = 'waiting';
+        let timerInterval;
+        let timeLimit = 5000;
+        let timeLeft;
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.documentElement.lang = t.htmlLang;
+            gameTitleEl.textContent = t.title;
+            gameSubtitleEl.textContent = t.subtitle;
+            levelLabelEl.textContent = t.level;
+            timeLabelEl.textContent = t.time;
+            langSwitcher.textContent = t.langSwitchTo;
+            authorLineEl.textContent = t.authorLine;
+            licenseLineEl.innerHTML = t.licenseLine;
+            updateDynamicText();
+        }
+        
+        function updateDynamicText() {
+            const t = translations[currentLang];
+            switch (gameState) {
+                case 'showing': messageEl.textContent = t.messageMemorize; startButton.textContent = t.startButtonFocus; break;
+                case 'playing': messageEl.textContent = t.messageYourTurn; break;
+                case 'gameover': startButton.textContent = t.startButtonAgain; break;
+                case 'waiting':
+                default: messageEl.textContent = t.messageInitial; startButton.textContent = t.startButton; break;
+            }
+        }
+
+        function startGame() {
+            if (gameState === 'showing') return;
+            gameState = 'waiting';
+            playerSequenceIndex = 0;
+            addStepToSequence();
+            updateUI();
+            startButton.disabled = true;
+            gameState = 'showing';
+            updateDynamicText();
+            setTimeout(showSequence, 800);
+        }
+
+        function addStepToSequence() {
+            const randomIndex = Math.floor(Math.random() * arrowKeys.length);
+            sequence.push(arrowKeys[randomIndex]);
+        }
+        
+        function showSequence() {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i > 0) arrowBoxes[sequence[i - 1]].classList.remove('lit');
+                if (i < sequence.length) {
+                    lightUpArrow(sequence[i]);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    gameState = 'playing';
+                    updateDynamicText();
+                    startTimer();
+                }
+            }, 700);
+        }
+
+        function lightUpArrow(key) {
+            const box = arrowBoxes[key];
+            if (box) {
+                box.classList.add('lit');
+                setTimeout(() => box.classList.remove('lit'), 400);
+            }
+        }
+
+        function handlePlayerInput(e) {
+            if (gameState !== 'playing' || !arrowKeys.includes(e.key)) return;
+            
+            const expectedKey = sequence[playerSequenceIndex];
+            const pressedKey = e.key;
+            flashFeedback(pressedKey, pressedKey === expectedKey);
+
+            if (pressedKey === expectedKey) {
+                playerSequenceIndex++;
+                if (playerSequenceIndex === sequence.length) {
+                    level++;
+                    timeLimit = Math.max(3000, timeLimit - 150);
+                    messageEl.textContent = translations[currentLang].messageCorrect;
+                    stopTimer();
+                    setTimeout(startGame, 1500);
+                }
+            } else {
+                endGame(false, translations[currentLang].messageError);
+            }
+        }
+        
+        function flashFeedback(key, isCorrect) {
+            const box = arrowBoxes[key];
+            const className = isCorrect ? 'correct' : 'incorrect';
+            box.classList.add(className);
+            setTimeout(() => box.classList.remove(className), 300);
+        }
+
+        function startTimer() {
+            timeLeft = timeLimit;
+            timerBar.style.width = '100%';
+            timerBar.className = 'bg-green-500 h-4 rounded-full transition-all duration-100 ease-linear';
+            const intervalTime = 50;
+            timerInterval = setInterval(() => {
+                timeLeft -= intervalTime;
+                const percentage = (timeLeft / timeLimit) * 100;
+                timerBar.style.width = `${percentage}%`;
+                if (percentage < 50 && percentage > 25) timerBar.classList.replace('bg-green-500', 'bg-yellow-500');
+                else if (percentage <= 25) timerBar.classList.replace('bg-yellow-500', 'bg-red-500');
+                if (timeLeft <= 0) endGame(false, translations[currentLang].messageTimeout);
+            }, intervalTime);
+        }
+        
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function endGame(isWin, msg) {
+            stopTimer();
+            gameState = 'gameover';
+            messageEl.textContent = msg;
+            startButton.disabled = false;
+            updateDynamicText();
+            if (!isWin) {
+                level = 1;
+                timeLimit = 5000;
+                sequence = [];
+            }
+        }
+        
+        function updateUI() {
+            levelEl.textContent = level;
+        }
+
+        startButton.addEventListener('click', startGame);
+        document.addEventListener('keydown', handlePlayerInput);
+        Object.keys(arrowBoxes).forEach(key => arrowBoxes[key].addEventListener('click', () => handlePlayerInput({ key: key })));
+        langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'es' ? 'ca' : 'es'));
+        window.addEventListener('load', () => setLanguage(currentLang));
+    </script>
+</body>
+</html>
