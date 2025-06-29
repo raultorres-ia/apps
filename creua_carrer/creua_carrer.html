@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creua el carrer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: none;
+        }
+        .game-font {
+            font-family: 'Luckiest Guy', cursive;
+            letter-spacing: 0.05em;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 8 / 5;
+            border: 5px solid #4a5568;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            background-color: #38a169; /* Green for grass */
+        }
+        .grass {
+            width: 20%;
+            height: 100%;
+            position: relative;
+        }
+        #road {
+            width: 60%;
+            height: 100%;
+            background-color: #4a5568;
+            position: relative;
+            border-left: 4px solid #d1d5db; /* Left continuous line */
+            border-right: 4px solid #d1d5db; /* Right continuous line */
+            /* Dashed line in the middle */
+            background-image: repeating-linear-gradient(180deg, #d1d5db 0, #d1d5db 20px, transparent 20px, transparent 40px);
+            background-size: 4px 100%;
+            background-position: center;
+            background-repeat: repeat-y;
+        }
+        #car {
+            position: absolute;
+            width: 150px; /* Larger car */
+            height: 80px;  /* Larger car */
+            background-image: url('https://raultorres-ia.github.io/apps/creua_carrer/cotxe.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform-origin: center;
+            z-index: 20;
+        }
+        .traffic-car {
+            position: absolute;
+            width: 45px;
+            height: 90px;
+            background-size: cover;
+            z-index: 10;
+            border-radius: 8px;
+            transform-origin: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        /* Details for traffic cars */
+        .traffic-car::before {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 5px;
+            right: 5px;
+            height: 20px;
+            background: #a2d2ff; /* Sky blue for glass */
+            border-radius: 4px 4px 2px 2px;
+            border: 2px solid #555;
+            opacity: 0.8;
+        }
+        .traffic-car::after {
+            content: '';
+            position: absolute;
+            bottom: 5px; /* Taillights */
+            left: 8px;
+            right: 8px;
+            height: 5px;
+            background: #ff7070; /* Red for lights */
+            border-radius: 2px;
+            box-shadow: 0 0 5px #ff7070;
+        }
+        .headlight {
+            position: absolute;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            background-color: #fef08a; /* Bright yellow */
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px #fef08a;
+            border: 1px solid #eab308;
+        }
+        .headlight.left { left: 8px; }
+        .headlight.right { right: 8px; }
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 150px;
+            height: 150px;
+        }
+        .control-button {
+            transition: all 0.1s ease-in-out;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .control-button:active {
+            transform: scale(0.95);
+            background-color: #4a5568;
+        }
+        
+        /* Collision effect */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake-effect {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen p-2 sm:p-4">
+
+    <div class="w-full max-w-4xl flex flex-col sm:flex-row justify-between items-center px-2 sm:px-4 mb-2 gap-4 sm:gap-0">
+         <h1 id="main-title" class="game-font text-4xl sm:text-5xl text-yellow-400 text-center" style="text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">Creua el carrer</h1>
+         <div class="flex items-center gap-4">
+             <div class="flex items-center space-x-2 sm:space-x-4">
+                 <button id="sound-button" class="bg-gray-800 hover:bg-gray-700 p-2 rounded-full border-2 border-gray-600">
+                     <svg id="sound-on-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                     <svg id="sound-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                 </button>
+                 <button id="lang-button" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded border-2 border-gray-600">
+                     Castellano
+                 </button>
+             </div>
+         </div>
+    </div>
+    
+    <p id="instructions" class="mb-4 text-base sm:text-lg text-gray-200 uppercase tracking-widest text-center">Esquiva el trànsit i toca la gespa de la dreta per guanyar!</p>
+
+    <div id="game-container" class="game-container rounded-lg shadow-2xl">
+        <div id="left-grass" class="grass"></div>
+        <div id="road"></div>
+        <div id="right-grass" class="grass"></div>
+        <div id="car"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="mt-6 flex justify-center">
+        <div class="d-pad">
+            <div class="col-start-2 row-start-1 flex justify-center items-center"><button id="up" class="control-button bg-gray-700 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></button></div>
+            <div class="col-start-1 row-start-2 flex justify-center items-center"><button id="left" class="control-button bg-gray-700 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button></div>
+            <div class="col-start-3 row-start-2 flex justify-center items-center"><button id="right" class="control-button bg-gray-700 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 5 7 7-7 7"/><path d="M5 12h14"/></svg></button></div>
+            <div class="col-start-2 row-start-3 flex justify-center items-center"><button id="down" class="control-button bg-gray-700 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7 7 7-7"/><path d="M12 5v14"/></svg></button></div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="collision-message" class="hidden fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4">
+        <div class="bg-yellow-500 text-black p-6 sm:p-8 rounded-lg shadow-xl text-center mx-4">
+            <h2 id="collision-title" class="text-xl sm:text-2xl font-bold mb-2"></h2>
+            <p id="max-level-display" class="text-lg mb-4"></p>
+            <button id="end-game-button" class="bg-red-600 text-white font-bold py-2 px-6 rounded-full hover:bg-red-700 transition text-lg"></button>
+        </div>
+    </div>
+
+    <div id="level-win-message" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-green-500 text-white p-8 rounded-lg shadow-xl text-center">
+            <h2 id="level-win-title" class="text-3xl font-bold game-font"></h2>
+        </div>
+    </div>
+    
+    <footer class="mt-8 text-center text-gray-500 text-xs sm:text-sm">
+        <p>Aplicació feta per Raül Torres</p>
+        <p id="license-text">Aquesta obra està sota una <a id="license-link" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" class="underline hover:text-gray-300">llicència Creative Commons BY-SA</a>.</p>
+    </footer>
+
+    <audio id="background-sound" src="https://raultorres-ia.github.io/apps/creua_carrer/so_cotxe.mp3" loop></audio>
+
+    <script>
+        // --- DOM Elements ---
+        const gameContainer = document.getElementById('game-container');
+        const road = document.getElementById('road');
+        const car = document.getElementById('car');
+        const leftGrass = document.getElementById('left-grass');
+        const rightGrass = document.getElementById('right-grass');
+        const collisionMessage = document.getElementById('collision-message');
+        const collisionTitle = document.getElementById('collision-title');
+        const maxLevelDisplay = document.getElementById('max-level-display');
+        const levelWinMessage = document.getElementById('level-win-message');
+        const levelWinTitle = document.getElementById('level-win-title');
+        const endGameButton = document.getElementById('end-game-button');
+        const langButton = document.getElementById('lang-button');
+        const soundButton = document.getElementById('sound-button');
+        const soundOnIcon = document.getElementById('sound-on-icon');
+        const soundOffIcon = document.getElementById('sound-off-icon');
+        const backgroundSound = document.getElementById('background-sound');
+        
+        // --- Game State ---
+        const carState = { x: 0, y: 0, angle: 0, speed: 0, maxSpeed: 2.5, turnSpeed: 2.5 };
+        const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+        let gameState = {
+            level: 1,
+            traffic: [],
+            trafficSpawnCounter: 0,
+            levelWon: false,
+            crashed: false,
+            audioContext: null,
+            isMuted: false,
+        };
+        
+        let currentLang = 'ca';
+        let gameLoopId;
+
+        const trafficColors = ['#ef4444', '#f97316', '#84cc16', '#06b6d4', '#8b5cf6', '#ec4899'];
+
+        const translations = {
+            ca: {
+                mainTitle: "Creua el carrer",
+                instructions: "Esquiva el trànsit i entra a la gespa de la dreta per guanyar!",
+                langButton: "Castellano",
+                licenseText: 'Aquesta obra està sota una <a id="license-link" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" class="underline hover:text-gray-300">llicència Creative Commons BY-SA</a>.',
+                levelWinTitle: "Nivell {level} Superat!",
+                collisionTitle: `"Aquí sí que té sentit no mirar el mòbil quan condueixis, no a secundària..."`,
+                maxLevelText: "Nivell màxim assolit: {level}",
+                endGameButton: "Final de la Partida"
+            },
+            es: {
+                mainTitle: "Cruza la calle",
+                instructions: "¡Esquiva el tráfico y entra en el césped de la derecha para ganar!",
+                langButton: "Català",
+                licenseText: 'Esta obra está bajo una <a id="license-link" href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" class="underline hover:text-gray-300">licencia Creative Commons BY-SA</a>.',
+                levelWinTitle: "¡Nivel {level} Superado!",
+                collisionTitle: `"Aquí sí que tiene sentido no mirar el móvil cuando conduzcas, no en secundaria..."`,
+                maxLevelText: "Nivel máximo alcanzado: {level}",
+                endGameButton: "Final de la Partida"
+            }
+        };
+        
+        // --- Audio Management ---
+        function initializeAudio() {
+            if (!gameState.audioContext) {
+                try {
+                    gameState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch(e) { console.error("Web Audio API is not supported in this browser"); }
+            }
+        }
+        
+        function playSound(type) {
+            if (!gameState.audioContext || gameState.isMuted) return;
+            const context = gameState.audioContext;
+            if (type === 'collision') {
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, context.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(50, context.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, context.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                oscillator.start(context.currentTime);
+                oscillator.stop(context.currentTime + 0.1);
+            }
+            if (type === 'levelWin') {
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, context.currentTime); // C5
+                oscillator.frequency.linearRampToValueAtTime(659.25, context.currentTime + 0.1); // E5
+                oscillator.frequency.linearRampToValueAtTime(783.99, context.currentTime + 0.2); // G5
+                gainNode.gain.setValueAtTime(0.2, context.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2);
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                oscillator.start(context.currentTime);
+                oscillator.stop(context.currentTime + 0.2);
+            }
+        }
+
+        // --- Language and UI ---
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.documentElement.lang = lang;
+            document.getElementById('main-title').textContent = t.mainTitle;
+            document.getElementById('instructions').textContent = t.instructions;
+            document.getElementById('lang-button').textContent = t.langButton;
+            document.getElementById('license-text').innerHTML = t.licenseText;
+            
+            // Update modal texts that depend on language
+            collisionTitle.textContent = t.collisionTitle;
+            endGameButton.textContent = t.endGameButton;
+            maxLevelDisplay.textContent = t.maxLevelText.replace('{level}', gameState.level);
+            levelWinTitle.textContent = t.levelWinTitle.replace('{level}', gameState.level);
+        }
+
+        // --- Game Flow ---
+        function resetCarPosition() {
+            carState.angle = 0;
+            carState.x = (leftGrass.clientWidth - car.offsetWidth) / 2;
+            carState.y = (gameContainer.clientHeight - car.offsetHeight) / 2;
+            carState.speed = 0;
+        }
+
+        function loadLevel() {
+            collisionMessage.classList.add('hidden');
+            levelWinMessage.classList.add('hidden');
+            gameContainer.classList.remove('shake-effect');
+            gameState.levelWon = false;
+            gameState.crashed = false;
+            gameState.traffic = [];
+            document.querySelectorAll('.traffic-car').forEach(el => el.remove());
+            resetCarPosition();
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            gameState.level = 1;
+            backgroundSound.volume = 0.2;
+            if (!gameState.isMuted) {
+                backgroundSound.play().catch(e => console.log("User must interact to start audio."));
+            }
+            loadLevel();
+        }
+        
+        function gameLoop() {
+            if (gameState.levelWon || gameState.crashed) return;
+            updateCarState();
+            updateTraffic();
+            checkCollisions();
+            render();
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- Game Logic ---
+        function updateCarState() {
+            if (keys.ArrowUp) carState.speed = Math.min(carState.speed + 0.05, carState.maxSpeed);
+            else if (keys.ArrowDown) carState.speed = Math.max(carState.speed - 0.05, -carState.maxSpeed / 2);
+            else carState.speed *= 0.98;
+
+            if (Math.abs(carState.speed) > 0.1) {
+                const turnFactor = carState.speed > 0 ? 1 : -1;
+                if (keys.ArrowLeft) carState.angle -= carState.turnSpeed * turnFactor;
+                if (keys.ArrowRight) carState.angle += carState.turnSpeed * turnFactor;
+            }
+            
+            const angleInRadians = carState.angle * (Math.PI / 180);
+            carState.x += carState.speed * Math.cos(angleInRadians);
+            carState.y += carState.speed * Math.sin(angleInRadians);
+
+            carState.x = Math.max(0, Math.min(gameContainer.clientWidth - car.offsetWidth, carState.x));
+            carState.y = Math.max(0, Math.min(gameContainer.clientHeight - car.offsetHeight, carState.y));
+        }
+        
+        function updateTraffic() {
+            const spawnInterval = Math.max(50, 250 - Math.min(gameState.level, 50) * 4);
+            gameState.trafficSpawnCounter++;
+            if(gameState.trafficSpawnCounter > spawnInterval) {
+                gameState.trafficSpawnCounter = 0;
+                const newCar = {
+                    x: road.offsetLeft + Math.random() * (road.clientWidth - 45),
+                    y: gameContainer.clientHeight,
+                    speed: 1 + Math.random() * 0.5 + (gameState.level - 1) * 0.1,
+                    color: trafficColors[Math.floor(Math.random() * trafficColors.length)],
+                    element: document.createElement('div')
+                };
+                newCar.element.className = 'traffic-car';
+                newCar.element.style.backgroundColor = newCar.color;
+                
+                const leftLight = document.createElement('div');
+                leftLight.className = 'headlight left';
+                newCar.element.appendChild(leftLight);
+                const rightLight = document.createElement('div');
+                rightLight.className = 'headlight right';
+                newCar.element.appendChild(rightLight);
+
+                newCar.element.style.left = `${newCar.x}px`;
+                gameContainer.appendChild(newCar.element);
+                gameState.traffic.push(newCar);
+            }
+            
+            gameState.traffic.forEach(tc => tc.y -= tc.speed);
+            
+            gameState.traffic = gameState.traffic.filter(tc => {
+                if (tc.y < -90) {
+                    tc.element.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        function checkCollisions() {
+            const carRect = car.getBoundingClientRect();
+            const padding = 15;
+
+            for (const tc of gameState.traffic) {
+                const tcRect = tc.element.getBoundingClientRect();
+                if (carRect.left + padding < tcRect.right - padding &&
+                    carRect.right - padding > tcRect.left + padding &&
+                    carRect.top + padding < tcRect.bottom - padding &&
+                    carRect.bottom - padding > tcRect.top + padding) {
+                    handlePlayerHit();
+                    return;
+                }
+            }
+
+            // Win condition: Player's car left edge is past the right grass's left edge
+            if (carState.x >= rightGrass.offsetLeft) {
+                handleLevelWin();
+            }
+        }
+        
+        function handlePlayerHit() {
+            if (gameState.crashed) return;
+            gameState.crashed = true;
+            cancelAnimationFrame(gameLoopId);
+            gameContainer.classList.add('shake-effect');
+            playSound('collision');
+            
+            const t = translations[currentLang];
+            collisionTitle.textContent = t.collisionTitle;
+            maxLevelDisplay.textContent = t.maxLevelText.replace('{level}', gameState.level);
+            endGameButton.textContent = t.endGameButton;
+            
+            collisionMessage.classList.remove('hidden');
+        }
+        
+        function handleLevelWin() {
+            if(gameState.levelWon) return; 
+            gameState.levelWon = true;
+
+            cancelAnimationFrame(gameLoopId);
+            playSound('levelWin');
+            
+            const t = translations[currentLang];
+            levelWinTitle.textContent = t.levelWinTitle.replace('{level}', gameState.level);
+            levelWinMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                levelWinMessage.classList.add('hidden');
+                gameState.level++;
+                loadLevel();
+            }, 1000);
+        }
+
+        function render() {
+            car.style.left = `${carState.x}px`;
+            car.style.top = `${carState.y}px`;
+            car.style.transform = `rotate(${carState.angle}deg)`;
+            gameState.traffic.forEach(tc => {
+                tc.element.style.top = `${tc.y}px`;
+            });
+        }
+        
+        // --- Event Listeners ---
+        function userInteraction() {
+            initializeAudio();
+            if (!backgroundSound.playing && !gameState.isMuted) {
+                 backgroundSound.play().catch(e => console.log("Error playing background sound"));
+            }
+            document.removeEventListener('keydown', userInteraction);
+            document.removeEventListener('mousedown', userInteraction);
+            document.removeEventListener('touchstart', userInteraction);
+        }
+
+        document.addEventListener('keydown', (e) => { 
+            userInteraction();
+            if (e.key in keys) { keys[e.key] = true; e.preventDefault(); } 
+        });
+        document.addEventListener('keyup', (e) => { 
+            if (e.key in keys) { keys[e.key] = false; e.preventDefault(); } 
+        });
+        
+        function setupTouchControls() {
+            const buttonMap = { 'up': 'ArrowUp', 'down': 'ArrowDown', 'left': 'ArrowLeft', 'right': 'ArrowRight' };
+            for (const [id, key] of Object.entries(buttonMap)) {
+                const button = document.getElementById(id);
+                const start = (e) => { userInteraction(); keys[key] = true; e.preventDefault(); };
+                const end = (e) => { keys[key] = false; e.preventDefault(); };
+                button.addEventListener('mousedown', start);
+                button.addEventListener('mouseup', end);
+                button.addEventListener('mouseleave', end);
+                button.addEventListener('touchstart', start, { passive: false });
+                button.addEventListener('touchend', end);
+            }
+        }
+        
+        endGameButton.addEventListener('click', () => {
+            collisionMessage.classList.add('hidden');
+            startGame(); // This resets level to 1
+        });
+
+        soundButton.addEventListener('click', () => {
+            gameState.isMuted = !gameState.isMuted;
+            backgroundSound.muted = gameState.isMuted;
+            if (!gameState.isMuted) {
+                backgroundSound.play().catch(e => console.log("User must interact to start audio."));
+            }
+            soundOnIcon.classList.toggle('hidden', gameState.isMuted);
+            soundOffIcon.classList.toggle('hidden', !gameState.isMuted);
+        });
+
+        langButton.addEventListener('click', () => {
+            const newLang = currentLang === 'ca' ? 'es' : 'ca';
+            setLanguage(newLang);
+        });
+
+        window.addEventListener('load', () => {
+            setupTouchControls();
+            setLanguage('ca');
+            startGame();
+            document.addEventListener('keydown', userInteraction);
+            document.addEventListener('mousedown', userInteraction);
+            document.addEventListener('touchstart', userInteraction);
+        });
+        
+        window.addEventListener('resize', () => {
+            loadLevel();
+        });
+
+    </script>
+</body>
+</html>
