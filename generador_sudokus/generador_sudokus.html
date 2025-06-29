@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Sudokus para Primaria</title>
+    <!-- Tailwind CSS para un diseño moderno y adaptable -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF para la generación de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas para capturar el contenido HTML como imagen -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Estilos personalizados para el tablero de Sudoku */
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, minmax(0, 1fr));
+            grid-template-rows: repeat(9, minmax(0, 1fr));
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            border: 3px solid #1f2937; /* Borde exterior más grueso */
+            border-radius: 8px;
+            background-color: #f9fafb;
+        }
+        .sudoku-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #d1d5db; /* Borde de celda */
+            font-size: clamp(1rem, 4vw, 1.75rem); /* Tamaño de fuente adaptable */
+            font-weight: bold;
+            color: #111827;
+        }
+        /* Bordes más gruesos para las cajas 3x3 */
+        .sudoku-cell:nth-child(3n) {
+            border-right-width: 3px;
+            border-right-color: #1f2937;
+        }
+        .sudoku-cell:nth-child(9n) {
+            border-right: none;
+        }
+        .sudoku-row:nth-child(3n) .sudoku-cell {
+            border-bottom-width: 3px;
+            border-bottom-color: #1f2937;
+        }
+        /* Quitamos el borde inferior de la última fila */
+        .sudoku-row:last-child .sudoku-cell {
+            border-bottom: none;
+        }
+        .sudoku-cell.initial-number {
+             color: #1e40af; /* Color azul para los números iniciales */
+        }
+    </style>
+</head>
+<body class="bg-blue-50 font-sans text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-800">Generador de Sudokus</h1>
+            <p class="text-lg text-blue-600 mt-2">Perfecto para niños de primaria</p>
+        </header>
+
+        <main class="bg-white p-6 rounded-2xl shadow-lg">
+            <!-- Controles -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+                <button id="generate-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    Generar Nuevo Sudoku
+                </button>
+                <button id="print-btn" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
+                    </svg>
+                    Guardar PDF para imprimir
+                </button>
+            </div>
+            
+            <!-- Contenedor para mensajes de error -->
+            <div id="error-box" class="hidden text-center p-4 my-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+            </div>
+
+            <!-- Tablero de Sudoku principal -->
+            <div id="sudoku-container" class="mx-auto">
+                <div id="sudoku-board" class="sudoku-board mx-auto shadow-inner"></div>
+            </div>
+             <div id="loading-spinner" class="text-center p-8 hidden">
+                <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-blue-600 font-semibold">Generando tu PDF...</p>
+            </div>
+        </main>
+        
+        <footer class="text-center mt-8 text-sm text-gray-500 space-y-2">
+            <div>
+                <p id="attribution">Aplicació feta per Raül Torres</p>
+                <p>
+                    <span id="license-text-part1">Aquesta obra està sota una </span>
+                    <a id="license-link" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                        llicència Creative Commons BY-SA.
+                    </a>
+                </p>
+            </div>
+            <div class="pt-2">
+                <button id="lang-ca" class="font-bold text-blue-700 underline" data-lang="ca">CAT</button>
+                <span class="text-gray-400">|</span>
+                <button id="lang-es" class="text-blue-600 hover:underline" data-lang="es">ESP</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Área oculta para preparar la impresión en PDF. Se posiciona fuera de la pantalla en lugar de hacerlo invisible. -->
+    <div id="printable-area" class="absolute -left-[9999px]">
+        <div class="p-8 bg-white" style="width: 800px;"> <!-- Ancho fijo para consistencia en la captura -->
+            <h1 class="text-3xl font-bold text-center mb-2">Sudoku para Imprimir</h1>
+            <p class="text-center text-gray-600 mb-6">Resuelve el puzzle y comprueba la solución abajo.</p>
+            
+            <h2 class="text-2xl font-semibold mb-4 text-blue-700">Puzzle</h2>
+            <div id="printable-puzzle" class="sudoku-board mx-auto"></div>
+            
+            <div style="page-break-before: always;"></div>
+
+            <h2 class="text-2xl font-semibold mt-8 mb-4 text-green-700">Solución</h2>
+            <div id="printable-solution" class="sudoku-board mx-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica principal de la aplicación
+        const boardElement = document.getElementById('sudoku-board');
+        const generateBtn = document.getElementById('generate-btn');
+        const printBtn = document.getElementById('print-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorBox = document.getElementById('error-box');
+        
+        let solutionGrid = [];
+        let puzzleGrid = [];
+
+        /**
+         * Función para barajar un array (algoritmo de Fisher-Yates)
+         * @param {Array} array - El array a barajar
+         * @returns {Array} - El array barajado
+         */
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Verifica si es seguro colocar un número en una celda específica
+         * @param {number[][]} grid - El tablero
+         * @param {number} row - Fila
+         * @param {number} col - Columna
+         * @param {number} num - Número a verificar
+         * @returns {boolean} - True si es válido, false en caso contrario
+         */
+        function isSafe(grid, row, col, num) {
+            // Comprobar fila y columna
+            for (let x = 0; x < 9; x++) {
+                if (grid[row][x] === num || grid[x][col] === num) return false;
+            }
+            // Comprobar caja 3x3
+            const startRow = row - row % 3;
+            const startCol = col - col % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (grid[i + startRow][j + startCol] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Resuelve el Sudoku usando backtracking
+         * @param {number[][]} grid - El tablero
+         * @returns {boolean} - True si se encontró una solución, false si no
+         */
+        function solveSudoku(grid) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (grid[row][col] === 0) {
+                        const numbers = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                        for (let num of numbers) {
+                            if (isSafe(grid, row, col, num)) {
+                                grid[row][col] = num;
+                                if (solveSudoku(grid)) {
+                                    return true;
+                                }
+                                grid[row][col] = 0; // Backtrack
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        
+        /**
+         * Crea un puzzle eliminando números de un tablero resuelto
+         * @param {number[][]} grid - El tablero resuelto
+         * @param {number} holes - El número de celdas a vaciar (dificultad)
+         */
+        function createPuzzle(grid, holes) {
+            let removed = 0;
+            while (removed < holes) {
+                const row = Math.floor(Math.random() * 9);
+                const col = Math.floor(Math.random() * 9);
+                if (grid[row][col] !== 0) {
+                    grid[row][col] = 0;
+                    removed++;
+                }
+            }
+        }
+        
+        /**
+         * Renderiza un tablero de Sudoku en un elemento del DOM
+         * @param {number[][]} grid - El tablero a renderizar
+         * @param {HTMLElement} container - El elemento contenedor
+         */
+        function renderBoard(grid, container) {
+            container.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'sudoku-row';
+                rowDiv.style.display = 'contents'; 
+                for (let j = 0; j < 9; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'sudoku-cell';
+                    if (grid[i][j] !== 0) {
+                        cell.textContent = grid[i][j];
+                        cell.classList.add('initial-number');
+                    }
+                    rowDiv.appendChild(cell);
+                }
+                container.appendChild(rowDiv);
+            }
+        }
+
+        /**
+         * Genera un nuevo Sudoku completo (puzzle y solución)
+         */
+        function generateNewSudoku() {
+            errorBox.classList.add('hidden');
+            const emptyGrid = Array(9).fill().map(() => Array(9).fill(0));
+            solveSudoku(emptyGrid);
+            solutionGrid = JSON.parse(JSON.stringify(emptyGrid)); 
+            puzzleGrid = JSON.parse(JSON.stringify(solutionGrid));
+            createPuzzle(puzzleGrid, 45);
+            renderBoard(puzzleGrid, boardElement);
+        }
+
+        // --- Lógica de Impresión ---
+        printBtn.addEventListener('click', async () => {
+            loadingSpinner.classList.remove('hidden');
+            errorBox.classList.add('hidden');
+            printBtn.disabled = true;
+            generateBtn.disabled = true;
+
+            try {
+                // Preparar los tableros en el área de impresión
+                const printablePuzzleContainer = document.getElementById('printable-puzzle');
+                const printableSolutionContainer = document.getElementById('printable-solution');
+                
+                renderBoard(puzzleGrid, printablePuzzleContainer);
+                renderBoard(solutionGrid, printableSolutionContainer);
+                
+                const printableArea = document.getElementById('printable-area');
+                const canvas = await html2canvas(printableArea, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff' // Asegurar fondo blanco
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const ratio = canvasWidth / canvasHeight;
+
+                const imgWidth = pdfWidth - 20; // 10mm de margen
+                let imgHeight = imgWidth / ratio;
+                let finalHeight = imgHeight;
+
+                // Si la imagen es más alta que la página, la ajustamos a la altura
+                if(imgHeight > pdfHeight - 20) {
+                    finalHeight = pdfHeight - 20;
+                }
+                
+                const x = (pdfWidth - imgWidth) / 2; // Centrar
+                const y = 10;
+
+                pdf.addImage(imgData, 'PNG', x, y, imgWidth, finalHeight);
+                pdf.save('sudoku-para-imprimir.pdf');
+
+            } catch (error) {
+                console.error("Error al generar el PDF:", error);
+                errorBox.textContent = "Hubo un error al crear el PDF. Por favor, inténtalo de nuevo.";
+                errorBox.classList.remove('hidden');
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                printBtn.disabled = false;
+                generateBtn.disabled = false;
+            }
+        });
+        
+        // --- Lógica de Traducción del Footer ---
+        const attributionEl = document.getElementById('attribution');
+        const licenseTextPart1El = document.getElementById('license-text-part1');
+        const licenseLinkEl = document.getElementById('license-link');
+        const langCaBtn = document.getElementById('lang-ca');
+        const langEsBtn = document.getElementById('lang-es');
+
+        const translations = {
+            ca: {
+                attribution: 'Aplicació feta per Raül Torres',
+                license_part1: 'Aquesta obra està sota una ',
+                license_link_text: 'llicència Creative Commons BY-SA.',
+                license_link_href: 'https://creativecommons.org/licenses/by-sa/4.0/deed.ca'
+            },
+            es: {
+                attribution: 'Aplicación hecha por Raül Torres',
+                license_part1: 'Esta obra está bajo una ',
+                license_link_text: 'licencia Creative Commons BY-SA.',
+                license_link_href: 'https://creativecommons.org/licenses/by-sa/4.0/deed.es'
+            }
+        };
+
+        function setLanguage(lang) {
+            const t = translations[lang];
+            attributionEl.textContent = t.attribution;
+            licenseTextPart1El.textContent = t.license_part1;
+            licenseLinkEl.textContent = t.license_link_text;
+            licenseLinkEl.href = t.license_link_href;
+
+            if (lang === 'ca') {
+                langCaBtn.classList.add('font-bold', 'text-blue-700', 'underline');
+                langCaBtn.classList.remove('text-blue-600', 'hover:underline');
+                langEsBtn.classList.remove('font-bold', 'text-blue-700', 'underline');
+                langEsBtn.classList.add('text-blue-600', 'hover:underline');
+            } else { // es
+                langEsBtn.classList.add('font-bold', 'text-blue-700', 'underline');
+                langEsBtn.classList.remove('text-blue-600', 'hover:underline');
+                langCaBtn.classList.remove('font-bold', 'text-blue-700', 'underline');
+                langCaBtn.classList.add('text-blue-600', 'hover:underline');
+            }
+        }
+
+        langCaBtn.addEventListener('click', () => setLanguage('ca'));
+        langEsBtn.addEventListener('click', () => setLanguage('es'));
+
+        generateBtn.addEventListener('click', generateNewSudoku);
+        window.onload = generateNewSudoku;
+
+    </script>
+</body>
+</html>
