@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Frase Encadenada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+        }
+        @keyframes shake {
+          10%, 90% { transform: translate3d(-1px, 0, 0); }
+          20%, 80% { transform: translate3d(2px, 0, 0); }
+          30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+          40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .animate-shake {
+          animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        .radio-label {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        .radio-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        input[type="radio"]:checked + .radio-label {
+            border-color: #00796b; /* teal-700 */
+            background-color: #e0f2f1; /* teal-50 */
+            color: #004d40; /* teal-900 */
+            font-weight: 700;
+            transform: scale(1.02);
+        }
+        .heart-icon {
+            transition: color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app-container" class="relative w-full max-w-2xl p-8 sm:p-12 bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl text-center transition-transform duration-500">
+        <!-- Botón de idioma -->
+        <div class="absolute top-5 right-5 sm:top-6 sm:right-6">
+            <button id="lang-toggle-button" class="w-12 h-12 flex items-center justify-center bg-gray-200/50 rounded-full text-sm font-bold text-gray-700 hover:bg-gray-200/80 transition-all duration-300">
+                CAST
+            </button>
+        </div>
+
+        <!-- Título del juego -->
+        <h1 data-lang-key="title" class="text-5xl font-extrabold text-teal-800 mb-4">La Frase Encadenada</h1>
+        
+        <!-- Selección de Modo de Juego -->
+        <div id="mode-selection">
+            <p data-lang-key="mode_selection_prompt" class="text-gray-600 mb-6 text-lg">Tria un mode de joc per desenvolupar la teva fluïdesa verbal.</p>
+            <fieldset class="mb-6">
+                <legend class="sr-only">Mode de joc</legend>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <input type="radio" name="gameMode" value="letter" id="mode-letter" class="sr-only" checked>
+                        <label for="mode-letter" class="radio-label cursor-pointer block border-2 border-gray-200 rounded-xl p-6 text-center bg-white">
+                            <span data-lang-key="mode_letter_title" class="text-xl font-bold block">Lletra a Lletra</span>
+                            <span data-lang-key="mode_letter_desc" class="text-base text-gray-500">Més senzill</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="gameMode" value="syllable" id="mode-syllable" class="sr-only">
+                        <label for="mode-syllable" class="radio-label cursor-pointer block border-2 border-gray-200 rounded-xl p-6 text-center bg-white">
+                            <span data-lang-key="mode_syllable_title" class="text-xl font-bold block">Síl·laba a Síl·laba</span>
+                            <span data-lang-key="mode_syllable_desc" class="text-base text-gray-500">Més repte</span>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+             <div class="p-4 bg-yellow-100/80 border-l-4 border-yellow-500 text-yellow-800 rounded-lg mb-6">
+                <p data-lang-key="instructions" class="font-semibold">És important escriure bé les paraules. L'ortografia penalitza!</p>
+            </div>
+            <button id="start-game-button" data-lang-key="start_button" class="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-teal-700 transition-all shadow-lg hover:shadow-teal-500/50 text-xl flex items-center justify-center gap-3">
+                <span id="start-button-text">Començar a Jugar</span>
+                <svg id="start-spinner-icon" class="hidden animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Contenedor del Juego (oculto inicialmente) -->
+        <div id="game-container" class="hidden">
+            <div class="p-4 bg-teal-50/70 rounded-xl mb-6 min-h-[80px] flex items-center justify-center">
+                <p id="phrase-display" class="text-2xl sm:text-3xl text-teal-900 font-semibold break-words"></p>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                 <div class="bg-white/50 p-4 rounded-xl">
+                    <p data-lang-key="score_label" class="text-base text-gray-600 font-semibold">Paraules</p>
+                    <span id="score" class="font-bold text-4xl text-gray-800">0</span>
+                </div>
+                <div class="bg-green-100/60 p-4 rounded-xl">
+                    <p data-lang-key="next_start_label" class="text-base text-gray-700 font-semibold">Pròxim Inici</p>
+                    <span id="next-start" class="font-bold text-4xl text-green-700"></span>
+                </div>
+                <div class="bg-white/50 p-4 rounded-xl">
+                    <p data-lang-key="lives_label" class="text-base text-gray-600 font-semibold">Vides</p>
+                    <div id="lives-container" class="flex justify-center items-center gap-2 mt-2">
+                        <!-- Hearts will be generated by JS -->
+                    </div>
+                </div>
+            </div>
+            <form id="word-form" class="flex gap-3">
+                <input type="text" id="word-input" class="flex-grow p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-300 transition text-lg" autocomplete="off" autofocus>
+                <button type="submit" id="submit-button" class="bg-teal-600 text-white font-bold p-4 rounded-xl hover:bg-teal-700 active:scale-95 transition-all shadow-md hover:shadow-lg w-16 h-16 flex items-center justify-center">
+                    <svg id="plus-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                    <svg id="spinner-icon" class="hidden animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+            <div id="message-area" class="mt-4 h-auto min-h-[3.5rem] flex items-center justify-center p-2"></div>
+            <button id="restart-button" data-lang-key="play_again_button" class="hidden w-full bg-orange-500 text-white font-bold py-4 px-6 rounded-xl hover:bg-orange-600 transition-all mt-4 shadow-lg hover:shadow-orange-500/50 text-xl">
+                Jugar de Nou!
+            </button>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-10 text-center text-sm text-gray-500">
+            <p><span data-lang-key="author">Aplicació feta per</span> Raül Torres</p>
+            <p>
+                <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="hover:underline" data-lang-key="license_link">
+                    Aquesta obra està sota una llicència Creative Commons BY-SA.
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DICCIONARIO DE IDIOMAS ---
+            const langDict = {
+                ca: {
+                    lang_toggle: "CAST",
+                    title: "La Frase Encadenada",
+                    mode_selection_prompt: "Tria un mode de joc per desenvolupar la teva fluïdesa verbal.",
+                    instructions: "És important escriure bé les paraules. L'ortografia penalitza!",
+                    mode_letter_title: "Lletra a Lletra",
+                    mode_letter_desc: "Més senzill",
+                    mode_syllable_title: "Síl·laba a Síl·laba",
+                    mode_syllable_desc: "Més repte",
+                    start_button: "Començar a Jugar",
+                    start_button_loading: "Iniciant...",
+                    score_label: "Paraules",
+                    next_start_label: "Pròxim Inici",
+                    lives_label: "Vides",
+                    word_input_placeholder: "Escriu la teva paraula...",
+                    error_one_word: "Només una paraula a la vegada!",
+                    error_lost: (letter) => `La paraula havia de començar per "${letter}".`,
+                    error_invalid_word: (word) => `"${word}" no és una paraula vàlida.`,
+                    game_over_message: "GAME OVER",
+                    play_again_button: "Jugar de Nou!",
+                    author: "Aplicació feta per",
+                    license_link: "Aquesta obra està sota una llicència Creative Commons BY-SA."
+                },
+                es: {
+                    lang_toggle: "CAT",
+                    title: "La Frase Encadenada",
+                    mode_selection_prompt: "Elige un modo de juego para desarrollar tu fluidez verbal.",
+                    instructions: "Es importante escribir bien las palabras. ¡La ortografía penaliza!",
+                    mode_letter_title: "Letra a Letra",
+                    mode_letter_desc: "Más sencillo",
+                    mode_syllable_title: "Sílaba a Sílaba",
+                    mode_syllable_desc: "Mayor reto",
+                    start_button: "Empezar a Jugar",
+                    start_button_loading: "Iniciando...",
+                    score_label: "Palabras",
+                    next_start_label: "Próximo Inicio",
+                    lives_label: "Vidas",
+                    word_input_placeholder: "Escribe tu palabra...",
+                    error_one_word: "¡Solo una palabra a la vez!",
+                    error_lost: (letter) => `La palabra debía empezar por "${letter}".`,
+                    error_invalid_word: (word) => `"${word}" no es una palabra válida.`,
+                    game_over_message: "GAME OVER",
+                    play_again_button: "¡Jugar de Nuevo!",
+                    author: "Aplicación hecha por",
+                    license_link: "Esta obra está bajo una licencia Creative Commons BY-SA."
+                }
+            };
+
+            // --- MOTORES DE AUDIO ---
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const synth = window.speechSynthesis;
+
+            function playSound(type) {
+                if (!audioCtx || audioCtx.state === 'suspended') { audioCtx.resume(); }
+                if (!audioCtx) return;
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+
+                if (type === 'success') {
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                } else if (type === 'error') {
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                } else { // 'click'
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+                }
+
+                oscillator.start(audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+                oscillator.stop(audioCtx.currentTime + 0.15);
+            }
+
+            function speak(text, langCode) {
+                if (synth.speaking) { return; }
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = langCode;
+                utterance.pitch = 1;
+                utterance.rate = 1;
+                synth.speak(utterance);
+            }
+
+            // --- REFERENCIAS AL DOM ---
+            const allElements = {
+                appContainer: document.getElementById('app-container'),
+                modeSelection: document.getElementById('mode-selection'),
+                startGameButton: document.getElementById('start-game-button'),
+                startButtonText: document.getElementById('start-button-text'),
+                startSpinnerIcon: document.getElementById('start-spinner-icon'),
+                gameContainer: document.getElementById('game-container'),
+                phraseDisplay: document.getElementById('phrase-display'),
+                nextStartDisplay: document.getElementById('next-start'),
+                scoreDisplay: document.getElementById('score'),
+                livesContainer: document.getElementById('lives-container'),
+                wordForm: document.getElementById('word-form'),
+                wordInput: document.getElementById('word-input'),
+                messageArea: document.getElementById('message-area'),
+                restartButton: document.getElementById('restart-button'),
+                submitButton: document.getElementById('submit-button'),
+                langToggleButton: document.getElementById('lang-toggle-button'),
+                plusIcon: document.getElementById('plus-icon'),
+                spinnerIcon: document.getElementById('spinner-icon')
+            };
+
+            // --- ESTADO DEL JUEGO ---
+            let words = [];
+            let gameOver = false;
+            let gameMode = 'letter';
+            let currentLang = 'ca';
+            let lives = 3;
+            const MAX_LIVES = 3;
+
+            // --- LÓGICA DE IA ---
+            async function callGemini(prompt) {
+                const apiKey = ""; // Dejar vacío
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Error de l'API: ${response.statusText}`);
+                    }
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                        return result.candidates[0].content.parts[0].text.trim();
+                    }
+                    return null;
+                } catch (error) {
+                    console.error("Error cridant a l'API de Gemini:", error);
+                    return null;
+                }
+            }
+
+            async function getAIStartingWord(lang) {
+                const langName = lang === 'ca' ? 'català' : 'español';
+                const prompt = `Dona'm una única paraula comuna, senzilla i curta per començar un joc de paraules encadenades en ${langName}. La paraula ha de ser fàcil per a qualsevol. Respon només amb la paraula.`;
+                let word = await callGemini(prompt);
+                if (word) {
+                    word = word.replace(/["'.*]/g, '').split(' ')[0];
+                }
+                return word || (lang === 'ca' ? 'Casa' : 'Casa'); // Paraula de fallback
+            }
+            
+            async function validateWordWithAI(word, lang) {
+                const langName = lang === 'ca' ? 'Catalan' : 'Spanish';
+                const prompt = `Is the word "${word}" a real and common word in the ${langName} language (including plurals and verb conjugations)? Please answer with only "yes" or "no".`;
+                
+                try {
+                    const response = await callGemini(prompt);
+                    return response && response.toLowerCase().includes('yes');
+                } catch (error) {
+                    console.error("Error validant la paraula amb IA:", error);
+                    return true; // Seguretat: si la IA falla, acceptem la paraula.
+                }
+            }
+
+            // --- LÓGICA DEL JUEGO ---
+            function setLanguage(lang) {
+                currentLang = lang;
+                document.documentElement.lang = lang;
+                const dict = langDict[lang];
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.dataset.langKey;
+                    if (dict[key] && typeof dict[key] === 'string') el.textContent = dict[key];
+                });
+                allElements.startButtonText.textContent = dict.start_button;
+                allElements.wordInput.placeholder = dict.word_input_placeholder;
+                allElements.langToggleButton.textContent = dict.lang_toggle;
+            }
+
+            function normalizeString(str) {
+                if (!str) return '';
+                return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            }
+
+            function getLastSyllable(word) {
+                const normalizedWord = normalizeString(word);
+                const vowels = "aeiou";
+                let lastVowelIndex = -1;
+                for (let i = normalizedWord.length - 1; i >= 0; i--) { if (vowels.includes(normalizedWord[i])) { lastVowelIndex = i; break; } }
+                if (lastVowelIndex === -1) return normalizedWord; 
+                let syllableStartIndex = 0;
+                for (let i = lastVowelIndex - 1; i >= 0; i--) { if (vowels.includes(normalizedWord[i])) { syllableStartIndex = i + 1; break; } }
+                const lastPart = normalizedWord.substring(syllableStartIndex);
+                const inseparable = ['bl', 'br', 'cl', 'cr', 'dr', 'fl', 'fr', 'gl', 'gr', 'pl', 'pr', 'tr'];
+                if (lastPart.length > 2 && !vowels.includes(lastPart[0]) && !vowels.includes(lastPart[1])) {
+                     if (inseparable.includes(lastPart.substring(0, 2))) return lastPart;
+                     return lastPart.substring(1);
+                }
+                return lastPart;
+            }
+
+            function updateLivesUI() {
+                allElements.livesContainer.innerHTML = '';
+                for (let i = 0; i < MAX_LIVES; i++) {
+                    const heart = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    heart.setAttribute('class', `h-8 w-8 heart-icon ${i < lives ? 'text-red-500' : 'text-gray-300'}`);
+                    heart.setAttribute('viewBox', '0 0 24 24');
+                    heart.setAttribute('fill', 'currentColor');
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+                    heart.appendChild(path);
+                    allElements.livesContainer.appendChild(heart);
+                }
+            }
+
+            async function startGame() {
+                allElements.startGameButton.disabled = true;
+                allElements.startButtonText.textContent = langDict[currentLang].start_button_loading;
+                allElements.startSpinnerIcon.classList.remove('hidden');
+
+                gameMode = document.querySelector('input[name="gameMode"]:checked').value;
+                const firstWord = await getAIStartingWord(currentLang);
+                
+                allElements.startGameButton.disabled = false;
+                allElements.startButtonText.textContent = langDict[currentLang].start_button;
+                allElements.startSpinnerIcon.classList.add('hidden');
+
+                allElements.modeSelection.classList.add('hidden');
+                allElements.gameContainer.classList.remove('hidden');
+                
+                words = [firstWord];
+                lives = MAX_LIVES;
+                gameOver = false;
+                updateUI();
+                speak(firstWord, currentLang === 'ca' ? 'ca-ES' : 'es-ES');
+                allElements.wordInput.disabled = false;
+                allElements.submitButton.disabled = false;
+                allElements.wordInput.value = '';
+                allElements.wordInput.focus();
+                allElements.messageArea.innerHTML = '';
+                allElements.restartButton.classList.add('hidden');
+            }
+            
+            function resetToSelection() {
+                allElements.gameContainer.classList.add('hidden');
+                allElements.modeSelection.classList.remove('hidden');
+            }
+
+            function updateUI() {
+                allElements.phraseDisplay.textContent = words.join(' → ');
+                allElements.scoreDisplay.textContent = words.length;
+                updateLivesUI();
+                if (!gameOver) {
+                    const lastWord = words[words.length - 1];
+                    const nextStart = gameMode === 'letter' ? normalizeString(lastWord).slice(-1) : getLastSyllable(lastWord);
+                    allElements.nextStartDisplay.textContent = nextStart.toUpperCase();
+                }
+            }
+
+            function setLoadingState(isLoading) {
+                allElements.wordInput.disabled = isLoading;
+                allElements.submitButton.disabled = isLoading;
+                if (isLoading) {
+                    allElements.plusIcon.classList.add('hidden');
+                    allElements.spinnerIcon.classList.remove('hidden');
+                } else {
+                    allElements.plusIcon.classList.remove('hidden');
+                    allElements.spinnerIcon.classList.add('hidden');
+                }
+            }
+
+            function handleMistake(errorMessage) {
+                lives--;
+                updateLivesUI();
+                showError(errorMessage);
+                if (lives <= 0) {
+                    endGame();
+                }
+            }
+
+            async function handleSubmission(e) {
+                e.preventDefault();
+                if (gameOver) return;
+                const newWordRaw = allElements.wordInput.value.trim();
+                if (!newWordRaw) return;
+                if (/\s/.test(newWordRaw)) {
+                    handleMistake(langDict[currentLang].error_one_word);
+                    return;
+                }
+
+                setLoadingState(true);
+
+                try {
+                    const newWordNormalized = normalizeString(newWordRaw);
+                    const lastWord = words[words.length - 1];
+                    const requiredStart = gameMode === 'letter' ? normalizeString(lastWord).slice(-1) : getLastSyllable(lastWord);
+
+                    if (!newWordNormalized.startsWith(requiredStart)) {
+                        handleMistake(langDict[currentLang].error_lost(requiredStart.toUpperCase()));
+                        return;
+                    }
+
+                    const isWordValid = await validateWordWithAI(newWordRaw, currentLang);
+
+                    if (!isWordValid) {
+                        handleMistake(langDict[currentLang].error_invalid_word(newWordRaw));
+                        return;
+                    }
+
+                    playSound('success');
+                    words.push(newWordRaw);
+                    speak(newWordRaw, currentLang === 'ca' ? 'ca-ES' : 'es-ES');
+                    updateUI();
+                    allElements.wordInput.value = '';
+                    allElements.messageArea.innerHTML = '';
+
+                } finally {
+                    setLoadingState(false);
+                    if (!gameOver) allElements.wordInput.focus();
+                }
+            }
+
+            function showError(message) {
+                playSound('error');
+                allElements.messageArea.innerHTML = `<p class="text-red-500 font-bold">${message}</p>`;
+                allElements.appContainer.classList.add('animate-shake');
+                setTimeout(() => {
+                    allElements.appContainer.classList.remove('animate-shake');
+                    if (lives > 0) { allElements.messageArea.innerHTML = ''; }
+                }, 3000);
+            }
+
+            function endGame() {
+                gameOver = true;
+                setLoadingState(true); 
+                allElements.wordInput.disabled = true;
+                allElements.submitButton.disabled = true;
+                allElements.messageArea.innerHTML = `<p class="text-4xl font-extrabold text-red-600 animate-bounce">${langDict[currentLang].game_over_message}</p>`;
+                setTimeout(resetToSelection, 3000);
+            }
+
+            // --- EVENT LISTENERS ---
+            allElements.langToggleButton.addEventListener('click', () => {
+                const newLang = currentLang === 'ca' ? 'es' : 'ca';
+                setLanguage(newLang);
+            });
+            
+            allElements.startGameButton.addEventListener('click', () => {
+                playSound('click');
+                startGame();
+            });
+            
+            allElements.wordForm.addEventListener('submit', handleSubmission);
+
+            // --- INICIALIZACIÓN ---
+            setLanguage('ca');
+        });
+    </script>
+</body>
+</html>
