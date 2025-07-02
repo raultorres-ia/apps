@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="window_title">Planificador de Rutes de Google Maps</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .location-item {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+        .lang-btn.active {
+            background-color: #2563eb; /* bg-blue-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md mx-auto bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
+        
+        <!-- Header & Language Switcher -->
+        <div class="flex justify-between items-start mb-8">
+            <div class="text-left">
+                <h1 class="text-3xl font-bold text-white" data-lang-key="title">Planificador de Rutes</h1>
+                <p class="text-gray-400 mt-2" data-lang-key="subtitle">Afegeix llocs per crear la teva ruta a Google Maps</p>
+            </div>
+            <div class="flex space-x-1 border border-gray-600 rounded-lg p-1">
+                <button id="lang-es" class="lang-btn px-3 py-1 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 transition">CAST</button>
+                <button id="lang-ca" class="lang-btn px-3 py-1 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 transition active">CAT</button>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="flex space-x-2 mb-6">
+            <input type="text" id="location-input" data-lang-key-placeholder="input_placeholder" placeholder="Ex: Torre Eiffel, París" class="flex-grow bg-gray-700 border-2 border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            <button id="add-location-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg transition-transform transform hover:scale-105 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Locations List -->
+        <div class="space-y-3">
+            <h2 class="text-xl font-semibold text-gray-300 border-b-2 border-gray-700 pb-2" data-lang-key="stops_header">Parades de la Ruta</h2>
+            <div id="locations-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                 <p id="empty-list-message" class="text-gray-500 text-center py-4" data-lang-key="empty_list">Encara no has afegit cap lloc.</p>
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="mt-8">
+            <button id="generate-route-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100" data-lang-key="generate_button">
+                Generar Ruta a Google Maps
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-gray-500 text-xs mt-8 pt-4 border-t border-gray-700">
+            <p>Aplicació feta per Raül Torres</p>
+            <p id="license-text">
+                <span data-lang-key="cc_license_text">Aquesta obra està sota una</span> 
+                <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" class="underline hover:text-gray-300" data-lang-key="cc_license_link">llicència Creative Commons BY-SA</a>.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Simple Modal for notifications -->
+    <div id="notification-modal" class="fixed top-5 right-5 bg-red-500 text-white py-2 px-4 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
+        <p id="notification-message"></p>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const locationInput = document.getElementById('location-input');
+        const addLocationBtn = document.getElementById('add-location-btn');
+        const locationsList = document.getElementById('locations-list');
+        const generateRouteBtn = document.getElementById('generate-route-btn');
+        const emptyListMessage = document.getElementById('empty-list-message');
+        const notificationModal = document.getElementById('notification-modal');
+        const notificationMessage = document.getElementById('notification-message');
+        const langEsBtn = document.getElementById('lang-es');
+        const langCaBtn = document.getElementById('lang-ca');
+
+        // --- Application State ---
+        let locations = [];
+        let currentLang = 'ca'; // Default language
+
+        // --- Translation Dictionary ---
+        const translations = {
+            window_title: {
+                es: "Planificador de Rutas de Google Maps",
+                ca: "Planificador de Rutes de Google Maps"
+            },
+            title: {
+                es: "Planificador de Rutas",
+                ca: "Planificador de Rutes"
+            },
+            subtitle: {
+                es: "Añade lugares para crear tu ruta en Google Maps",
+                ca: "Afegeix llocs per crear la teva ruta a Google Maps"
+            },
+            input_placeholder: {
+                es: "Ej: Torre Eiffel, París",
+                ca: "Ex: Torre Eiffel, París"
+            },
+            stops_header: {
+                es: "Paradas de la Ruta",
+                ca: "Parades de la Ruta"
+            },
+            empty_list: {
+                es: "Aún no has añadido ningún lugar.",
+                ca: "Encara no has afegit cap lloc."
+            },
+            generate_button: {
+                es: "Generar Ruta en Google Maps",
+                ca: "Generar Ruta a Google Maps"
+            },
+            notification_add: {
+                es: "Por favor, introduce un nombre de lugar válido.",
+                ca: "Si us plau, introdueix un nom de lloc vàlid."
+            },
+            notification_min: {
+                es: "Necesitas al menos 2 lugares para generar una ruta.",
+                ca: "Necessites almenys 2 llocs per generar una ruta."
+            },
+            cc_license_text: {
+                es: "Esta obra está bajo una",
+                ca: "Aquesta obra està sota una"
+            },
+            cc_license_link: {
+                es: "licencia Creative Commons BY-SA",
+                ca: "llicència Creative Commons BY-SA"
+            }
+        };
+
+        // --- Functions ---
+
+        /**
+         * Sets the language of the application UI.
+         * @param {string} lang - The language to set ('es' or 'ca').
+         */
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+
+            // Update all elements with data-lang-key attribute
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if (translations[key] && translations[key][lang]) {
+                    el.innerText = translations[key][lang];
+                }
+            });
+
+            // Update all elements with data-lang-key-placeholder attribute
+            document.querySelectorAll('[data-lang-key-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-lang-key-placeholder');
+                if (translations[key] && translations[key][lang]) {
+                    el.placeholder = translations[key][lang];
+                }
+            });
+            
+            // Update active state on buttons
+            langEsBtn.classList.toggle('active', lang === 'es');
+            langCaBtn.classList.toggle('active', lang === 'ca');
+        }
+
+        function renderLocations() {
+            locationsList.innerHTML = '';
+            const emptyMsgEl = document.createElement('p');
+            emptyMsgEl.id = 'empty-list-message';
+            emptyMsgEl.className = 'text-gray-500 text-center py-4';
+            emptyMsgEl.setAttribute('data-lang-key', 'empty_list');
+            emptyMsgEl.innerText = translations.empty_list[currentLang];
+
+            if (locations.length === 0) {
+                locationsList.appendChild(emptyMsgEl);
+            } else {
+                locations.forEach((location, index) => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'location-item flex items-center justify-between bg-gray-700 p-3 rounded-lg';
+                    listItem.innerHTML = `
+                        <span class="text-gray-200">${index + 1}. ${location}</span>
+                        <button class="delete-btn text-gray-400 hover:text-red-500 transition-colors" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    `;
+                    locationsList.appendChild(listItem);
+                });
+            }
+            updateGenerateButtonState();
+        }
+
+        function addLocation() {
+            const locationName = locationInput.value.trim();
+            if (locationName) {
+                locations.push(locationName);
+                locationInput.value = '';
+                renderLocations();
+            } else {
+                showNotification(translations.notification_add[currentLang]);
+            }
+            locationInput.focus();
+        }
+
+        function deleteLocation(index) {
+            locations.splice(index, 1);
+            renderLocations();
+        }
+
+        function updateGenerateButtonState() {
+            generateRouteBtn.disabled = locations.length < 2;
+        }
+
+        function generateRoute() {
+            if (locations.length < 2) {
+                showNotification(translations.notification_min[currentLang]);
+                return;
+            }
+            const baseUrl = 'https://www.google.com/maps/dir/';
+            const routeParts = locations.map(location => encodeURIComponent(location));
+            const finalUrl = baseUrl + routeParts.join('/');
+            window.open(finalUrl, '_blank');
+        }
+
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            notificationModal.classList.remove('translate-x-full');
+            setTimeout(() => {
+                notificationModal.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // --- Event Listeners ---
+        addLocationBtn.addEventListener('click', addLocation);
+        locationInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                addLocation();
+            }
+        });
+        generateRouteBtn.addEventListener('click', generateRoute);
+        locationsList.addEventListener('click', (event) => {
+            const deleteButton = event.target.closest('.delete-btn');
+            if (deleteButton) {
+                const index = parseInt(deleteButton.dataset.index, 10);
+                deleteLocation(index);
+            }
+        });
+        langEsBtn.addEventListener('click', () => setLanguage('es'));
+        langCaBtn.addEventListener('click', () => setLanguage('ca'));
+
+        // --- Initial Setup ---
+        setLanguage(currentLang); // Set initial language on load
+        renderLocations();
+
+    </script>
+</body>
+</html>
