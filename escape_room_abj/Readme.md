@@ -73,9 +73,9 @@ I ja estaràs a punt per començar la Missió TERRA VIVA!
 
 Aquesta aplicació ha estat creada per:
 
-Raül Torres
+- Raül Torres
 
-Raquel Otal
+- Raquel Otal
 
 
 📜 Llicència
