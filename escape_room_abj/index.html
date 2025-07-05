@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Missió TERRA VIVA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a192f;
+            color: #e6f1ff;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(13, 38, 76, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 191, 255, 0.2);
+        }
+        .neon-text {
+            text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 40px #00bfff, 0 0 80px #00bfff;
+        }
+        .enigma-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 300px;
+        }
+        .enigma-card:not(.enigma-solved):hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.5);
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+        .enigma-solved {
+            border-color: #22c55e; /* green-500 */
+            background: rgba(34, 197, 94, 0.1);
+        }
+        .enigma-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0a192f;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #windmill-img {
+            cursor: pointer;
+            transition: transform 0.05s linear;
+        }
+        /* Estils per al Trencaclosques */
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            border: 3px solid #00bfff;
+            border-radius: 8px;
+            padding: 5px;
+        }
+        .puzzle-piece {
+            width: 100%;
+            height: 100%;
+            background-image: url('https://raultorres-ia.github.io/apps/escape_room_abj/bosc.png');
+            background-size: 300% 300%;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .puzzle-piece:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .empty-piece {
+            background-image: none !important;
+            background-color: rgba(0,0,0,0.3);
+            cursor: default;
+        }
+        .empty-piece:hover {
+            transform: none;
+        }
+        .lang-btn.active {
+            background-color: #00bfff;
+            color: #0a192f;
+        }
+        /* Estils Enigma 3 */
+        .drag-item {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            cursor: grab;
+            position: absolute;
+            transition: transform 0.2s;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+            z-index: 100;
+            transform: scale(1.1);
+        }
+        .drop-zone {
+            width: 100%;
+            min-height: 160px;
+            border: 2px dashed #00bfff;
+        }
+        .drop-zone.solved {
+            border-style: solid;
+            border-color: #22c55e;
+        }
+        .heart {
+            color: #ef4444; /* red-500 */
+            font-size: 2rem;
+            text-shadow: 0 0 5px #ef4444;
+        }
+        /* Estils Enigma 4 */
+        #gameCanvas {
+            background: linear-gradient(to bottom, #87CEEB 0%, #4682B4 100%);
+        }
+    </style>
+</head>
+<body class="p-4">
+    <audio id="background-music" src="https://raultorres-ia.github.io/apps/escape_room_abj/musica.mp3" loop></audio>
+    <audio id="start-sound" src="https://raultorres-ia.github.io/apps/escape_room_abj/inici.mp3"></audio>
+    <audio id="final-sound1" src="https://raultorres-ia.github.io/apps/escape_room_abj/final01.mp3"></audio>
+    <audio id="final-sound2" src="https://raultorres-ia.github.io/apps/escape_room_abj/final02.mp3"></audio>
+
+    <div id="main-view">
+        <header class="text-center mb-6 md:mb-8 relative">
+            <div class="absolute top-0 right-0 p-2 flex items-center space-x-2">
+                <div class="flex space-x-1 glass-effect rounded-lg p-1">
+                    <button onclick="setLanguage('ca'); playSound('click');" class="lang-btn ca p-2 text-xs font-bold rounded-md transition-colors">CAT</button>
+                    <button onclick="setLanguage('es'); playSound('click');" class="lang-btn es p-2 text-xs font-bold rounded-md transition-colors">CAST</button>
+                    <button onclick="setLanguage('en'); playSound('click');" class="lang-btn en p-2 text-xs font-bold rounded-md transition-colors">EN</button>
+                </div>
+                <button onclick="toggleMute()" id="mute-btn" class="p-2 glass-effect rounded-lg">
+                    <svg id="icon-unmuted" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <svg id="icon-muted" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="1" x2="1" y2="23"></line></svg>
+                </button>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold font-orbitron neon-text" data-translate="main_title">MISSIÓ TERRA VIVA</h1>
+            <div id="timer" class="mt-4 text-3xl md:text-5xl font-orbitron bg-red-600/80 text-white py-2 px-6 rounded-lg inline-block shadow-lg">30:00</div>
+        </header>
+
+        <div class="glass-effect rounded-xl p-6 mb-8 text-center max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-cyan-300 mb-2" data-translate="gaia_greeting">SALUTACIONS, VIATGERS DEL TEMPS.</h2>
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="md:w-2/3">
+                    <p class="text-lg" data-translate="gaia_message">
+                        Sóc GAIA, una IA del futur. He viatjat fins a la vostra època com a últim recurs. El meu món està a la vora del col·lapse a causa del canvi climàtic. Vosaltres sou la nostra única esperança. Heu d'activar el protocol d'emergència "TERRA VIVA" per reescriure el futur. El temps s'esgota. Teniu <strong data-translate="minutes">30 minuts</strong> per superar quatre reptes i obtenir la contrasenya final. El destí del planeta és a les vostres mans.
+                    </p>
+                </div>
+                <div class="md:w-1/3 grid grid-cols-2 gap-2">
+                    <img src="https://raultorres-ia.github.io/apps/escape_room_abj/intro01.png" alt="Imatge d'un bosc cremant-se" class="rounded-lg w-full h-auto object-cover">
+                    <img src="https://raultorres-ia.github.io/apps/escape_room_abj/intro02.png" alt="Imatge d'un paisatge àrid" class="rounded-lg w-full h-auto object-cover">
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 max-w-7xl mx-auto">
+            <div id="enigma1" class="enigma-card glass-effect rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                <h3 class="text-xl font-bold text-cyan-300 mb-4" data-translate="enigma1_title">ENIGMA 1</h3>
+                <div id="enigma1-content">
+                     <button onclick="initEnigma1()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg" data-translate="start_challenge">INICIAR REPTE</button>
+                </div>
+            </div>
+            <div id="enigma2" class="enigma-card glass-effect rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                <h3 class="text-xl font-bold text-cyan-300 mb-4" data-translate="enigma2_title">ENIGMA 2</h3>
+                <div id="enigma2-content">
+                    <button onclick="initEnigma2()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg" data-translate="start_challenge">INICIAR REPTE</button>
+                </div>
+            </div>
+            <div id="enigma3" class="enigma-card glass-effect rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                <h3 class="text-xl font-bold text-cyan-300 mb-4" data-translate="enigma3_title">ENIGMA 3</h3>
+                <div id="enigma3-content">
+                    <button onclick="initEnigma3()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg" data-translate="start_challenge">INICIAR REPTE</button>
+                </div>
+            </div>
+            <div id="enigma4" class="enigma-card glass-effect rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                <h3 class="text-xl font-bold text-cyan-300 mb-4" data-translate="enigma4_title">ENIGMA 4</h3>
+                 <div id="enigma4-content">
+                    <button onclick="initEnigma4()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg" data-translate="start_challenge">INICIAR REPTE</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-effect rounded-xl p-6 max-w-md mx-auto">
+            <h2 class="text-2xl font-bold text-center text-cyan-300 mb-4" data-translate="protocol_activation">ACTIVACIÓ PROTOCOL</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input type="text" id="final-password" class="w-full bg-slate-800 text-white placeholder-gray-400 border border-cyan-400 rounded-lg p-3 text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-300" maxlength="4">
+                <button onclick="checkFinalPassword()" class="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-lg transition-colors duration-300" data-translate="activate_button">
+                    ACTIVAR
+                </button>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-8 text-xs text-gray-400">
+            <p data-translate="credits">Aplicació feta per Raül Torres i Raquel Otal</p>
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="hover:text-cyan-300" data-translate="license">Aquesta obra està sota una llicència Creative Commons BY-SA.</a>
+        </footer>
+    </div>
+    
+    <div id="enigma-modal-container"></div>
+
+    <div id="message-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 hidden z-50">
+        <div class="glass-effect rounded-xl shadow-2xl p-8 max-w-sm w-full text-center border-2" id="message-modal-content">
+            <h3 id="message-modal-title" class="text-3xl font-bold mb-4"></h3>
+            <div id="message-modal-body" class="text-lg mb-6"></div>
+            <button id="message-modal-button" class="bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-2 px-8 rounded-lg transition-colors duration-300" data-translate="close_button">Tancar</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONFIGURACIÓ ---
+        const TEMPS_INICIAL = 30 * 60;
+        const CONTRASENYA_FINAL = "2030";
+
+        // --- ESTATS DEL JOC ---
+        let tempsRestant = TEMPS_INICIAL;
+        let temporitzador;
+        let currentLanguage = 'ca';
+        let enigma1Solved = false, enigma2Solved = false, enigma3Solved = false, enigma4Solved = false;
+        let enigma1ResizeHandler = null;
+        let musicStarted = false;
+        let audioCtx;
+        let isMuted = false;
+
+        // --- DICCIONARI DE TRADUCCIONS ---
+        const translations = {
+            ca: {
+                main_title: "MISSIÓ TERRA VIVA",
+                gaia_greeting: "SALUTACIONS, VIATGERS DEL TEMPS.",
+                gaia_message: "Sóc GAIA, una IA del futur. He viatjat fins a la vostra època com a últim recurs. El meu món està a la vora del col·lapse a causa del canvi climàtic. Vosaltres sou la nostra única esperança. Heu d'activar el protocol d'emergència \"TERRA VIVA\" per reescriure el futur. El temps s'esgota. Teniu <strong>30 minuts</strong> per superar quatre reptes i obtenir la contrasenya final. El destí del planeta és a les vostres mans.",
+                minutes: "30 minuts",
+                enigma1_title: "ENIGMA 1", enigma2_title: "ENIGMA 2", enigma3_title: "ENIGMA 3", enigma4_title: "ENIGMA 4",
+                start_challenge: "INICIAR REPTE",
+                protocol_activation: "ACTIVACIÓ PROTOCOL",
+                activate_button: "ACTIVAR",
+                credits: "Aplicació feta per Raül Torres i Raquel Otal",
+                license: "Aquesta obra està sota una llicència Creative Commons BY-SA.",
+                close_button: "Tancar",
+                password_placeholder: "Introdueix la contrasenya final",
+                password_incorrect_title: "Contrasenya Incorrecta",
+                password_incorrect_msg: "La clau introduïda no és correcta. Seguiu buscant les pistes!",
+                final_sequence_title1: "GAIA:",
+                final_sequence_msg1: "Ho heu aconseguit. Heu superat els reptes. El protocol \"TERRA VIVA\" ja pot ser activat. Però queda un últim pas... La contrasenya. El codi que obrirà la porta cap a un futur diferent. Aquest número no és qualsevol número. Representa un moment clau. Una promesa. Un límit.<br><br><strong class='text-5xl text-cyan-300 font-orbitron'>2030</strong><br><br>Aquest és l’any en què la humanitat es va comprometre a reduir les emissions, protegir els ecosistemes i garantir un futur habitable. Però el temps passa... I la finestra d'oportunitat s’estreta.<br>Ara depèn de vosaltres. Introduïu la contrasenya. Reescriviu la història.",
+                final_sequence_title2: "GAIA:",
+                final_sequence_msg2: "Protocol TERRA VIVA activat. El futur encara pot ser salvat. Però recordeu...<br><br>Els reptes no s’acaben aquí. El veritable escape room... és el món real.<br><br><strong>Sortiu i sigueu el canvi.</strong>",
+                final_button_text: "ACTIVAR PROTOCOL",
+                final_exit_button_text: "Sortir",
+                lose_title: "TEMPS ESGOTAT",
+                lose_msg: "La connexió amb el futur s'ha perdut. No heu aconseguit activar el protocol a temps... Les conseqüències seran irreversibles. El futur ha canviat, i no per a bé.",
+                challenge_complete_title: "REPTE SUPERAT",
+                enigma1_complete_msg: "Has generat energia neta!",
+                enigma2_complete_msg: "Has restaurat l'ecosistema!",
+                enigma3_complete_msg: "Sistema de reciclatge activat!",
+                enigma4_complete_msg: "Protocol final verificat!",
+                key_digit_text: "xifra de la clau:",
+                first_key_digit_text: "Primera", second_key_digit_text: "Segona", third_key_digit_text: "Tercera", fourth_key_digit_text: "Quarta",
+                enigma1_modal_title: "ENIGMA 1: ENERGIA NETA",
+                enigma1_modal_desc: "Fes clic al molí per generar energia. Mantén la línia dins la franja blava durant 60 segons!",
+                enigma2_modal_title: "ENIGMA 2: RESTAURA L'ECOSISTEMA",
+                enigma2_modal_desc: "Ordena les peces per reconstruir la imatge del bosc.",
+                enigma2_help_button: "AJUDA (1 sol ús)",
+                enigma3_modal_title: "ENIGMA 3: RECICLATGE",
+                enigma3_modal_desc: "Arrossega cada objecte sobre la seva parella per veure el resultat del reciclatge.",
+                enigma3_lives_info: "Tens 3 vides. Si falles 3 cops, perdràs 5 minuts!",
+                lives_lost_title: "Vida Perduda!",
+                lives_lost_msg: "Has perdut una vida. Ves amb compte!",
+                reset_penalty_title: "Totes les vides perdudes!",
+                reset_penalty_msg: "Has perdut 5 minuts. El repte es reiniciarà.",
+                enigma4_modal_title: "ENIGMA 4: RESCAT POLAR",
+                enigma4_instructions_title: "Instruccions",
+                enigma4_instructions_1: "🧊 L'objectiu és ajudar l'ós a saltar sobre <strong>50 plataformes</strong> de gel per posar-lo a tret segur.",
+                enigma4_instructions_2: "🚀 Fes clic o prem la <strong>barra espaiadora</strong> per saltar. Pots fer un <strong>doble salt</strong> a l'aire!",
+                enigma4_instructions_3: "💧 Compte! Tens <strong>3 vides</strong>. Cada vegada que caus a l'aigua, en perds una.",
+                enigma4_start_button: "Començar Joc",
+                enigma4_end_title_win: "Felicitats! Has rescatat l'ós!",
+                enigma4_end_title_lose: "Oh no! L'ós ha caigut...",
+                enigma4_end_score_win: "Has assolit l'objectiu de 50 salts!",
+                enigma4_end_score_lose: "Puntuació Final:",
+                enigma4_fact_title: "Sabies que...?",
+                enigma4_restart_button: "Torna a Jugar",
+                enigma4_facts: [
+                    "L'Àrtic s'està escalfant aproximadament quatre vegades més ràpid que la resta del planeta.",
+                    "La pèrdua de gel marí a l'Àrtic afecta els patrons climàtics globals, provocant fenòmens meteorològics més extrems.",
+                    "Els óssos polars depenen del gel marí per caçar foques. Menys gel significa menys menjar i menys possibilitats de supervivència.",
+                    "Des de 1979, el gel marí de l'Àrtic ha disminuït a un ritme del 13% per dècada.",
+                    "Si es fon tot el gel de Groenlàndia, el nivell del mar pujaria uns 7 metres, inundant ciutats costaneres de tot el món.",
+                    "Reduir el nostre consum de carn, utilitzar el transport públic i estalviar energia són accions que ajuden a combatre el canvi climàtic.",
+                    "L'oceà absorbeix més del 90% de l'excés de calor atrapat pels gasos d'efecte hivernacle.",
+                    "El metà, un potent gas d'efecte hivernacle, s'allibera del permagel que es fon a l'Àrtic, accelerant encara més l'escalfament."
+                ],
+                recycling_A: "Triturant tetrabrics es fa un material amb el qual es poden construir mobles",
+                recycling_B: "Mira l’evolució del material fins al fil per teixir",
+                recycling_C: "Per això és tan important reciclar tot el paper de les aules",
+                recycling_D: "Els pneumàtics usats poden tenir moltes altres vides",
+            },
+            es: {
+                main_title: "MISIÓN TIERRA VIVA",
+                gaia_greeting: "SALUDOS, VIAJEROS DEL TIEMPO.",
+                gaia_message: "Soy GAIA, una IA del futuro. He viajado a vuestra época como último recurso. Mi mundo está al borde del colapso debido al cambio climático. Vosotros sois nuestra única esperanza. Debéis activar el protocolo de emergencia \"TIERRA VIVA\" para reescribir el futuro. El tiempo se agota. Tenéis <strong>30 minutos</strong> para superar cuatro retos y obtener la contraseña final. El destino del planeta está en vuestras manos.",
+                minutes: "30 minutos",
+                enigma1_title: "ENIGMA 1", enigma2_title: "ENIGMA 2", enigma3_title: "ENIGMA 3", enigma4_title: "ENIGMA 4",
+                start_challenge: "INICIAR RETO",
+                protocol_activation: "ACTIVACIÓN PROTOCOLO",
+                activate_button: "ACTIVAR",
+                credits: "Aplicación hecha por Raül Torres y Raquel Otal",
+                license: "Esta obra está bajo una licencia Creative Commons BY-SA.",
+                close_button: "Cerrar",
+                password_placeholder: "Introduce la contraseña final",
+                password_incorrect_title: "Contraseña Incorrecta",
+                password_incorrect_msg: "La clave introducida no es correcta. ¡Seguid buscando las pistas!",
+                final_sequence_title1: "GAIA:",
+                final_sequence_msg1: "Lo habéis conseguido. Habéis superado los retos. El protocolo \"TIERRA VIVA\" ya puede ser activado. Pero queda un último paso... La contraseña. El código que abrirá la puerta hacia un futuro diferente. Este número no es un número cualquiera. Representa un momento clave. Una promesa. Un límite.<br><br><strong class='text-5xl text-cyan-300 font-orbitron'>2030</strong><br><br>Este es el año en que la humanidad se comprometió a reducir las emisiones, proteger los ecosistemas y garantizar un futuro habitable. Pero el tiempo pasa... Y la ventana de oportunidad se estrecha.<br>Ahora depende de vosotros. Introducid la contraseña. Reescribid la historia.",
+                final_sequence_title2: "GAIA:",
+                final_sequence_msg2: "Protocolo TIERRA VIVA activado. El futuro todavía puede ser salvado. Pero recordad...<br><br>Los retos no acaban aquí. El verdadero escape room... es el mundo real.<br><br><strong>Salid y sed el cambio.</strong>",
+                final_button_text: "ACTIVAR PROTOCOLO",
+                final_exit_button_text: "Salir",
+                lose_title: "TIEMPO AGOTADO",
+                lose_msg: "La conexión con el futuro se ha perdido. No habéis logrado activar el protocolo a tiempo... Las consecuencias serán irreversibles. El futuro ha cambiado, y no para bien.",
+                challenge_complete_title: "RETO SUPERADO",
+                enigma1_complete_msg: "¡Has generado energía limpia!",
+                enigma2_complete_msg: "¡Has restaurado el ecosistema!",
+                enigma3_complete_msg: "¡Sistema de reciclaje activado!",
+                enigma4_complete_msg: "¡Protocolo final verificado!",
+                key_digit_text: "cifra de la clave:",
+                first_key_digit_text: "Primera", second_key_digit_text: "Segunda", third_key_digit_text: "Tercera", fourth_key_digit_text: "Cuarta",
+                enigma1_modal_title: "ENIGMA 1: ENERGÍA LIMPIA",
+                enigma1_modal_desc: "Haz clic en el molino para generar energía. ¡Mantén la línea dentro de la franja azul durante 60 segundos!",
+                enigma2_modal_title: "ENIGMA 2: RESTAURA EL ECOSISTEMA",
+                enigma2_modal_desc: "Ordena las piezas para reconstruir la imagen del bosque.",
+                enigma2_help_button: "AYUDA (1 solo uso)",
+                enigma3_modal_title: "ENIGMA 3: RECICLAJE",
+                enigma3_modal_desc: "Arrastra cada objeto sobre su pareja para ver el resultado del reciclaje.",
+                enigma3_lives_info: "Tienes 3 vidas. Si fallas 3 veces, ¡perderás 5 minutos!",
+                lives_lost_title: "¡Vida Perdida!",
+                lives_lost_msg: "Has perdido una vida. ¡Ten cuidado!",
+                reset_penalty_title: "¡Todas las vidas perdidas!",
+                reset_penalty_msg: "Has perdido 5 minutos. El reto se reiniciará.",
+                enigma4_modal_title: "ENIGMA 4: RESCATE POLAR",
+                enigma4_instructions_title: "Instrucciones",
+                enigma4_instructions_1: "🧊 El objetivo es ayudar al oso a saltar sobre <strong>50 plataformas</strong> de hielo para ponerlo a salvo.",
+                enigma4_instructions_2: "🚀 Haz clic o pulsa la <strong>barra espaciadora</strong> para saltar. ¡Puedes hacer un <strong>doble salto</strong> en el aire!",
+                enigma4_instructions_3: "💧 ¡Cuidado! Tienes <strong>3 vidas</strong>. Cada vez que caes al agua, pierdes una.",
+                enigma4_start_button: "Empezar Juego",
+                enigma4_end_title_win: "¡Felicidades! ¡Has rescatado al oso!",
+                enigma4_end_title_lose: "¡Oh no! El oso se ha caído...",
+                enigma4_end_score_win: "¡Has alcanzado el objetivo de 50 saltos!",
+                enigma4_end_score_lose: "Puntuación Final:",
+                enigma4_fact_title: "¿Sabías que...?",
+                enigma4_restart_button: "Volver a Jugar",
+                enigma4_facts: [
+                    "El Ártico se está calentando aproximadamente cuatro veces más rápido que el resto del planeta.",
+                    "La pérdida de hielo marino en el Ártico afecta a los patrones climáticos globales, provocando fenómenos meteorológicos más extremos.",
+                    "Los osos polares dependen del hielo marino para cazar focas. Menos hielo significa menos comida y menos posibilidades de supervivencia.",
+                    "Desde 1979, el hielo marino del Ártico ha disminuido a un ritmo del 13% por década.",
+                    "Si todo el hielo de Groenlandia se derritiera, el nivel del mar subiría unos 7 metros, inundando ciudades costeras de todo el mundo.",
+                    "Reducir nuestro consumo de carne, usar el transporte público y ahorrar energía son acciones que ayudan a combatir el cambio climático.",
+                    "El océano absorbe más del 90% del exceso de calor atrapado por los gases de efecto invernadero.",
+                    "El metano, un potente gas de efecto invernadero, se libera del permafrost que se derrite en el Ártico, acelerando aún más el calentamiento."
+                ],
+                recycling_A: "Triturando tetrabriks se hace un material con el que se pueden construir muebles",
+                recycling_B: "Mira la evolución del material hasta el hilo para tejer",
+                recycling_C: "Por eso es tan importante reciclar todo el papel de las aulas",
+                recycling_D: "Los neumáticos usados pueden tener muchas otras vidas",
+            },
+            en: {
+                main_title: "MISSION TERRA VIVA",
+                gaia_greeting: "GREETINGS, TIME TRAVELERS.",
+                gaia_message: "I am GAIA, an AI from the future. I have traveled to your time as a last resort. My world is on the brink of collapse due to climate change. You are our only hope. You must activate the \"TERRA VIVA\" emergency protocol to rewrite the future. Time is running out. You have <strong>30 minutes</strong> to overcome four challenges and get the final password. The fate of the planet is in your hands.",
+                minutes: "30 minutes",
+                enigma1_title: "CHALLENGE 1", enigma2_title: "CHALLENGE 2", enigma3_title: "CHALLENGE 3", enigma4_title: "CHALLENGE 4",
+                start_challenge: "START CHALLENGE",
+                protocol_activation: "PROTOCOL ACTIVATION",
+                activate_button: "ACTIVATE",
+                credits: "Application made by Raül Torres and Raquel Otal",
+                license: "This work is licensed under a Creative Commons BY-SA license.",
+                close_button: "Close",
+                password_placeholder: "Enter the final password",
+                password_incorrect_title: "Incorrect Password",
+                password_incorrect_msg: "The entered key is not correct. Keep looking for the clues!",
+                final_sequence_title1: "GAIA:",
+                final_sequence_msg1: "You did it. You have passed the challenges. The \"TERRA VIVA\" protocol can now be activated. But there is one last step... The password. The code that will open the door to a different future. This number is not just any number. It represents a key moment. A promise. A limit.<br><br><strong class='text-5xl text-cyan-300 font-orbitron'>2030</strong><br><br>This is the year humanity pledged to reduce emissions, protect ecosystems, and ensure a habitable future. But time is passing... And the window of opportunity is narrowing.<br>Now it's up to you. Enter the password. Rewrite history.",
+                final_sequence_title2: "GAIA:",
+                final_sequence_msg2: "TERRA VIVA protocol activated. The future can still be saved. But remember...<br><br>The challenges do not end here. The real escape room... is the real world.<br><br><strong>Go out and be the change.</strong>",
+                final_button_text: "ACTIVATE PROTOCOL",
+                final_exit_button_text: "Exit",
+                lose_title: "TIME'S UP",
+                lose_msg: "The connection to the future has been lost. You failed to activate the protocol in time... The consequences will be irreversible. The future has changed, and not for the better.",
+                challenge_complete_title: "CHALLENGE COMPLETE",
+                enigma1_complete_msg: "You have generated clean energy!",
+                enigma2_complete_msg: "You have restored the ecosystem!",
+                enigma3_complete_msg: "Recycling system activated!",
+                enigma4_complete_msg: "Final protocol verified!",
+                key_digit_text: "digit of the key:",
+                first_key_digit_text: "First", second_key_digit_text: "Second", third_key_digit_text: "Third", fourth_key_digit_text: "Fourth",
+                enigma1_modal_title: "CHALLENGE 1: CLEAN ENERGY",
+                enigma1_modal_desc: "Click on the windmill to generate energy. Keep the line within the blue band for 60 seconds!",
+                enigma2_modal_title: "CHALLENGE 2: RESTORE THE ECOSYSTEM",
+                enigma2_modal_desc: "Arrange the pieces to reconstruct the forest image.",
+                enigma2_help_button: "HELP (1 use only)",
+                enigma3_modal_title: "CHALLENGE 3: RECYCLING",
+                enigma3_modal_desc: "Drag each object onto its partner to see the result of recycling.",
+                enigma3_lives_info: "You have 3 lives. If you fail 3 times, you will lose 5 minutes!",
+                lives_lost_title: "Life Lost!",
+                lives_lost_msg: "You lost a life. Be careful!",
+                reset_penalty_title: "All Lives Lost!",
+                reset_penalty_msg: "You lost 5 minutes. The challenge will restart.",
+                enigma4_modal_title: "CHALLENGE 4: POLAR RESCUE",
+                enigma4_instructions_title: "Instructions",
+                enigma4_instructions_1: "🧊 The goal is to help the bear jump on <strong>50 ice platforms</strong> to get it to safety.",
+                enigma4_instructions_2: "🚀 Click or press the <strong>spacebar</strong> to jump. You can <strong>double jump</strong> in the air!",
+                enigma4_instructions_3: "💧 Be careful! You have <strong>3 lives</strong>. Every time you fall into the water, you lose one.",
+                enigma4_start_button: "Start Game",
+                enigma4_end_title_win: "Congratulations! You rescued the bear!",
+                enigma4_end_title_lose: "Oh no! The bear fell...",
+                enigma4_end_score_win: "You reached the goal of 50 jumps!",
+                enigma4_end_score_lose: "Final Score:",
+                enigma4_fact_title: "Did you know...?",
+                enigma4_restart_button: "Play Again",
+                enigma4_facts: [
+                    "The Arctic is warming approximately four times faster than the rest of the planet.",
+                    "The loss of sea ice in the Arctic affects global climate patterns, causing more extreme weather events.",
+                    "Polar bears depend on sea ice to hunt seals. Less ice means less food and fewer chances of survival.",
+                    "Since 1979, Arctic sea ice has declined at a rate of 13% per decade.",
+                    "If all the ice in Greenland were to melt, sea levels would rise by about 7 meters, flooding coastal cities worldwide.",
+                    "Reducing our meat consumption, using public transport, and saving energy are actions that help combat climate change.",
+                    "The ocean absorbs more than 90% of the excess heat trapped by greenhouse gases.",
+                    "Methane, a potent greenhouse gas, is released from thawing permafrost in the Arctic, further accelerating warming."
+                ],
+                recycling_A: "By shredding cartons, a material is made with which furniture can be built",
+                recycling_B: "Look at the evolution of the material into yarn for weaving",
+                recycling_C: "That's why it's so important to recycle all the paper in the classrooms",
+                recycling_D: "Used tires can have many other lives",
+            }
+        };
+
+        // --- ELEMENTS DEL DOM ---
+        const mainView = document.getElementById('main-view');
+        const timerElement = document.getElementById('timer');
+        const finalPasswordInput = document.getElementById('final-password');
+        const messageModal = document.getElementById('message-modal');
+        const messageModalContent = document.getElementById('message-modal-content');
+        const messageModalTitle = document.getElementById('message-modal-title');
+        const messageModalBody = document.getElementById('message-modal-body');
+        const backgroundMusic = document.getElementById('background-music');
+        const enigmaModalContainer = document.getElementById('enigma-modal-container');
+
+        // --- LÒGICA DE SO ---
+        function initializeAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (!musicStarted) {
+                backgroundMusic.volume = 0.2;
+                backgroundMusic.play().catch(e => console.error("La reproducció automàtica de música ha estat bloquejada.", e));
+                
+                const startSound = document.getElementById('start-sound');
+                startSound.volume = 0.5;
+                startSound.play().catch(e => console.error("Error playing start sound", e));
+
+                musicStarted = true;
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.querySelectorAll('audio').forEach(audio => audio.muted = isMuted);
+            
+            document.getElementById('icon-unmuted').classList.toggle('hidden', isMuted);
+            document.getElementById('icon-muted').classList.toggle('hidden', !isMuted);
+            playSound('click', true); // Force click sound even if muted
+        }
+
+        function playSound(type, force = false) {
+            if (!audioCtx || (isMuted && !force)) return;
+
+            const startSound = document.getElementById('start-sound');
+            if (type === 'click' && startSound && !startSound.paused) {
+                startSound.pause();
+                startSound.currentTime = 0;
+            }
+            
+            if (type === 'click') {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'success') {
+                const freqs = [300, 450, 600];
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.08;
+                gainNode.connect(audioCtx.destination);
+                freqs.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    osc.connect(gainNode);
+                    osc.start(audioCtx.currentTime + i * 0.1);
+                    osc.stop(audioCtx.currentTime + i * 0.1 + 0.1);
+                });
+            } else if (type === 'error') {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'win') {
+                 const freqs = [523.25, 659.25, 783.99, 1046.50];
+                 const gainNode = audioCtx.createGain();
+                 gainNode.gain.value = 0.1;
+                 gainNode.connect(audioCtx.destination);
+                 freqs.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    osc.connect(gainNode);
+                    osc.start(audioCtx.currentTime + i * 0.15);
+                    osc.stop(audioCtx.currentTime + i * 0.15 + 0.15);
+                 });
+            }
+        }
+
+        document.body.addEventListener('click', initializeAudio, { once: true });
+
+
+        // --- LÒGICA DE TRADUCCIÓ ---
+        function setLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLanguage = lang;
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+
+            finalPasswordInput.placeholder = translations[lang].password_placeholder;
+
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.lang-btn.${lang}`).classList.add('active');
+        }
+
+        // --- LÒGICA DEL TEMPORITZADOR ---
+        function iniciarTemporitzador() {
+            temporitzador = setInterval(() => {
+                tempsRestant--;
+                const minuts = Math.floor(tempsRestant / 60);
+                const segons = tempsRestant % 60;
+                timerElement.textContent = `${String(minuts).padStart(2, '0')}:${String(segons).padStart(2, '0')}`;
+
+                if (tempsRestant <= 0) finalitzarJoc(false);
+                if (tempsRestant < 5 * 60) timerElement.classList.add('animate-pulse');
+            }, 1000);
+        }
+
+        // --- LÒGICA DEL JOC PRINCIPAL---
+        function checkFinalPassword() {
+            playSound('click');
+            if (finalPasswordInput.value.toUpperCase() === CONTRASENYA_FINAL.toUpperCase()) {
+                finalitzarJoc(true);
+            } else {
+                playSound('error');
+                mostrarModal(translations[currentLanguage].password_incorrect_title, `<p>${translations[currentLanguage].password_incorrect_msg}</p>`, "error");
+                finalPasswordInput.value = "";
+            }
+        }
+
+        function finalitzarJoc(victoria) {
+            clearInterval(temporitzador);
+            if (window.enigma1GameLoop) clearInterval(window.enigma1GameLoop);
+            if (enigma1ResizeHandler) window.removeEventListener('resize', enigma1ResizeHandler);
+
+            mainView.style.display = 'none';
+            enigmaModalContainer.innerHTML = '';
+
+            if (victoria) {
+                const finalSound1 = document.getElementById('final-sound1');
+                if(!isMuted) finalSound1.play();
+                
+                mostrarModal(
+                    translations[currentLanguage].final_sequence_title1, 
+                    `<p>${translations[currentLanguage].final_sequence_msg1}</p>`, 
+                    'success',
+                    () => {
+                        finalSound1.pause();
+                        finalSound1.currentTime = 0;
+                        if(!isMuted) document.getElementById('final-sound2').play();
+                        
+                        const modalContent = document.getElementById('message-modal-content');
+                        modalContent.style.borderColor = '#22c55e';
+                        messageModalTitle.textContent = translations[currentLanguage].final_sequence_title2;
+                        messageModalBody.innerHTML = `
+                            <img src="https://raw.githubusercontent.com/raultorres-ia/apps/main/escape_room_abj/final.png" alt="Imatge d'un futur verd i sostenible" class="rounded-lg mx-auto mb-4 w-full max-w-xs">
+                            <p>${translations[currentLanguage].final_sequence_msg2}</p>
+                        `;
+                        const finalButton = document.getElementById('message-modal-button');
+                        finalButton.textContent = translations[currentLanguage].final_exit_button_text;
+                        finalButton.onclick = () => {
+                            messageModal.classList.add('hidden');
+                            document.body.style.filter = 'blur(8px)';
+                        };
+                        messageModal.classList.remove('hidden');
+                    }
+                );
+                const firstButton = document.getElementById('message-modal-button');
+                firstButton.textContent = translations[currentLanguage].final_button_text;
+            } else {
+                playSound('error');
+                mostrarModal(translations[currentLanguage].lose_title, `<p>${translations[currentLanguage].lose_msg}</p>`, "failure");
+            }
+        }
+
+        // --- LÒGICA DELS MODALS ---
+        function mostrarModal(titol, missatgeHTML, tipus, callback) {
+            messageModalTitle.innerHTML = titol;
+            messageModalBody.innerHTML = missatgeHTML;
+            
+            messageModalContent.className = 'glass-effect rounded-xl shadow-2xl p-8 max-w-sm w-full text-center border-2';
+            if (tipus === 'success') {
+                messageModalContent.classList.add('border-green-400');
+                messageModalTitle.classList.add('text-green-300');
+            } else if (tipus === 'failure') {
+                 messageModalContent.classList.add('border-red-500');
+                 messageModalTitle.classList.add('text-red-400');
+            } else {
+                 messageModalContent.classList.add('border-yellow-400');
+                 messageModalTitle.classList.add('text-yellow-300');
+            }
+            messageModal.classList.remove('hidden');
+
+            const modalButton = document.getElementById('message-modal-button');
+            const newButton = modalButton.cloneNode(true);
+            newButton.textContent = translations[currentLanguage].close_button;
+            modalButton.parentNode.replaceChild(newButton, modalButton);
+
+            if(callback) {
+                newButton.addEventListener('click', () => {
+                    playSound('click');
+                    closeModal();
+                    callback();
+                });
+            } else {
+                newButton.addEventListener('click', () => {
+                    playSound('click');
+                    closeModal();
+                });
+            }
+        }
+
+        function closeModal() {
+            messageModal.classList.add('hidden');
+            if (tempsRestant <= 0) {
+                 mainView.style.display = 'none';
+            }
+        }
+
+        function closeEnigmaModal() {
+            playSound('click');
+            enigmaModalContainer.innerHTML = '';
+            mainView.style.display = 'block';
+            if (window.enigma1GameLoop) clearInterval(window.enigma1GameLoop);
+            if (enigma1ResizeHandler) window.removeEventListener('resize', enigma1ResizeHandler);
+            if(window.polarRescueLoop) cancelAnimationFrame(window.polarRescueLoop);
+        }
+        
+        // --- ENIGMA 1: MOLÍ DE VENT ---
+        function initEnigma1() {
+            playSound('click');
+            if (enigma1Solved) return;
+            mainView.style.display = 'none';
+            enigmaModalContainer.innerHTML = `
+                <div class="enigma-modal p-4 sm:p-8 relative">
+                    <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                    <div class="w-full max-w-4xl text-center flex flex-col items-center">
+                        <h3 class="text-3xl font-bold text-cyan-300 mb-4" data-translate="enigma1_modal_title">${translations[currentLanguage].enigma1_modal_title}</h3>
+                        <div class="flex flex-col md:flex-row items-center justify-center gap-6 p-4 w-full">
+                            <div id="windmill-container" class="w-1/2 md:w-1/3 flex items-center justify-center">
+                                 <img id="windmill-img" src="https://raultorres-ia.github.io/apps/escape_room_abj/moli.png" class="w-full h-auto max-w-[150px] cursor-pointer" alt="Molí de vent">
+                            </div>
+                            <div id="chart-container" class="w-full md:w-2/3 h-64 relative">
+                                <canvas id="enigma1-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="w-full mt-4">
+                            <div class="w-full bg-gray-700 rounded-full h-6">
+                                <div id="progress-bar" class="bg-green-500 h-6 rounded-full flex items-center justify-center text-black font-bold" style="width: 0%">0s</div>
+                            </div>
+                        </div>
+                        <p class="text-center text-lg mt-4" data-translate="enigma1_modal_desc">${translations[currentLanguage].enigma1_modal_desc}</p>
+                    </div>
+                </div>
+            `;
+            const windmillImg = document.getElementById('windmill-img');
+            let rotation = 0;
+            let timeInZone = 0;
+            const timeToWin = 60;
+            const maxPower = 20;
+            let currentPower = 0;
+            const clickBoost = 1.5;
+            const gravity = 0.5;
+            const gameInterval = 50;
+            const timeToWinInIntervals = timeToWin * (1000 / gameInterval);
+            const targetZone = { top: 19, bottom: 14 };
+            windmillImg.addEventListener('click', () => {
+                if(enigma1Solved) return;
+                currentPower = Math.min(maxPower, currentPower + clickBoost);
+            });
+            const chartContainer = document.getElementById('chart-container');
+            const canvas = d3.select("#enigma1-chart");
+            const ctx = canvas.node().getContext("2d");
+            const dataPoints = 50;
+            let userData = Array(dataPoints).fill(0);
+            let width, height, x, y, line, area;
+            function setupChartDimensions() {
+                const margin = {top: 10, right: 10, bottom: 20, left: 20};
+                width = chartContainer.clientWidth - margin.left - margin.right;
+                height = chartContainer.clientHeight - margin.top - margin.bottom;
+                canvas.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.translate(margin.left, margin.top);
+                x = d3.scaleLinear().domain([0, dataPoints - 1]).range([0, width]);
+                y = d3.scaleLinear().domain([0, maxPower]).range([height, 0]).clamp(true);
+                line = d3.line().x((d, i) => x(i)).y(d => y(d)).context(ctx);
+                area = d3.area().x((d, i) => x(i)).y0(d => y(d.y0)).y1(d => y(d.y1)).context(ctx);
+            }
+            function drawChart() {
+                ctx.clearRect(-20, -10, width + 40, height + 40);
+                const zoneData = userData.map(() => ({ y0: targetZone.bottom, y1: targetZone.top }));
+                ctx.beginPath();
+                area(zoneData);
+                ctx.fillStyle = "rgba(0, 191, 255, 0.3)";
+                ctx.fill();
+                ctx.beginPath();
+                line(userData);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "white";
+                ctx.stroke();
+            }
+            enigma1ResizeHandler = setupChartDimensions;
+            window.addEventListener('resize', enigma1ResizeHandler);
+            setupChartDimensions();
+            window.enigma1GameLoop = setInterval(() => {
+                if (enigma1Solved) {
+                    clearInterval(window.enigma1GameLoop);
+                    return;
+                }
+                currentPower = Math.max(0, currentPower - gravity);
+                rotation += currentPower;
+                windmillImg.style.transform = `rotate(${rotation}deg)`;
+                userData.push(currentPower);
+                userData.shift();
+                drawChart();
+                if (currentPower >= targetZone.bottom && currentPower <= targetZone.top) {
+                    timeInZone++;
+                }
+                const progressPercent = (timeInZone / timeToWinInIntervals) * 100;
+                const progressBar = document.getElementById('progress-bar');
+                progressBar.style.width = `${progressPercent}%`;
+                progressBar.textContent = `${Math.floor(timeInZone / (1000 / gameInterval))}s`;
+                if (progressPercent >= 100) {
+                    completeEnigma1();
+                }
+            }, gameInterval);
+        }
+
+        function completeEnigma1() {
+            if(enigma1Solved) return;
+            playSound('success');
+            enigma1Solved = true;
+            closeEnigmaModal();
+            const enigmaCard = document.getElementById('enigma1');
+            enigmaCard.classList.add('enigma-solved');
+            const content = document.getElementById('enigma1-content');
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center h-full">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">${translations[currentLanguage].challenge_complete_title}</h3>
+                    <p class="text-md mb-2">${translations[currentLanguage].enigma1_complete_msg}</p>
+                    <p class="text-lg">${translations[currentLanguage].first_key_digit_text} ${translations[currentLanguage].key_digit_text}</p>
+                    <p class="font-orbitron text-6xl text-green-300 neon-text">2</p>
+                </div>
+            `;
+        }
+
+        // --- ENIGMA 2: TRENCACLOSQUES ---
+        function initEnigma2() {
+            playSound('click');
+            if (enigma2Solved) return;
+            mainView.style.display = 'none';
+            enigmaModalContainer.innerHTML = `
+                <div class="enigma-modal p-4 sm:p-8 relative">
+                    <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                    <div class="w-full max-w-lg text-center flex flex-col items-center">
+                        <h3 class="text-3xl font-bold text-cyan-300 mb-4">${translations[currentLanguage].enigma2_modal_title}</h3>
+                        <div id="puzzle-container"></div>
+                        <p class="text-center text-lg mt-4">${translations[currentLanguage].enigma2_modal_desc}</p>
+                        <button id="puzzle-help-button" onclick="window.showPuzzleHint()" class="mt-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 px-4 rounded-lg transition-opacity">${translations[currentLanguage].enigma2_help_button}</button>
+                    </div>
+                </div>
+                <div id="puzzle-preview-fullscreen" class="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center hidden p-4">
+                    <img src="https://raultorres-ia.github.io/apps/escape_room_abj/bosc.png" class="w-auto h-auto max-w-full max-h-full object-contain rounded-lg" alt="Imatge completa del bosc">
+                </div>
+            `;
+            
+            window.showPuzzleHint = function() {
+                playSound('click');
+                const helpButton = document.getElementById('puzzle-help-button');
+                if (!helpButton || helpButton.disabled) return;
+                
+                helpButton.disabled = true;
+                helpButton.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                const previewContainer = document.getElementById('puzzle-preview-fullscreen');
+                if(previewContainer) {
+                    previewContainer.classList.remove('hidden');
+                    setTimeout(() => {
+                        previewContainer.classList.add('hidden');
+                    }, 2000);
+                }
+            }
+
+            const container = document.getElementById('puzzle-container');
+            const size = 3;
+            const pieceCount = size * size;
+            const emptyIndex = pieceCount - 1;
+            let pieces = Array.from({length: pieceCount}, (_, i) => i);
+            const solvedPieces = [...pieces];
+            
+            let shufflePieces = pieces.slice(0, emptyIndex);
+            for (let i = shufflePieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shufflePieces[i], shufflePieces[j]] = [shufflePieces[j], shufflePieces[i]];
+            }
+            shufflePieces.push(emptyIndex);
+            pieces = shufflePieces;
+            
+            function renderPuzzle() {
+                if (!container) return;
+                container.innerHTML = '';
+                pieces.forEach((pieceValue, i) => {
+                    const piece = document.createElement('div');
+                    piece.classList.add('puzzle-piece');
+                    if (pieceValue === emptyIndex) {
+                        piece.classList.add('empty-piece');
+                    } else {
+                        const x = (pieceValue % size) * 50;
+                        const y = Math.floor(pieceValue / size) * 50;
+                        piece.style.backgroundPosition = `${x}% ${y}%`;
+                        piece.addEventListener('click', () => movePiece(i));
+                    }
+                    container.appendChild(piece);
+                });
+            }
+
+            function movePiece(clickedIndex) {
+                playSound('click');
+                const emptyPos = pieces.indexOf(emptyIndex);
+                const clickedRow = Math.floor(clickedIndex / size);
+                const clickedCol = clickedIndex % size;
+                const emptyRow = Math.floor(emptyPos / size);
+                const emptyCol = emptyPos % size;
+                const isAdjacent = (Math.abs(clickedRow - emptyRow) + Math.abs(clickedCol - emptyCol)) === 1;
+                if (isAdjacent) {
+                    [pieces[clickedIndex], pieces[emptyPos]] = [pieces[emptyPos], pieces[clickedIndex]];
+                    renderPuzzle();
+                    checkWin();
+                }
+            }
+            function checkWin() {
+                if (JSON.stringify(pieces) === JSON.stringify(solvedPieces)) {
+                    setTimeout(completeEnigma2, 500);
+                }
+            }
+            
+            setTimeout(renderPuzzle, 0);
+        }
+
+        function completeEnigma2() {
+            if(enigma2Solved) return;
+            playSound('success');
+            enigma2Solved = true;
+            closeEnigmaModal();
+            const enigmaCard = document.getElementById('enigma2');
+            enigmaCard.classList.add('enigma-solved');
+            const content = document.getElementById('enigma2-content');
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center h-full">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">${translations[currentLanguage].challenge_complete_title}</h3>
+                    <p class="text-md mb-2">${translations[currentLanguage].enigma2_complete_msg}</p>
+                    <p class="text-lg">${translations[currentLanguage].second_key_digit_text} ${translations[currentLanguage].key_digit_text}</p>
+                    <p class="font-orbitron text-6xl text-green-300 neon-text">0</p>
+                </div>
+            `;
+        }
+        
+        // --- ENIGMA 3: RECICLATGE ---
+        function initEnigma3() {
+            playSound('click');
+            if (enigma3Solved) return;
+            mainView.style.display = 'none';
+            
+            let lives = 3;
+            
+            function drawEnigma3() {
+                enigmaModalContainer.innerHTML = `
+                    <div class="enigma-modal p-4 sm:p-8 relative">
+                        <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                        <div class="w-full max-w-5xl text-center flex flex-col items-center h-full overflow-y-auto">
+                            <div class="flex justify-between items-center w-full">
+                                <h3 class="text-3xl font-bold text-cyan-300 mb-2">${translations[currentLanguage].enigma3_modal_title}</h3>
+                                <div id="lives-container" class="flex">
+                                    ${'<span class="heart">♥</span>'.repeat(lives)}
+                                </div>
+                            </div>
+                            <p class="mb-2">${translations[currentLanguage].enigma3_modal_desc}</p>
+                            <div id="recycling-play-area" class="w-full flex-grow glass-effect rounded-lg relative mb-4 min-h-[300px] md:min-h-[450px]">
+                            </div>
+                            <div id="recycling-drop-zones" class="w-full grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            </div>
+                             <p class="text-center text-sm mt-4 text-yellow-400">${translations[currentLanguage].enigma3_lives_info}</p>
+                        </div>
+                    </div>
+                `;
+
+                const pairs = [
+                    { id: 'A', item1: '1A', item2: '2A', result: '3A', msg: translations[currentLanguage].recycling_A },
+                    { id: 'B', item1: '4B', item2: '5B', result: '6B', msg: translations[currentLanguage].recycling_B },
+                    { id: 'C', item1: '7C', item2: '8C', result: '9C', msg: translations[currentLanguage].recycling_C },
+                    { id: 'D', item1: '10D', item2: '11D', result: '12D', msg: translations[currentLanguage].recycling_D }
+                ];
+
+                const playArea = document.getElementById('recycling-play-area');
+                const dropZonesContainer = document.getElementById('recycling-drop-zones');
+                let solvedCount = 0;
+                let placedItems = [];
+
+                pairs.forEach(p => {
+                    const zoneEl = document.createElement('div');
+                    zoneEl.id = `zone-${p.id}`;
+                    zoneEl.className = 'drop-zone glass-effect rounded-lg flex items-center justify-center p-2';
+                    zoneEl.innerHTML = `<span class="text-4xl text-cyan-500/50">?</span>`;
+                    dropZonesContainer.appendChild(zoneEl);
+                });
+
+                setTimeout(() => {
+                    let itemsToPlace = [];
+                    pairs.forEach(p => {
+                        itemsToPlace.push(p.item1, p.item2);
+                    });
+
+                    for (let i = itemsToPlace.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [itemsToPlace[i], itemsToPlace[j]] = [itemsToPlace[j], itemsToPlace[i]];
+                    }
+                    
+                    itemsToPlace.forEach(itemId => {
+                        const itemEl = document.createElement('img');
+                        itemEl.id = itemId;
+                        itemEl.src = `https://raultorres-ia.github.io/apps/escape_room_abj/${itemId}.png`;
+                        itemEl.className = 'drag-item';
+                        itemEl.draggable = true;
+                        
+                        const itemSize = 100;
+                        let pos;
+                        let overlaps;
+                        do {
+                           pos = {
+                                left: Math.random() * (playArea.clientWidth - itemSize),
+                                top: Math.random() * (playArea.clientHeight - itemSize)
+                            };
+                            overlaps = placedItems.some(p => {
+                                return Math.abs(p.left - pos.left) < itemSize && Math.abs(p.top - pos.top) < itemSize;
+                            });
+                        } while(overlaps);
+
+                        placedItems.push(pos);
+                        itemEl.style.left = `${pos.left}px`;
+                        itemEl.style.top = `${pos.top}px`;
+                        
+                        playArea.appendChild(itemEl);
+
+                        itemEl.addEventListener('dragstart', (e) => {
+                            e.dataTransfer.setData('text/plain', e.target.id);
+                            e.dataTransfer.effectAllowed = 'move';
+                        });
+                    });
+                }, 0);
+
+                playArea.addEventListener('dragover', (e) => e.preventDefault());
+                
+                playArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    const target = e.target;
+
+                    if (target.classList.contains('drag-item') && target.id !== draggedId) {
+                        const targetId = target.id;
+                        const correctPair = pairs.find(p => (p.item1 === draggedId && p.item2 === targetId) || (p.item1 === targetId && p.item2 === draggedId));
+
+                        if (correctPair) {
+                            playSound('success');
+                            document.getElementById(draggedId).style.display = 'none';
+                            document.getElementById(targetId).style.display = 'none';
+                            
+                            const dropZone = document.getElementById(`zone-${correctPair.id}`);
+                            dropZone.classList.add('solved');
+                            dropZone.innerHTML = `
+                                <div class="w-full h-full flex flex-col items-center justify-center text-center p-2">
+                                    <img src="https://raultorres-ia.github.io/apps/escape_room_abj/${correctPair.result}.png" class="h-20 w-auto mb-2 object-contain">
+                                    <p class="text-xs md:text-sm">${correctPair.msg}</p>
+                                </div>
+                            `;
+                            solvedCount++;
+                            if (solvedCount === pairs.length) {
+                                setTimeout(completeEnigma3, 1000);
+                            }
+                        } else {
+                            playSound('error');
+                            lives--;
+                            if (lives > 0) {
+                                mostrarModal(translations[currentLanguage].lives_lost_title, `<p>${translations[currentLanguage].lives_lost_msg}</p>`, 'error', drawEnigma3);
+                            } else {
+                                tempsRestant -= 5 * 60;
+                                if (tempsRestant < 0) tempsRestant = 0;
+                                mostrarModal(translations[currentLanguage].reset_penalty_title, `<p>${translations[currentLanguage].reset_penalty_msg}</p>`, 'failure', drawEnigma3);
+                            }
+                        }
+                    }
+                });
+            }
+            drawEnigma3();
+        }
+
+        function completeEnigma3() {
+            if(enigma3Solved) return;
+            playSound('success');
+            enigma3Solved = true;
+            closeEnigmaModal();
+            const enigmaCard = document.getElementById('enigma3');
+            enigmaCard.classList.add('enigma-solved');
+            const content = document.getElementById('enigma3-content');
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center h-full">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">${translations[currentLanguage].challenge_complete_title}</h3>
+                    <p class="text-md mb-2">${translations[currentLanguage].enigma3_complete_msg}</p>
+                    <p class="text-lg">${translations[currentLanguage].third_key_digit_text} ${translations[currentLanguage].key_digit_text}</p>
+                    <p class="font-orbitron text-6xl text-green-300 neon-text">3</p>
+                </div>
+            `;
+        }
+        
+        // --- ENIGMA 4: RESCAT POLAR ---
+        function initEnigma4() {
+            playSound('click');
+            if (enigma4Solved) return;
+            mainView.style.display = 'none';
+            enigmaModalContainer.innerHTML = `
+                <div class="enigma-modal p-4 sm:p-8 relative">
+                     <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                    <div class="w-full max-w-2xl text-center flex flex-col items-center">
+                         <h3 class="text-3xl font-bold text-cyan-300 mb-2">${translations[currentLanguage].enigma4_modal_title}</h3>
+                         <div id="polar-rescue-game" class="relative w-full max-w-2xl">
+                            <canvas id="gameCanvas" width="800" height="400" class="w-full rounded-lg"></canvas>
+                            <div id="startGameModal" class="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center p-4">
+                                <div class="bg-blue-900 border-2 border-cyan-400 rounded-xl p-8 max-w-md w-full text-center shadow-2xl glass-effect">
+                                    <h2 class="text-3xl font-bold mb-4 text-white">${translations[currentLanguage].enigma4_instructions_title}</h2>
+                                    <div class="text-left space-y-3 mb-6 text-gray-200">
+                                        <p>${translations[currentLanguage].enigma4_instructions_1}</p>
+                                        <p>${translations[currentLanguage].enigma4_instructions_2}</p>
+                                        <p>${translations[currentLanguage].enigma4_instructions_3}</p>
+                                    </div>
+                                    <button id="startButton" class="bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-6 rounded-lg text-lg transition duration-300 transform hover:scale-105">${translations[currentLanguage].enigma4_start_button}</button>
+                                </div>
+                            </div>
+                         </div>
+                         <div id="infoPanel" class="text-center mt-4 text-xl flex justify-center items-center space-x-4 md:space-x-8">
+                            <p>Puntuació: <span id="score">0</span></p>
+                            <p>❤️ Vides: <span id="lives">3</span></p>
+                            <p>🎯 Objectiu: <span id="objective">50</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const livesElement = document.getElementById('lives');
+            const objectiveElement = document.getElementById('objective');
+            
+            const startGameModal = document.getElementById('startGameModal');
+            const startButton = document.getElementById('startButton');
+            
+            let score, lives, gameSpeed, animationFrameId;
+            let isGameOver, gameStarted;
+            const TARGET_SCORE = 50;
+            
+            const bear = {
+                x: 100, y: 150, width: 50, height: 40, dy: 0,
+                gravity: 0.6, jumpPower: -12, jumpsLeft: 2,
+                draw() {
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.roundRect(this.x, this.y, this.width, this.height, 10);
+                    ctx.roundRect(this.x + this.width - 20, this.y - 15, 30, 30, 8);
+                    ctx.arc(this.x + this.width - 15, this.y - 15, 6, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width + 5, this.y - 15, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width + 8, this.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            };
+
+            let platforms = [];
+
+            function createPlatform(x, width) {
+                const minHeight = 20;
+                const maxHeight = 40;
+                const y = canvas.height - Math.random() * (maxHeight - minHeight) - minHeight - 50;
+                return {
+                    x: x, y: y, width: width, height: canvas.height - y, isMelting: false, shrinkRate: 0.05,
+                    draw() {
+                        ctx.fillStyle = '#E0FFFF';
+                        ctx.beginPath();
+                        ctx.roundRect(this.x, this.y, this.width, this.height, 15);
+                        ctx.fill();
+                        ctx.fillStyle = '#AFEEEE';
+                        ctx.beginPath();
+                        ctx.roundRect(this.x + 5, this.y, this.width - 10, 10, 5);
+                        ctx.fill();
+                    },
+                    update() {
+                        this.x -= gameSpeed;
+                        if (this.isMelting && this.width > 30) {
+                            this.width -= this.shrinkRate;
+                            this.x += this.shrinkRate / 2;
+                        }
+                    }
+                };
+            }
+            
+            function setupGame() {
+                if (window.polarRescueLoop) cancelAnimationFrame(window.polarRescueLoop);
+                score = 0;
+                lives = 3;
+                gameSpeed = 2;
+                isGameOver = false;
+                gameStarted = false;
+                bear.y = 150;
+                bear.x = 100;
+                bear.dy = 0;
+                bear.jumpsLeft = 2;
+                platforms = [];
+                scoreElement.textContent = score;
+                livesElement.textContent = lives;
+                objectiveElement.textContent = TARGET_SCORE;
+                let currentX = 0;
+                platforms.push(createPlatform(0, 300));
+                currentX += 300;
+                for (let i = 0; i < 10; i++) {
+                    const gap = 80 + Math.random() * 100;
+                    const width = 80 + Math.random() * 120;
+                    currentX += gap;
+                    platforms.push(createPlatform(currentX, width));
+                }
+                startGameModal.classList.remove('hidden');
+                drawInitialScene();
+            }
+            
+            function startGame() {
+                gameStarted = true;
+                startGameModal.classList.add('hidden');
+                gameLoop();
+            }
+
+            function handleJump() {
+                if (gameStarted && !isGameOver && bear.jumpsLeft > 0) {
+                    bear.dy = bear.jumpPower;
+                    bear.jumpsLeft--;
+                    playSound('click');
+                }
+            }
+
+            function handleFall() {
+                lives--;
+                livesElement.textContent = lives;
+                playSound('error');
+                if (lives <= 0) {
+                    showEndGameScreen(false);
+                } else {
+                    bear.y = 150;
+                    bear.x = 100;
+                    bear.dy = 0;
+                    bear.jumpsLeft = 2;
+                }
+            }
+
+            function showEndGameScreen(isWin) {
+                isGameOver = true;
+                cancelAnimationFrame(window.polarRescueLoop);
+                if (isWin) {
+                    completeEnigma4();
+                } else {
+                    const climateFacts = translations[currentLanguage].enigma4_facts;
+                    const fact = climateFacts[Math.floor(Math.random() * climateFacts.length)];
+                    mostrarModal(
+                        translations[currentLanguage].enigma4_end_title_lose,
+                        `<p>${translations[currentLanguage].enigma4_end_score_lose} ${score}</p><div class="bg-blue-200 bg-opacity-20 p-4 rounded-lg my-4"><h3 class="text-lg font-bold mb-2 text-cyan-300">${translations[currentLanguage].enigma4_fact_title}</h3><p>${fact}</p></div>`,
+                        'failure',
+                        setupGame
+                    );
+                    const modalButton = document.getElementById('message-modal-button');
+                    modalButton.textContent = translations[currentLanguage].enigma4_restart_button;
+                }
+            }
+
+            function update() {
+                bear.dy += bear.gravity;
+                bear.y += bear.dy;
+
+                let onPlatform = false;
+                let currentPlatform = null;
+
+                platforms.forEach(platform => {
+                    platform.update();
+                    if (bear.x + bear.width > platform.x && bear.x < platform.x + platform.width &&
+                        bear.y + bear.height > platform.y && bear.y + bear.height < platform.y + 30 && bear.dy > 0) {
+                        
+                        if (bear.jumpsLeft < 2) {
+                           playSound('click');
+                        }
+                        bear.y = platform.y - bear.height;
+                        bear.dy = 0;
+                        onPlatform = true;
+                        bear.jumpsLeft = 2;
+                        currentPlatform = platform;
+                    }
+                });
+                
+                if (currentPlatform) currentPlatform.isMelting = true;
+
+                if (platforms.length > 0 && platforms[0].x + platforms[0].width < 0) {
+                    platforms.shift();
+                    score++;
+                    scoreElement.textContent = score;
+
+                    if (score >= TARGET_SCORE) {
+                        showEndGameScreen(true);
+                        return;
+                    }
+
+                    if (score > 0 && score % 5 === 0) gameSpeed += 0.2;
+                    
+                    const lastPlatform = platforms[platforms.length - 1];
+                    const gap = 80 + Math.random() * 100;
+                    const width = 80 + Math.random() * 120;
+                    platforms.push(createPlatform(lastPlatform.x + lastPlatform.width + gap, width));
+                }
+
+                if (bear.y > canvas.height) handleFall();
+            }
+
+            function drawInitialScene() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#1E40AF';
+                ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+                platforms.forEach(platform => platform.draw());
+                bear.draw();
+            }
+            
+            function drawGame() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#1E40AF';
+                ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+                platforms.forEach(platform => platform.draw());
+                bear.draw();
+            }
+
+            function gameLoop() {
+                if (isGameOver) return;
+                update();
+                drawGame();
+                window.polarRescueLoop = requestAnimationFrame(gameLoop);
+            }
+
+            startButton.addEventListener('click', startGame);
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (!gameStarted) {
+                        startGame();
+                    } else {
+                        handleJump();
+                    }
+                }
+            });
+            canvas.addEventListener('mousedown', handleJump);
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleJump();
+            });
+            
+            setupGame();
+        }
+
+        function completeEnigma4() {
+            if(enigma4Solved) return;
+            playSound('success');
+            enigma4Solved = true;
+            closeEnigmaModal();
+            const enigmaCard = document.getElementById('enigma4');
+            enigmaCard.classList.add('enigma-solved');
+            const content = document.getElementById('enigma4-content');
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center h-full">
+                    <h3 class="text-xl font-bold text-green-400 mb-2">${translations[currentLanguage].challenge_complete_title}</h3>
+                    <p class="text-md mb-2">${translations[currentLanguage].enigma4_complete_msg}</p>
+                    <p class="text-lg">${translations[currentLanguage].fourth_key_digit_text} ${translations[currentLanguage].key_digit_text}</p>
+                    <p class="font-orbitron text-6xl text-green-300 neon-text">0</p>
+                </div>
+            `;
+        }
+
+        // --- INICI DEL JOC ---
+        window.onload = function() {
+            iniciarTemporitzador();
+            setLanguage('ca'); // Idioma per defecte
+        };
+    </script>
+
+</body>
+</html>
