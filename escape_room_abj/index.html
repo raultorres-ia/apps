@@ -623,6 +623,10 @@
                         const finalButton = document.getElementById('message-modal-button');
                         finalButton.textContent = translations[currentLanguage].final_exit_button_text;
                         finalButton.onclick = () => {
+                            document.querySelectorAll('audio').forEach(audio => {
+                                audio.pause();
+                                audio.currentTime = 0;
+                            });
                             messageModal.classList.add('hidden');
                             document.body.style.filter = 'blur(8px)';
                         };
