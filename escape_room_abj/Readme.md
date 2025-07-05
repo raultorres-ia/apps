@@ -7,23 +7,23 @@ En aquesta experiència interactiva, els jugadors reben un missatge urgent de GA
 🚀 Característiques Principals
 Narrativa Immersiva: Una història de ciència-ficció que connecta les accions del present amb les conseqüències futures.
 
-Temporitzador: Un compte enrere de 30 minuts que afegeix emoció i urgència a la missió.
+- Temporitzador: Un compte enrere de 30 minuts que afegeix emoció i urgència a la missió.
 
-Multilingüe: L'aplicació està disponible en Català, Castellà i Anglès.
+- Multilingüe: L'aplicació està disponible en Català, Castellà i Anglès.
 
-4 Reptes Temàtics: Cada enigma se centra en un pilar fonamental de la sostenibilitat:
+- 4 Reptes Temàtics: Cada enigma se centra en un pilar fonamental de la sostenibilitat:
 
-Energies Renovables
+- Energies Renovables
 
-Restauració d'Ecosistemes
+- Restauració d'Ecosistemes
 
-Reciclatge
+- Reciclatge
 
-Protecció de la Biodiversitat
+- Protecció de la Biodiversitat
 
-Experiència Audiovisual: Inclou música de fons i efectes de so per millorar la immersió.
+- Experiència Audiovisual: Inclou música de fons i efectes de so per millorar la immersió.
 
-Disseny Futurista: Una interfície moderna amb efectes visuals de neó i vidre, creada amb Tailwind CSS.
+- Disseny Futurista: Una interfície moderna amb efectes visuals de neó i vidre, creada amb Tailwind CSS.
 
 
 🧩 Els Reptes
@@ -47,15 +47,15 @@ Un joc d'estil platformer on el jugador ha d'ajudar un ós polar a saltar sobre 
 
 Aquest projecte està construït com una única pàgina web (Single Page Application) utilitzant tecnologies web estàndard, sense necessitat de backend.
 
-Estructura: HTML5
+- Estructura: HTML5
 
-Estils: CSS3, Tailwind CSS per a les utilitats i estils personalitzats per a la temàtica.
+- Estils: CSS3, Tailwind CSS per a les utilitats i estils personalitzats per a la temàtica.
 
-Lògica i Interactivitat: JavaScript (ES6+), sense dependències externes més enllà de D3.js.
+- Lògica i Interactivitat: JavaScript (ES6+), sense dependències externes més enllà de D3.js.
 
-Visualització de Dades: D3.js (v7) per a la gràfica de l'enigma 1.
+- Visualització de Dades: D3.js (v7) per a la gràfica de l'enigma 1.
 
-Fonts: Google Fonts (Orbitron i Inter).
+- Fonts: Google Fonts (Orbitron i Inter).
 
 
 ⚙️ Com Executar el Projecte
