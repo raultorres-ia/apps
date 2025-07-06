@@ -135,7 +135,15 @@
     <audio id="final-sound1" src="https://raultorres-ia.github.io/apps/escape_room_abj/final01.mp3"></audio>
     <audio id="final-sound2" src="https://raultorres-ia.github.io/apps/escape_room_abj/final02.mp3"></audio>
 
-    <div id="main-view">
+    <div id="start-screen" class="min-h-screen flex items-center justify-center">
+        <div class="text-center max-w-2xl glass-effect p-8 rounded-xl">
+            <h1 class="text-5xl md:text-6xl font-bold font-orbitron neon-text mb-6" data-translate="main_title">MISSIÓ TERRA VIVA</h1>
+            <p class="text-lg mb-8" data-translate="start_instructions">La vostra missió, si l'accepteu, és infiltrar-vos en el sistema de GAIA i activar el protocol d'emergència "TERRA VIVA". Teniu 15 minuts per resoldre els 4 enigmes i obtenir la contrasenya final abans que el futur es perdi per sempre.</p>
+            <button onclick="startGame()" class="bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-8 rounded-lg text-xl transition duration-300 transform hover:scale-105" data-translate="start_mission">Començar Missió</button>
+        </div>
+    </div>
+
+    <div id="main-view" class="hidden">
         <header class="text-center mb-6 md:mb-8 relative">
             <div class="absolute top-0 right-0 p-2 flex items-center space-x-2">
                 <div class="flex space-x-1 glass-effect rounded-lg p-1">
@@ -149,7 +157,7 @@
                 </button>
             </div>
             <h1 class="text-4xl md:text-6xl font-bold font-orbitron neon-text" data-translate="main_title">MISSIÓ TERRA VIVA</h1>
-            <div id="timer" class="mt-4 text-3xl md:text-5xl font-orbitron bg-red-600/80 text-white py-2 px-6 rounded-lg inline-block shadow-lg">30:00</div>
+            <div id="timer" class="mt-4 text-3xl md:text-5xl font-orbitron bg-red-600/80 text-white py-2 px-6 rounded-lg inline-block shadow-lg">15:00</div>
         </header>
 
         <div class="glass-effect rounded-xl p-6 mb-8 text-center max-w-4xl mx-auto">
@@ -157,7 +165,7 @@
             <div class="flex flex-col md:flex-row gap-4 items-center">
                 <div class="md:w-2/3">
                     <p class="text-lg" data-translate="gaia_message">
-                        Sóc GAIA, una IA del futur. He viatjat fins a la vostra època com a últim recurs. El meu món està a la vora del col·lapse a causa del canvi climàtic. Vosaltres sou la nostra única esperança. Heu d'activar el protocol d'emergència "TERRA VIVA" per reescriure el futur. El temps s'esgota. Teniu <strong data-translate="minutes">30 minuts</strong> per superar quatre reptes i obtenir la contrasenya final. El destí del planeta és a les vostres mans.
+                        Sóc GAIA, una IA del futur. He viatjat fins a la vostra època com a últim recurs. El meu món està a la vora del col·lapse a causa del canvi climàtic. Vosaltres sou la nostra única esperança. Heu d'activar el protocol d'emergència "TERRA VIVA" per reescriure el futur. El temps s'esgota. Teniu <strong data-translate="minutes">15 minuts</strong> per superar quatre reptes i obtenir la contrasenya final. El destí del planeta és a les vostres mans.
                     </p>
                 </div>
                 <div class="md:w-1/3 grid grid-cols-2 gap-2">
@@ -197,11 +205,12 @@
         <div class="glass-effect rounded-xl p-6 max-w-md mx-auto">
             <h2 class="text-2xl font-bold text-center text-cyan-300 mb-4" data-translate="protocol_activation">ACTIVACIÓ PROTOCOL</h2>
             <div class="flex flex-col sm:flex-row gap-4">
-                <input type="text" id="final-password" class="w-full bg-slate-800 text-white placeholder-gray-400 border border-cyan-400 rounded-lg p-3 text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-300" maxlength="4">
-                <button onclick="checkFinalPassword()" class="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-lg transition-colors duration-300" data-translate="activate_button">
+                <input type="text" id="final-password" class="w-full bg-slate-800 text-white placeholder-gray-400 border border-cyan-400 rounded-lg p-3 text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-300" maxlength="4" disabled>
+                <button id="final-button" onclick="checkFinalPassword()" class="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-lg transition-colors duration-300" data-translate="activate_button" disabled>
                     ACTIVAR
                 </button>
             </div>
+            <p id="password-lock-msg" class="text-center text-yellow-400 text-sm mt-2" data-translate="password_lock_msg">Completa tots els enigmes per activar el protocol.</p>
         </div>
         
         <footer class="text-center mt-8 text-xs text-gray-400">
@@ -223,7 +232,7 @@
 
     <script>
         // --- CONFIGURACIÓ ---
-        const TEMPS_INICIAL = 30 * 60;
+        const TEMPS_INICIAL = 15 * 60;
         const CONTRASENYA_FINAL = "2030";
 
         // --- ESTATS DEL JOC ---
@@ -240,13 +249,16 @@
         const translations = {
             ca: {
                 main_title: "MISSIÓ TERRA VIVA",
+                start_instructions: "La vostra missió, si l'accepteu, és infiltrar-vos en el sistema de GAIA i activar el protocol d'emergència \"TERRA VIVA\". Teniu 15 minuts per resoldre els 4 enigmes i obtenir la contrasenya final abans que el futur es perdi per sempre.",
+                start_mission: "Començar Missió",
                 gaia_greeting: "SALUTACIONS, VIATGERS DEL TEMPS.",
-                gaia_message: "Sóc GAIA, una IA del futur. He viatjat fins a la vostra època com a últim recurs. El meu món està a la vora del col·lapse a causa del canvi climàtic. Vosaltres sou la nostra única esperança. Heu d'activar el protocol d'emergència \"TERRA VIVA\" per reescriure el futur. El temps s'esgota. Teniu <strong>30 minuts</strong> per superar quatre reptes i obtenir la contrasenya final. El destí del planeta és a les vostres mans.",
-                minutes: "30 minuts",
+                gaia_message: "Sóc GAIA, una IA del futur. He viatjat fins a la vostra època com a últim recurs. El meu món està a la vora del col·lapse a causa del canvi climàtic. Vosaltres sou la nostra única esperança. Heu d'activar el protocol d'emergència \"TERRA VIVA\" per reescriure el futur. El temps s'esgota. Teniu <strong data-translate=\"minutes\">15 minuts</strong> per superar quatre reptes i obtenir la contrasenya final. El destí del planeta és a les vostres mans.",
+                minutes: "15 minuts",
                 enigma1_title: "ENIGMA 1", enigma2_title: "ENIGMA 2", enigma3_title: "ENIGMA 3", enigma4_title: "ENIGMA 4",
                 start_challenge: "INICIAR REPTE",
                 protocol_activation: "ACTIVACIÓ PROTOCOL",
                 activate_button: "ACTIVAR",
+                password_lock_msg: "Completa tots els enigmes per activar el protocol.",
                 credits: "Aplicació feta per Raül Torres i Raquel Otal",
                 license: "Aquesta obra està sota una llicència Creative Commons BY-SA.",
                 close_button: "Tancar",
@@ -309,13 +321,16 @@
             },
             es: {
                 main_title: "MISIÓN TIERRA VIVA",
+                start_instructions: "Vuestra misión, si la aceptáis, es infiltraros en el sistema de GAIA y activar el protocolo de emergencia \"TIERRA VIVA\". Tenéis 15 minutos para resolver los 4 enigmas y obtener la contraseña final antes de que el futuro se pierda para siempre.",
+                start_mission: "Empezar Misión",
                 gaia_greeting: "SALUDOS, VIAJEROS DEL TIEMPO.",
-                gaia_message: "Soy GAIA, una IA del futuro. He viajado a vuestra época como último recurso. Mi mundo está al borde del colapso debido al cambio climático. Vosotros sois nuestra única esperanza. Debéis activar el protocolo de emergencia \"TIERRA VIVA\" para reescribir el futuro. El tiempo se agota. Tenéis <strong>30 minutos</strong> para superar cuatro retos y obtener la contraseña final. El destino del planeta está en vuestras manos.",
-                minutes: "30 minutos",
+                gaia_message: "Soy GAIA, una IA del futuro. He viajado a vuestra época como último recurso. Mi mundo está al borde del colapso debido al cambio climático. Vosotros sois nuestra única esperanza. Debéis activar el protocolo de emergencia \"TIERRA VIVA\" para reescribir el futuro. El tiempo se agota. Tenéis <strong>15 minutos</strong> para superar cuatro retos y obtener la contraseña final. El destino del planeta está en vuestras manos.",
+                minutes: "15 minutos",
                 enigma1_title: "ENIGMA 1", enigma2_title: "ENIGMA 2", enigma3_title: "ENIGMA 3", enigma4_title: "ENIGMA 4",
                 start_challenge: "INICIAR RETO",
                 protocol_activation: "ACTIVACIÓN PROTOCOLO",
                 activate_button: "ACTIVAR",
+                password_lock_msg: "Completa todos los enigmas para activar el protocolo.",
                 credits: "Aplicación hecha por Raül Torres y Raquel Otal",
                 license: "Esta obra está bajo una licencia Creative Commons BY-SA.",
                 close_button: "Cerrar",
@@ -378,13 +393,16 @@
             },
             en: {
                 main_title: "MISSION TERRA VIVA",
+                start_instructions: "Your mission, should you choose to accept it, is to infiltrate GAIA's system and activate the \"TERRA VIVA\" emergency protocol. You have 15 minutes to solve the 4 riddles and get the final password before the future is lost forever.",
+                start_mission: "Start Mission",
                 gaia_greeting: "GREETINGS, TIME TRAVELERS.",
-                gaia_message: "I am GAIA, an AI from the future. I have traveled to your time as a last resort. My world is on the brink of collapse due to climate change. You are our only hope. You must activate the \"TERRA VIVA\" emergency protocol to rewrite the future. Time is running out. You have <strong>30 minutes</strong> to overcome four challenges and get the final password. The fate of the planet is in your hands.",
-                minutes: "30 minutes",
+                gaia_message: "I am GAIA, an AI from the future. I have traveled to your time as a last resort. My world is on the brink of collapse due to climate change. You are our only hope. You must activate the \"TERRA VIVA\" emergency protocol to rewrite the future. Time is running out. You have <strong>15 minutes</strong> to overcome four challenges and get the final password. The fate of the planet is in your hands.",
+                minutes: "15 minutes",
                 enigma1_title: "CHALLENGE 1", enigma2_title: "CHALLENGE 2", enigma3_title: "CHALLENGE 3", enigma4_title: "CHALLENGE 4",
                 start_challenge: "START CHALLENGE",
                 protocol_activation: "PROTOCOL ACTIVATION",
                 activate_button: "ACTIVATE",
+                password_lock_msg: "Complete all challenges to activate the protocol.",
                 credits: "Application made by Raül Torres and Raquel Otal",
                 license: "This work is licensed under a Creative Commons BY-SA license.",
                 close_button: "Close",
@@ -448,9 +466,12 @@
         };
 
         // --- ELEMENTS DEL DOM ---
+        const startScreen = document.getElementById('start-screen');
         const mainView = document.getElementById('main-view');
         const timerElement = document.getElementById('timer');
         const finalPasswordInput = document.getElementById('final-password');
+        const finalButton = document.getElementById('final-button');
+        const passwordLockMsg = document.getElementById('password-lock-msg');
         const messageModal = document.getElementById('message-modal');
         const messageModalContent = document.getElementById('message-modal-content');
         const messageModalTitle = document.getElementById('message-modal-title');
@@ -466,11 +487,6 @@
             if (!musicStarted) {
                 backgroundMusic.volume = 0.2;
                 backgroundMusic.play().catch(e => console.error("La reproducció automàtica de música ha estat bloquejada.", e));
-                
-                const startSound = document.getElementById('start-sound');
-                startSound.volume = 0.5;
-                startSound.play().catch(e => console.error("Error playing start sound", e));
-
                 musicStarted = true;
             }
         }
@@ -488,7 +504,7 @@
             if (!audioCtx || (isMuted && !force)) return;
 
             const startSound = document.getElementById('start-sound');
-            if (type === 'click' && startSound && !startSound.paused) {
+            if (startSound && !startSound.paused) {
                 startSound.pause();
                 startSound.currentTime = 0;
             }
@@ -544,10 +560,7 @@
                  });
             }
         }
-
-        document.body.addEventListener('click', initializeAudio, { once: true });
-
-
+        
         // --- LÒGICA DE TRADUCCIÓ ---
         function setLanguage(lang) {
             if (!translations[lang]) return;
@@ -567,20 +580,34 @@
             document.querySelector(`.lang-btn.${lang}`).classList.add('active');
         }
 
-        // --- LÒGICA DEL TEMPORITZADOR ---
+        // --- LÒGICA DEL JOC PRINCIPAL---
+        function startGame() {
+            startScreen.classList.add('hidden');
+            mainView.classList.remove('hidden');
+            initializeAudio();
+            iniciarTemporitzador();
+            const startSound = document.getElementById('start-sound');
+            if (!isMuted) {
+                startSound.play().catch(e => console.error("Error playing start sound", e));
+            }
+        }
+
         function iniciarTemporitzador() {
             temporitzador = setInterval(() => {
                 tempsRestant--;
                 const minuts = Math.floor(tempsRestant / 60);
                 const segons = tempsRestant % 60;
-                timerElement.textContent = `${String(minuts).padStart(2, '0')}:${String(segons).padStart(2, '0')}`;
+                const tempsFormatat = `${String(minuts).padStart(2, '0')}:${String(segons).padStart(2, '0')}`;
+                
+                document.getElementById('timer').textContent = tempsFormatat;
+                const modalTimer = document.getElementById('modal-timer');
+                if (modalTimer) modalTimer.textContent = tempsFormatat;
 
                 if (tempsRestant <= 0) finalitzarJoc(false);
-                if (tempsRestant < 5 * 60) timerElement.classList.add('animate-pulse');
+                if (tempsRestant < 5 * 60) document.getElementById('timer').classList.add('animate-pulse');
             }, 1000);
         }
 
-        // --- LÒGICA DEL JOC PRINCIPAL---
         function checkFinalPassword() {
             playSound('click');
             if (finalPasswordInput.value.toUpperCase() === CONTRASENYA_FINAL.toUpperCase()) {
@@ -638,6 +665,14 @@
             } else {
                 playSound('error');
                 mostrarModal(translations[currentLanguage].lose_title, `<p>${translations[currentLanguage].lose_msg}</p>`, "failure");
+            }
+        }
+        
+        function checkAllEnigmasSolved() {
+            if (enigma1Solved && enigma2Solved && enigma3Solved && enigma4Solved) {
+                finalPasswordInput.disabled = false;
+                finalButton.disabled = false;
+                passwordLockMsg.classList.add('hidden');
             }
         }
 
@@ -702,6 +737,7 @@
             enigmaModalContainer.innerHTML = `
                 <div class="enigma-modal p-4 sm:p-8 relative">
                     <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                    <div id="modal-timer" class="absolute top-4 right-4 text-2xl md:text-3xl font-orbitron bg-red-600/80 text-white py-2 px-4 rounded-lg"></div>
                     <div class="w-full max-w-4xl text-center flex flex-col items-center">
                         <h3 class="text-3xl font-bold text-cyan-300 mb-4" data-translate="enigma1_modal_title">${translations[currentLanguage].enigma1_modal_title}</h3>
                         <div class="flex flex-col md:flex-row items-center justify-center gap-6 p-4 w-full">
@@ -810,6 +846,7 @@
                     <p class="font-orbitron text-6xl text-green-300 neon-text">2</p>
                 </div>
             `;
+            checkAllEnigmasSolved();
         }
 
         // --- ENIGMA 2: TRENCACLOSQUES ---
@@ -820,6 +857,7 @@
             enigmaModalContainer.innerHTML = `
                 <div class="enigma-modal p-4 sm:p-8 relative">
                     <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                    <div id="modal-timer" class="absolute top-4 right-4 text-2xl md:text-3xl font-orbitron bg-red-600/80 text-white py-2 px-4 rounded-lg"></div>
                     <div class="w-full max-w-lg text-center flex flex-col items-center">
                         <h3 class="text-3xl font-bold text-cyan-300 mb-4">${translations[currentLanguage].enigma2_modal_title}</h3>
                         <div id="puzzle-container"></div>
@@ -921,6 +959,7 @@
                     <p class="font-orbitron text-6xl text-green-300 neon-text">0</p>
                 </div>
             `;
+            checkAllEnigmasSolved();
         }
         
         // --- ENIGMA 3: RECICLATGE ---
@@ -935,6 +974,7 @@
                 enigmaModalContainer.innerHTML = `
                     <div class="enigma-modal p-4 sm:p-8 relative">
                         <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                        <div id="modal-timer" class="absolute top-4 right-4 text-2xl md:text-3xl font-orbitron bg-red-600/80 text-white py-2 px-4 rounded-lg"></div>
                         <div class="w-full max-w-5xl text-center flex flex-col items-center h-full overflow-y-auto">
                             <div class="flex justify-between items-center w-full">
                                 <h3 class="text-3xl font-bold text-cyan-300 mb-2">${translations[currentLanguage].enigma3_modal_title}</h3>
@@ -1077,6 +1117,7 @@
                     <p class="font-orbitron text-6xl text-green-300 neon-text">3</p>
                 </div>
             `;
+            checkAllEnigmasSolved();
         }
         
         // --- ENIGMA 4: RESCAT POLAR ---
@@ -1087,6 +1128,7 @@
             enigmaModalContainer.innerHTML = `
                 <div class="enigma-modal p-4 sm:p-8 relative">
                      <button onclick="closeEnigmaModal()" class="absolute top-4 left-4 text-white text-4xl hover:text-cyan-300">&larr;</button>
+                     <div id="modal-timer" class="absolute top-4 right-4 text-2xl md:text-3xl font-orbitron bg-red-600/80 text-white py-2 px-4 rounded-lg"></div>
                     <div class="w-full max-w-2xl text-center flex flex-col items-center">
                          <h3 class="text-3xl font-bold text-cyan-300 mb-2">${translations[currentLanguage].enigma4_modal_title}</h3>
                          <div id="polar-rescue-game" class="relative w-full max-w-2xl">
@@ -1351,11 +1393,11 @@
                     <p class="font-orbitron text-6xl text-green-300 neon-text">0</p>
                 </div>
             `;
+            checkAllEnigmasSolved();
         }
 
         // --- INICI DEL JOC ---
         window.onload = function() {
-            iniciarTemporitzador();
             setLanguage('ca'); // Idioma per defecte
         };
     </script>
