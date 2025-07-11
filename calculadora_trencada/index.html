@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Trencada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background-color: #6b7280 !important; /* Use important to override hover states */
+        }
+        .span-two {
+            grid-column: span 2;
+        }
+        .lang-btn.active {
+            background-color: #6366f1; /* indigo-500 */
+            color: white;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 relative">
+        
+        <!-- Language Switcher -->
+        <div id="lang-switcher" class="absolute top-4 right-4 flex gap-2">
+            <button id="lang-ca" class="lang-btn px-3 py-1 text-sm rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors">CAT</button>
+            <button id="lang-es" class="lang-btn px-3 py-1 text-sm rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors">ESP</button>
+        </div>
+
+        <div class="text-center mb-6 pt-8">
+            <h1 data-translate-key="title" class="text-2xl font-bold text-gray-800 dark:text-white">Calculadora Trencada</h1>
+            <p data-translate-key="subtitle" class="text-gray-500 dark:text-gray-400">Arriba al número objectiu!</p>
+        </div>
+
+        <!-- Target Number -->
+        <div class="bg-blue-100 dark:bg-blue-900/50 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4 mb-6 text-center">
+            <p data-translate-key="targetLabel" class="text-sm font-semibold text-blue-600 dark:text-blue-300">OBJECTIU</p>
+            <p id="target-number" class="text-4xl font-bold text-blue-800 dark:text-blue-200">120</p>
+        </div>
+
+        <!-- Display -->
+        <div id="display" class="bg-gray-200 dark:bg-gray-900 rounded-lg p-4 mb-6 text-right text-4xl font-mono text-gray-800 dark:text-white break-all">
+            0
+        </div>
+
+        <!-- Message Area -->
+        <div id="message-area" class="h-8 mb-4 text-center font-semibold"></div>
+
+        <!-- Buttons -->
+        <div class="calculator-grid">
+            <!-- Operators -->
+            <button data-value="+" class="btn operator text-xl font-bold bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-lg shadow-md">+</button>
+            <button data-value="-" class="btn operator text-xl font-bold bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-lg shadow-md">-</button>
+            <button data-value="*" class="btn operator text-xl font-bold bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-lg shadow-md">&times;</button>
+            <button data-value="/" class="btn operator text-xl font-bold bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-lg shadow-md">&divide;</button>
+
+            <!-- Numbers -->
+            <button data-value="7" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">7</button>
+            <button data-value="8" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">8</button>
+            <button data-value="9" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">9</button>
+            <button id="clear-btn" class="btn text-xl font-bold bg-red-500 hover:bg-red-600 text-white p-4 rounded-lg shadow-md">C</button>
+
+            <button data-value="4" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">4</button>
+            <button data-value="5" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">5</button>
+            <button data-value="6" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">6</button>
+            <button id="enter-btn" class="btn row-span-3 text-xl font-bold bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg shadow-md flex items-center justify-center">=</button>
+
+            <button data-value="1" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">1</button>
+            <button data-value="2" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">2</button>
+            <button data-value="3" class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">3</button>
+            
+            <button data-value="0" class="btn number span-two text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">0</button>
+            <button data-value="." class="btn number text-xl font-bold bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-white p-4 rounded-lg shadow-md">.</button>
+        </div>
+
+        <button id="new-game-btn" data-translate-key="newGameButton" class="w-full mt-6 text-lg font-semibold bg-indigo-500 hover:bg-indigo-600 text-white py-3 rounded-lg shadow-md">Partida Nova</button>
+    
+        <footer class="text-center mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <p id="author-text" class="text-sm text-gray-500 dark:text-gray-400"></p>
+            <p id="license-text" class="text-xs text-gray-400 dark:text-gray-500 mt-1"></p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Translations ---
+        const translations = {
+            es: {
+                title: "Calculadora Rota",
+                subtitle: "¡Alcanza el número objetivo!",
+                targetLabel: "OBJETIVO",
+                newGameButton: "Nueva Partida",
+                divideByZeroError: "¡No se puede dividir por cero!",
+                winMessage: "¡Correcto! ¡Lo has conseguido!",
+                incorrectMessage: "Incorrecto. El resultado es {result}",
+                author: "Aplicación hecha por Raül Torres",
+                license: 'Esta obra está bajo una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-600 dark:hover:text-gray-400">licencia Creative Commons BY-SA</a>.'
+            },
+            ca: {
+                title: "Calculadora Trencada",
+                subtitle: "Arriba al número objectiu!",
+                targetLabel: "OBJECTIU",
+                newGameButton: "Partida Nova",
+                divideByZeroError: "No es pot dividir per zero!",
+                winMessage: "Correcte! Ho has aconseguit!",
+                incorrectMessage: "Incorrecte. El resultat és {result}",
+                author: "Aplicació feta per Raül Torres",
+                license: 'Aquesta obra està sota una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-600 dark:hover:text-gray-400">llicència Creative Commons BY-SA</a>.'
+            }
+        };
+
+        // --- DOM Elements ---
+        const display = document.getElementById('display');
+        const targetNumberEl = document.getElementById('target-number');
+        const messageArea = document.getElementById('message-area');
+        const numberButtons = document.querySelectorAll('.number');
+        const operatorButtons = document.querySelectorAll('.operator');
+        const clearButton = document.getElementById('clear-btn');
+        const enterButton = document.getElementById('enter-btn');
+        const newGameButton = document.getElementById('new-game-btn');
+        const allButtons = document.querySelectorAll('.btn:not(#clear-btn):not(#enter-btn):not(#new-game-btn)');
+        const langCaButton = document.getElementById('lang-ca');
+        const langEsButton = document.getElementById('lang-es');
+        const authorText = document.getElementById('author-text');
+        const licenseText = document.getElementById('license-text');
+
+        // --- Game State ---
+        let currentInput = '0';
+        let firstOperand = null;
+        let operator = null;
+        let shouldResetDisplay = false;
+        let targetNumber = 0;
+        let currentLang = 'ca'; // Default language
+
+        // --- Core Logic ---
+
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        function clear() {
+            currentInput = '0';
+            firstOperand = null;
+            operator = null;
+            shouldResetDisplay = false;
+            updateDisplay();
+            hideMessage();
+        }
+
+        function calculate() {
+            if (operator === null || shouldResetDisplay) return;
+
+            const secondOperand = parseFloat(currentInput);
+            let result = 0;
+
+            if (operator === '/' && secondOperand === 0) {
+                showMessage('divideByZeroError', 'error');
+                return;
+            }
+
+            switch (operator) {
+                case '+': result = firstOperand + secondOperand; break;
+                case '-': result = firstOperand - secondOperand; break;
+                case '*': result = firstOperand * secondOperand; break;
+                case '/': result = firstOperand / secondOperand; break;
+            }
+            
+            currentInput = String(parseFloat(result.toFixed(5)));
+            operator = null;
+            firstOperand = null;
+            updateDisplay();
+            shouldResetDisplay = true;
+        }
+
+        // --- Event Handlers ---
+
+        function handleNumberClick(value) {
+            if (shouldResetDisplay) {
+                currentInput = '0';
+                shouldResetDisplay = false;
+            }
+            if (value === '.' && currentInput.includes('.')) return;
+            if (currentInput === '0' && value !== '.') {
+                currentInput = value;
+            } else {
+                currentInput += value;
+            }
+            updateDisplay();
+        }
+
+        function handleOperatorClick(op) {
+            if (operator !== null && !shouldResetDisplay) {
+                calculate();
+            }
+            firstOperand = parseFloat(currentInput);
+            operator = op;
+            shouldResetDisplay = true;
+        }
+
+        function handleEnterClick() {
+            if (operator !== null) {
+                calculate();
+            }
+            
+            const finalResult = parseFloat(currentInput);
+            if (finalResult === targetNumber) {
+                showMessage('winMessage', 'success');
+            } else {
+                showMessage('incorrectMessage', 'error', { result: finalResult });
+            }
+            shouldResetDisplay = true;
+        }
+        
+        // --- Game Setup & Language ---
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll('[data-translate-key]').forEach(el => {
+                const key = el.dataset.translateKey;
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Handle footer text
+            authorText.textContent = translations[lang].author;
+            licenseText.innerHTML = translations[lang].license;
+
+            // Update active button style
+            langCaButton.classList.toggle('active', lang === 'ca');
+            langEsButton.classList.toggle('active', lang === 'es');
+            
+            // Clear message to avoid showing it in the wrong language
+            hideMessage();
+        }
+
+        function startNewGame() {
+            clear();
+            
+            targetNumber = Math.floor(Math.random() * 231) + 20;
+            targetNumberEl.textContent = targetNumber;
+
+            allButtons.forEach(btn => btn.disabled = false);
+
+            const buttonsToDisable = Math.floor(Math.random() * 4) + 2;
+            const buttonArray = Array.from(allButtons);
+            
+            buttonArray.sort(() => 0.5 - Math.random());
+            for (let i = 0; i < buttonsToDisable; i++) {
+                if (buttonArray[i]) {
+                    buttonArray[i].disabled = true;
+                }
+            }
+        }
+
+        // --- UI Feedback ---
+
+        function showMessage(key, type = 'info', replacements = {}) {
+            let message = translations[currentLang][key] || key;
+            for (const placeholder in replacements) {
+                message = message.replace(`{${placeholder}}`, replacements[placeholder]);
+            }
+            messageArea.textContent = message;
+
+            if (type === 'success') {
+                messageArea.className = 'h-8 mb-4 text-center font-semibold text-green-600 dark:text-green-400';
+            } else if (type === 'error') {
+                messageArea.className = 'h-8 mb-4 text-center font-semibold text-red-600 dark:text-red-400';
+            } else {
+                messageArea.className = 'h-8 mb-4 text-center font-semibold text-gray-500 dark:text-gray-400';
+            }
+        }
+
+        function hideMessage() {
+            messageArea.textContent = '';
+        }
+
+        // --- Event Listeners Initialization ---
+        
+        numberButtons.forEach(button => button.addEventListener('click', () => handleNumberClick(button.dataset.value)));
+        operatorButtons.forEach(button => button.addEventListener('click', () => handleOperatorClick(button.dataset.value)));
+        clearButton.addEventListener('click', clear);
+        enterButton.addEventListener('click', handleEnterClick);
+        newGameButton.addEventListener('click', startNewGame);
+        langCaButton.addEventListener('click', () => setLanguage('ca'));
+        langEsButton.addEventListener('click', () => setLanguage('es'));
+
+        // --- Initial Load ---
+        window.onload = () => {
+            setLanguage(currentLang); // Set initial language texts
+            startNewGame();
+        };
+
+    </script>
+</body>
+</html>
