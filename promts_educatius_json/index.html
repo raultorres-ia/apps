@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador de Prompts per a IA (JSON)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-section, .prompt-output-container {
+            transition: all 0.5s ease-in-out;
+        }
+        .hidden {
+            display: none;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Creador de Prompts per a IA</h1>
+            <p class="mt-2 text-lg text-gray-600">Construeix instruccions estructurades en format JSON.</p>
+        </header>
+
+        <div id="main-grid" class="grid grid-cols-1 justify-center gap-8">
+            <!-- Columna del Formulari -->
+            <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col">
+                <form id="prompt-form" class="flex-grow">
+                    <!-- Secció 1: Rol, Nivell i Matèria -->
+                    <div class="mb-6 pb-6 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Defineix el Context Principal</h2>
+                        
+                        <!-- Rol General -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rol General</label>
+                            <select id="rol" name="rol" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="Docent">Docent</option>
+                                <option value="Assessor/a pedagògic">Assessor/a pedagògic</option>
+                                <option value="Avaluador/a d'exàmens">Avaluador/a d'exàmens</option>
+                                <option value="Facilitador d'aprenentatge">Facilitador d'aprenentatge</option>
+                                <option value="Guia d'aprenentatge socioemocional">Guia d'aprenentatge socioemocional</option>
+                                <option value="Mestre/a expert/a">Mestre/a expert/a</option>
+                                <option value="Professor/a">Professor/a</option>
+                            </select>
+                        </div>
+
+                        <!-- Etapa Educativa -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Etapa Educativa</label>
+                            <div id="etapa-container" class="space-y-2">
+                                <label class="flex items-center"><input type="radio" name="etapa" value="Infantil" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"> <span class="ml-2">Infantil</span></label>
+                                <label class="flex items-center"><input type="radio" name="etapa" value="Primaria" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"> <span class="ml-2">Primària</span></label>
+                                <label class="flex items-center"><input type="radio" name="etapa" value="Secundaria" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"> <span class="ml-2">Secundària</span></label>
+                                <label class="flex items-center"><input type="radio" name="etapa" value="Batxillerat" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"> <span class="ml-2">Batxillerat</span></label>
+                            </div>
+                        </div>
+
+                        <!-- Nivells i Matèries (Condicionals) -->
+                        <div id="niveles-materias-container" class="space-y-4">
+                            <!-- Seccions que es mostraran dinàmicament -->
+                        </div>
+                    </div>
+
+                    <!-- Secció 2: Tasca i Tema -->
+                    <div class="mb-6 pb-6 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Defineix la Tasca</h2>
+                        <div class="mb-4">
+                            <label for="tarea" class="block text-sm font-medium text-gray-700 mb-2">Què vols obtenir?</label>
+                            <select id="tarea" name="tarea" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="Genera una situació d'aprenentatge detallada">Genera una situació d'aprenentatge detallada</option>
+                                <option value="Genera l'esquema d'una situació d'aprenentatge">Genera l'esquema d'una situació d'aprenentatge</option>
+                                <option value="Crea una llista d'activitats">Crea una llista d'activitats</option>
+                                <option value="Escriu una introducció">Escriu una introducció</option>
+                                <option value="Fes un esquema per a una presentació">Fes un esquema per a una presentació</option>
+                                <option value="Genera una activitat de cerca d'informació">Genera una activitat de cerca d'informació</option>
+                                <option value="Fes un llistat d'idees per a projectes">Fes un llistat d'idees per a projectes</option>
+                                <option value="Crea un qüestionari">Crea un qüestionari</option>
+                                <option value="Genera una rúbrica">Genera una rúbrica</option>
+                                <option value="Escriu una programació">Escriu una programació</option>
+                                <option value="Escriu un conte educatiu">Escriu un conte educatiu</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="tema" class="block text-sm font-medium text-gray-700 mb-2">Especifica el tema a treballar</label>
+                            <input type="text" id="tema" name="tema" placeholder="Ex: la suma, la cèl·lula, el cicle de l'aigua..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Secció 3: Opcions Addicionals -->
+                    <div class="mb-6">
+                         <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Opcions Addicionals</h2>
+                         <div class="mb-4">
+                            <label for="metodologia" class="block text-sm font-medium text-gray-700 mb-2">Metodologia (Opcional)</label>
+                            <select id="metodologia" name="metodologia" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Cap</option>
+                                <option value="Aprenentatge basat en Projectes">Aprenentatge basat en Projectes</option>
+                                <option value="Aprenentatge cooperatiu">Aprenentatge cooperatiu</option>
+                                <option value="Gamificació">Gamificació</option>
+                                <option value="Aula Invertida (Flipped Classroom)">Aula Invertida (Flipped Classroom)</option>
+                                <option value="Design Thinking">Design Thinking</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="adaptacion" class="block text-sm font-medium text-gray-700 mb-2">Adaptació per a NEAE (Opcional)</label>
+                            <select id="adaptacion" name="adaptacion" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Cap</option>
+                                <option value="Altes Capacitats (ALCAIN)">Altes Capacitats (ALCAIN)</option>
+                                <option value="Dificultats d'Aprenentatge (DEA)">Dificultats d'Aprenentatge (DEA)</option>
+                                <option value="TDAH">TDAH</option>
+                                <option value="TEA">TEA</option>
+                                <option value="Dislèxia">Dislèxia</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-auto pt-6">
+                    <button id="generate-button" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition shadow-md">
+                        Generar Prompt JSON
+                    </button>
+                </div>
+            </div>
+
+            <!-- Columna del Prompt Generat (inicialment oculta) -->
+            <div id="prompt-output-container" class="sticky top-8 self-start hidden">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Prompt JSON Generat</h2>
+                    <div class="relative">
+                        <textarea id="output-prompt" rows="15" class="w-full p-3 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition font-mono text-sm" readonly placeholder="El resultat apareixerà aquí..."></textarea>
+                        <button id="copy-button" class="absolute top-3 right-3 bg-indigo-600 text-white py-1 px-3 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                            Copiar
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Aquest JSON es pot fer servir per alimentar API o altres eines.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center p-4 bg-gray-200 text-gray-600 text-sm">
+        <p>Aplicació feta per Pablo G. Guízar i Raül Torres</p>
+        <p>Aquesta obra està sota una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-indigo-600">llicència Creative Commons BY-SA</a>.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Referències a elements del DOM
+            const form = document.getElementById('prompt-form');
+            const etapaContainer = document.getElementById('etapa-container');
+            const nivelesMateriasContainer = document.getElementById('niveles-materias-container');
+            const outputPrompt = document.getElementById('output-prompt');
+            const copyButton = document.getElementById('copy-button');
+            const generateButton = document.getElementById('generate-button');
+            const mainGrid = document.getElementById('main-grid');
+            const promptOutputContainer = document.getElementById('prompt-output-container');
+
+            // Dades per als camps dinàmics (currículum de Catalunya)
+            const data = {
+                Infantil: {
+                    nivel: { label: 'Nivell', options: ['Primer Cicle', 'Segon Cicle'] },
+                    materia: { label: 'Àrea', options: ['Creixement en Harmonia', 'Descoberta i Exploració de l’Entorn', 'Comunicació i Representació de la Realitat'] },
+                    decreto: 'DECRET 175/2022, d’ordenació dels ensenyaments de l’educació infantil.'
+                },
+                Primaria: {
+                    nivel: { label: 'Nivell', options: ['1r Primària', '2n Primària', '3r Primària', '4t Primària', '5è Primària', '6è Primària'] },
+                    materia: { label: 'Matèria', options: ['Coneixement del Medi Natural, Social i Cultural', 'Educació Artística', 'Llengua Catalana i Literatura', 'Llengua Castellana i Literatura', 'Matemàtiques', 'Educació en Valors Cívics i Ètics'] },
+                    decreto: 'DECRET 175/2022, d’ordenació dels ensenyaments de l’educació bàsica.'
+                },
+                Secundaria: {
+                    nivel: { label: 'Nivell', options: ['1r ESO', '2n ESO', '3r ESO', '4t ESO'] },
+                    materia: { label: 'Matèria', options: ['Biologia i Geologia', 'Digitalització', 'Educació Física', 'Física i Química', 'Geografia i Història', 'Llengua Catalana i Literatura', 'Llengua Castellana i Literatura', 'Matemàtiques', 'Música', 'Tecnologia i Digitalització'] },
+                    decreto: 'DECRET 175/2022, d’ordenació dels ensenyaments de l’educació bàsica.'
+                },
+                Batxillerat: {
+                    nivel: { label: 'Nivell', options: ['1r Batxillerat', '2n Batxillerat'] },
+                    materia: { label: 'Matèria', options: ['Biologia, Geologia i Ciències Ambientals', 'Dibuix Tècnic I', 'Física i Química', 'Història d\'Espanya', 'Història de la Filosofia', 'Llengua Catalana i Literatura I', 'Llengua Castellana i Literatura I', 'Matemàtiques I', 'Tecnologia i Enginyeria I'] },
+                    decreto: 'DECRET 175/2022, d’ordenació dels ensenyaments de batxillerat.'
+                }
+            };
+            
+            // Funció per crear camps dinàmics
+            function createDynamicFields(etapa) {
+                nivelesMateriasContainer.innerHTML = '';
+                if (!data[etapa]) return;
+
+                const etapaData = data[etapa];
+
+                const nivelDiv = document.createElement('div');
+                nivelDiv.className = 'form-section';
+                let nivelOptionsHTML = etapaData.nivel.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                nivelDiv.innerHTML = `
+                    <label for="nivel" class="block text-sm font-medium text-gray-700 mb-2">${etapaData.nivel.label}</label>
+                    <select id="nivel" name="nivel" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        ${nivelOptionsHTML}
+                    </select>
+                `;
+                nivelesMateriasContainer.appendChild(nivelDiv);
+
+                const materiaDiv = document.createElement('div');
+                materiaDiv.className = 'form-section';
+                let materiaOptionsHTML = etapaData.materia.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                materiaDiv.innerHTML = `
+                    <label for="materia" class="block text-sm font-medium text-gray-700 mb-2">${etapaData.materia.label}</label>
+                    <select id="materia" name="materia" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        ${materiaOptionsHTML}
+                    </select>
+                `;
+                nivelesMateriasContainer.appendChild(materiaDiv);
+            }
+
+            // Funció per generar el prompt JSON
+            function generatePrompt() {
+                const formData = new FormData(form);
+                const etapa = formData.get('etapa');
+
+                if (!etapa) {
+                    alert('Si us plau, selecciona una etapa educativa per començar.');
+                    return;
+                }
+                
+                const promptObject = {
+                    context: {
+                        role: formData.get('rol'),
+                        subject: formData.get('materia'),
+                        level: {
+                            stage: etapa,
+                            grade: formData.get('nivel')
+                        }
+                    },
+                    task: {
+                        type: formData.get('tarea'),
+                        topic: formData.get('tema')
+                    },
+                    options: {
+                        framework: data[etapa].decreto
+                    }
+                };
+
+                const metodologia = formData.get('metodologia');
+                if (metodologia) {
+                    promptObject.options.methodology = metodologia;
+                }
+
+                const adaptacion = formData.get('adaptacion');
+                if (adaptacion) {
+                    promptObject.options.adaptation = adaptacion;
+                }
+                
+                outputPrompt.value = JSON.stringify(promptObject, null, 4);
+
+                // Mostrar el panell de resultats si està ocult
+                if (promptOutputContainer.classList.contains('hidden')) {
+                    mainGrid.classList.remove('justify-center');
+                    mainGrid.classList.add('lg:grid-cols-2');
+                    promptOutputContainer.classList.remove('hidden');
+                    promptOutputContainer.classList.add('fade-in');
+                }
+            }
+
+            // Event listener per al botó de generar
+            generateButton.addEventListener('click', generatePrompt);
+            
+            // Event listener per als radio buttons d'etapa
+            etapaContainer.addEventListener('change', (e) => {
+                if (e.target.name === 'etapa') {
+                    createDynamicFields(e.target.value);
+                }
+            });
+
+            // Event listener per al botó de copiar
+            copyButton.addEventListener('click', () => {
+                if (!outputPrompt.value) return;
+                
+                outputPrompt.select();
+                outputPrompt.setSelectionRange(0, 99999);
+                
+                try {
+                    document.execCommand('copy');
+                    const originalText = copyButton.textContent;
+                    copyButton.textContent = 'Copiat!';
+                    copyButton.classList.add('bg-green-500', 'hover:bg-green-600');
+                    copyButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                    
+                    setTimeout(() => {
+                        copyButton.textContent = originalText;
+                        copyButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+                        copyButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Error en copiar el text: ', err);
+                    alert('No s\'ha pogut copiar el text. Si us plau, fes-ho manualment.');
+                }
+                
+                window.getSelection().removeAllRanges();
+            });
+            
+        });
+    </script>
+</body>
+</html>
