@@ -1,0 +1,5 @@
+{
+  "name": "EditImage",
+  "description": "Una herramienta para editar imágenes usando IA. Sube una foto, haz clic en cualquier lugar y escribe un comando para transformarla. Soporta español, catalán e inglés.",
+  "requestFramePermissions": []
+}
