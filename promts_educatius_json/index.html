@@ -143,6 +143,19 @@
                         </button>
                     </div>
                     <p class="text-xs text-gray-500 mt-2">Aquest JSON es pot fer servir per alimentar API o altres eines.</p>
+                    
+                    <div id="chatbot-launcher" class="mt-4 pt-4 border-t border-gray-200">
+                        <label for="chatbot-selector" class="block text-sm font-medium text-gray-700 mb-2">Enviar prompt a:</label>
+                        <select id="chatbot-selector" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Selecciona un xatbot...</option>
+                            <option value="chatgpt">ChatGPT</option>
+                            <option value="le-chat">Le Chat (Mistral)</option>
+                            <option value="copilot">Microsoft Copilot</option>
+                            <option value="perplexity">Perplexity</option>
+                            <option value="claude">Claude</option>
+                        </select>
+                        <p id="copy-feedback" class="text-sm text-green-600 mt-2 h-5"></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,6 +177,8 @@
             const generateButton = document.getElementById('generate-button');
             const mainGrid = document.getElementById('main-grid');
             const promptOutputContainer = document.getElementById('prompt-output-container');
+            const chatbotSelector = document.getElementById('chatbot-selector');
+            const copyFeedback = document.getElementById('copy-feedback');
 
             // Datos para los campos dinámicos
             const data = {
@@ -215,6 +230,7 @@
                     <select id="materia" name="materia" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                         ${materiaOptionsHTML}
                     </select>
+                    <input type="text" id="materia-text" name="materia-text" placeholder="O escriu una opció personalitzada..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-2">
                 `;
                 nivelesMateriasContainer.appendChild(materiaDiv);
             }
@@ -238,11 +254,12 @@
                 const taskValue = formData.get('tarea-text').trim() || formData.get('tarea');
                 const metodologiaValue = formData.get('metodologia-text').trim() || formData.get('metodologia');
                 const adaptacionValue = formData.get('adaptacion-text').trim() || formData.get('adaptacion');
+                const materiaValue = formData.get('materia-text').trim() || formData.get('materia');
 
                 const promptObject = {
                     context: {
                         role: formData.get('rol'),
-                        subject: formData.get('materia'),
+                        subject: materiaValue,
                         level: {
                             stage: etapa,
                             grade: formData.get('nivel')
@@ -309,6 +326,64 @@
             });
 
             copyButton.addEventListener('click', copyToClipboard);
+
+            chatbotSelector.addEventListener('change', (e) => {
+                const chatbotId = e.target.value;
+                const promptValue = outputPrompt.value;
+
+                if (!chatbotId || !promptValue || promptValue.startsWith('Si us plau, selecciona')) {
+                    e.target.value = '';
+                    return;
+                }
+                
+                const encodedPrompt = encodeURIComponent(promptValue);
+                let finalUrl = '';
+
+                switch (chatbotId) {
+                    case 'chatgpt':
+                        finalUrl = `https://chatgpt.com/?q=${encodedPrompt}`;
+                        break;
+                    case 'le-chat':
+                        finalUrl = `https://chat.mistral.ai/chat/?q=${encodedPrompt}`;
+                        break;
+                    case 'copilot':
+                        finalUrl = `https://copilot.microsoft.com/?q=${encodedPrompt}`;
+                        break;
+                    case 'perplexity':
+                        finalUrl = `https://www.perplexity.ai/?q=${encodedPrompt}`;
+                        break;
+                    case 'claude':
+                        finalUrl = `https://claude.ai/new?q=${encodedPrompt}`;
+                        break;
+                    default:
+                        e.target.value = '';
+                        return;
+                }
+
+                // Always copy to clipboard as a fallback
+                try {
+                    outputPrompt.select();
+                    outputPrompt.setSelectionRange(0, 99999);
+                    document.execCommand('copy');
+                    copyFeedback.textContent = 'Prompt enviat i copiat al porta-retalls.';
+
+                } catch (err) {
+                    console.error('Error en copiar el text: ', err);
+                    copyFeedback.textContent = 'Error en copiar. Si us plau, fes-ho manualment.';
+                }
+                
+                setTimeout(() => {
+                    copyFeedback.textContent = '';
+                }, 3000);
+                
+                window.getSelection().removeAllRanges();
+
+                // Open chatbot in new tab
+                window.open(finalUrl, '_blank');
+
+                // Reset selector
+                e.target.value = '';
+            });
             
         });
     </script>
