@@ -77,43 +77,7 @@ function randomWithDigits(d){
   return Math.floor(Math.random()*900)+100; // 100..999
 }
 
-function newSum(){
-  const digits = parseInt($('#sumes-digits').value,10);
-  state.sumes.digits = digits;
-  const a = randomWithDigits(digits);
-  const b = randomWithDigits(digits);
-  state.sumes.a = a; state.sumes.b = b;
-  $('#sum-a').textContent = a;
-  $('#sum-b').textContent = b;
-  $('#sum-answer').value = '';
-  setFeedback('#sumes-feedback');
-}
 
-function checkSum(){
-  const {a,b} = state.sumes;
-  if(a==null||b==null) return;
-  const ans = ($('#sum-answer').value||'').replace(/\s+/g,'');
-  if(!/^\d+$/.test(ans)){
-    setFeedback('#sumes-feedback','Escriu un nombre vàlid.', false);
-    return;
-  }
-  const ok = parseInt(ans,10) === (a+b);
-  setFeedback('#sumes-feedback', ok ? 'Genial! 🎉' : `Revisa-ho: prova de sumar unitats, desenes i centenes.`, ok);
-  updateScore(ok);
-}
-
-
-
-// ÀBAC (descomposició)
-function bead(count){
-  const frag = document.createDocumentFragment();
-  for(let i=0;i<count;i++){
-    const b = document.createElement('div');
-    b.className = 'bead';
-    frag.appendChild(b);
-  }
-  return frag;
-}
 
 function renderAbacus(c, d, u) {
   const cTrack = $('[data-abacus-col="C"]');
@@ -182,16 +146,7 @@ function renderSum(){
   }
 }
 
-function newSum(){
-  const digits = parseInt($('#sumes-digits').value,10);
-  state.sumes.digits = digits;
-  const a = randomWithDigits(digits);
-  const b = randomWithDigits(digits);
-  state.sumes.a = a; state.sumes.b = b;
-  renderSum();
-  setFeedback('#sumes-feedback');
-  setTimeout(()=> $('#ans-u').focus(), 0);
-}
+
 
 function readAnsInputs(){
   const h = $('#ans-h').value.trim();
@@ -203,6 +158,10 @@ function readAnsInputs(){
   if([hv,tv,uv].some(v=> Number.isNaN(v) || v<0 || v>9)) return null;
   return hv*100 + tv*10 + uv;
 }
+
+
+
+
 
 function checkSum(){
   const {a,b} = state.sumes;
@@ -217,10 +176,11 @@ function checkSum(){
   updateScore(ok);
 }
 
-// Sumes events
 $('#sumes-digits').addEventListener('change', newSum);
 $('#sumes-new').addEventListener('click', newSum);
 $('#sumes-check').addEventListener('click', checkSum);
+
+
 
 $('#sumes-next').addEventListener('click', newSum);
 ['#ans-h','#ans-t','#ans-u'].forEach(sel=>{
@@ -322,13 +282,15 @@ $$('.arrow-btn').forEach(btn => {
 });
 newDescomp();
 newSum();
+
 updateScore(null);
 // --- Afegits: millores de sumes ---
 // Genera operands evitant desbordament a milers quan són 3 xifres
 function genOperands(d){
   if(d===2){
-    const a = Math.floor(Math.random()*90)+10;
-    const b = Math.floor(Math.random()*90)+10;
+    const a = Math.floor(Math.random() * 80) + 10; // a is 10-89
+    const maxB = 99 - a;
+    const b = Math.floor(Math.random() * (maxB - 10 + 1)) + 10;
     return [a,b];
   }
   let a = Math.floor(Math.random()*800)+100; // 100..899 per garantir marge
@@ -338,7 +300,8 @@ function genOperands(d){
   return [a,b];
 }
 
-// Sobreescriu newSum per usar genOperands i focalitzar unitats
+
+
 function newSum(){
   const digits = parseInt($('#sumes-digits').value,10);
   state.sumes.digits = digits;
@@ -354,6 +317,7 @@ function newSum(){
   setFeedback('#sumes-feedback');
   setTimeout(()=> $('#ans-u') ? $('#ans-u').focus() : undefined, 0);
 }
+
 
 
 
