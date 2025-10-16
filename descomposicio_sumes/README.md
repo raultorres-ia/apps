@@ -8,7 +8,6 @@ Aplicació web senzilla per practicar la descomposició de nombres i les sumes (
 - Pestanyes disponibles:
   - "Descomposició": descompon nombres en centenes, desenes i unitats.
   - "Sumes": resol sumes verticals amb 2 o 3 xifres.
-  - "Mode lliure": tria el nombre o la suma a treballar.
 
 ## Idees didàctiques
 
@@ -19,7 +18,6 @@ Aplicació web senzilla per practicar la descomposició de nombres i les sumes (
 ## Personalització
 
 - Dificultat de descomposició: 0–99, 100–499 o 500–999.
-- Sumes: 2 o 3 xifres, amb generació aleatòria o suma definida al "Mode lliure".
 
 ## Crèdits
 
