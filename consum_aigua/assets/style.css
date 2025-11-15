@@ -1,0 +1,238 @@
+/*
+Estètica per a nens - Estil renovat
+*/
+
+/* 1. Variables i configuració general */
+:root {
+  --font-family: 'Nunito', sans-serif;
+  --primary-color: #00a8e8; /* Blau brillant i alegre */
+  --secondary-color: #fdfdfd; /* Blanc per a fons de targetes */
+  --accent-color: #ffd60a; /* Groc per a detalls importants */
+  --text-color: #4a4a4a; /* Gris fosc, més suau que el negre */
+  --background-color: #f0f8ff; /* Blau cel molt clar (AliceBlue) */
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --danger-color: #ff5c5c;
+
+  --border-radius: 12px;
+  --shadow: 0 4px 12px var(--shadow-color);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%; /* 16px */
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  padding-bottom: 4rem;
+}
+
+/* 2. Capçalera i peu de pàgina */
+.app-header,
+.app-footer {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.app-header {
+  background-color: var(--primary-color);
+  color: white;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.app-footer {
+  margin-top: 2rem;
+  color: #888;
+}
+
+/* 3. Contingut principal i botons */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.tools {
+  text-align: right;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 99px; /* Botons ben rodons */
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+  background-color: var(--accent-color);
+  color: var(--text-color);
+}
+
+/* 4. Estils per a la taula (pantalles grans) */
+.table-wrap {
+  display: none; /* Ocult per defecte, es mostra en pantalles grans */
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden; /* Per mantenir els radis de la cantonada */
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table thead {
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 1.1rem;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.table tbody tr:hover {
+  background-color: #eaf6ff;
+}
+
+.table tfoot {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.table tfoot #totalLitres {
+  color: var(--primary-color);
+}
+
+/* 5. Estils per a les targetes (pantalles petites) */
+.cards {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card .title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.card .muted {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.card .chip {
+  background-color: #e0f7fa;
+  color: #007c91;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.card .row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.card .total-box {
+  grid-column: span 2;
+  text-align: center;
+  background-color: #f0f8ff;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.card .litres {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* 6. Estils per als camps d'entrada */
+input[type='number'] {
+  font-family: var(--font-family);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background-color: #fcfcfc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type='number']:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2);
+}
+
+/* 7. Utilitats i alineació */
+.center {
+  text-align: center;
+}
+.right {
+  text-align: right;
+}
+
+/* 8. Media Queries per a la responsivitat */
+@media (min-width: 769px) {
+  .table-wrap {
+    display: block; /* Mostra la taula en pantalles grans */
+  }
+  .cards {
+    display: none; /* Amaga les targetes en pantalles grans */
+  }
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Consum d'aigua - 3r de primària</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>L'aigua és vida 💧</h1>
+      <p>Completa el consum d'aigua del cap de setmana a casa teva.</p>
+    </header>
+
+    <main class="container">
+      <section class="tools">
+        <button id="resetBtn" class="btn btn-secondary">Reinicia</button>
+      </section>
+
+      <!-- Vista taula per pantalles grans -->
+      <section class="table-wrap" aria-label="Taula de consum">
+        <table class="table" id="consumTable">
+          <thead>
+            <tr>
+              <th>Activitat o aparell</th>
+              <th class="center">Consum per ús (L)</th>
+              <th class="center">Vegades dissabte</th>
+              <th class="center">Vegades diumenge</th>
+              <th class="center">Consum familiar (L)</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" class="right"><strong>Total cap de setmana (L)</strong></td>
+              <td class="center"><strong id="totalLitres">0</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+
+      <!-- Vista targetes per mòbil -->
+      <section class="cards" id="cards"></section>
+    </main>
+
+    <footer class="app-footer">
+      <small>Aplicació creada per Raül Torres</small>
+    </footer>
+
+    <script src="assets/app.js"></script>
+  </body>
+  </html>
