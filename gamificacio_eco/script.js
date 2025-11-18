@@ -256,7 +256,25 @@ function mostrarCelebracio() {
     ? guardada.trim()
     : recompensaText || "D'on ve l'Eco?";
 
-  elModalRecompensa.textContent = `Recompensa cooperativa: ${text}`;
+  // Neteja contingut anterior del missatge
+  elModalRecompensa.textContent = "";
+
+  // Si el text és el predeterminat, no el mostrem per evitar "Recompensa cooperativa: D'on ve l'Eco?"
+  const DEFAULT_TXT = "D'on ve l'Eco?";
+  if (text && text !== DEFAULT_TXT) {
+    elModalRecompensa.appendChild(document.createTextNode(`Recompensa cooperativa: ${text}`));
+    elModalRecompensa.appendChild(document.createElement("br"));
+  }
+
+  // Afegim l'enllaç a la pàgina de recompensa
+  const link = document.createElement("a");
+  link.className = "btn";
+  link.href = "https://sites.google.com/xtec.cat/historia-eco/p%C3%A0gina-principal?authuser=1";
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = "Accedeix a la recompensa cooperativa";
+  elModalRecompensa.appendChild(link);
+
   elModal.setAttribute("aria-hidden", "false");
 
   // Portem el focus al botó de tancar per accessibilitat
