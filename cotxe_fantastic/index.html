@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor 3D - Máximo Brillo</title>
+    <style>
+        body { margin: 0; background-color: #f7f7f7; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; }
+        #ui {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9); padding: 10px 25px;
+            border-radius: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            pointer-events: none; color: #333; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">Modelo 3D con Iluminación Reforzada</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf7f7f7); 
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // --- CONFIGURACIÓN DE BRILLO EXTREMO ---
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 2.2; // Brillo muy alto
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        
+        document.body.appendChild(renderer.domElement);
+
+        // --- SISTEMA DE LUCES 360 ---
+        // 1. Luz Ambiental (base fuerte)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.8); 
+        scene.add(ambientLight);
+
+        // 2. Luz de Hemisferio (brillo desde arriba)
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1.2);
+        scene.add(hemiLight);
+
+        // 3. Luz Frontal Principal
+        const sunLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        sunLight.position.set(5, 10, 7.5);
+        scene.add(sunLight);
+
+        // 4. Luz de Relleno Trasera (para iluminar los lados oscuros)
+        const backLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        backLight.position.set(-5, 5, -5);
+        scene.add(backLight);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        const loader = new GLTFLoader();
+        
+        loader.load('textured_mesh.glb', (gltf) => {
+            const model = gltf.scene;
+
+            // Centrado automático mejorado
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            
+            model.position.sub(center);
+            scene.add(model);
+            
+            // Posicionar cámara según tamaño
+            const maxDim = Math.max(size.x, size.y, size.z);
+            camera.position.set(maxDim * 1.5, maxDim, maxDim * 2);
+            controls.target.set(0, 0, 0);
+            camera.updateProjectionMatrix();
+        }, 
+        undefined, 
+        (error) => { console.error("Error:", error); });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
