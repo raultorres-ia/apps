@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Explora l'Univers 3D — Primària</title>
+  <meta name="description" content="Sistema solar 3D interactiu explicat per a nens i nenes de primària, en català.">
+
+  <!-- Three.js + OrbitControls (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+
+  <style>
+    :root {
+      --bg-space: #0b0d17;
+      --text-main: #ffffff;
+      --text-secondary: #a0a0a0;
+      --accent-color: #ffd700;
+      --panel-bg: rgba(20, 24, 40, 0.95);
+      --button-bg: #2c3e50;
+      --button-hover: #34495e;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --border-radius: 16px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0; background: var(--bg-space); color: var(--text-main);
+      font-family: var(--font-family); overflow: hidden; height: 100vh;
+    }
+
+    header {
+      position: absolute; top: 0; left: 0; right: 0; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 var(--spacing-md); background: rgba(0,0,0,0.3); z-index: 10;
+    }
+    h1 { margin: 0; font-size: 1.1rem; color: var(--accent-color); }
+    .header-controls { display: flex; gap: var(--spacing-sm); }
+
+    #app-container { position: relative; width: 100%; height: 100%; }
+    #visualization-area { width: 100%; height: 100%; cursor: grab; }
+    #visualization-area:active { cursor: grabbing; }
+    canvas { display: block; width: 100%; height: 100%; }
+
+    .floating-controls {
+      position: absolute; left: 50%; bottom: var(--spacing-md);
+      transform: translateX(-50%);
+      background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px; padding: 8px 14px; display: flex; gap: 14px; z-index: 10;
+      align-items: center; width: calc(100% - 32px); max-width: 520px;
+      backdrop-filter: blur(5px);
+    }
+    .zoom-controls { position: absolute; right: var(--spacing-md); bottom: 110px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+
+    #info-panel {
+      position: absolute; top: 0; right: 0; width: 100%; height: 100%;
+      background: var(--panel-bg); transform: translateX(100%);
+      transition: transform .3s ease; z-index: 20; padding: 80px var(--spacing-lg) var(--spacing-lg);
+      display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+      border-left: 1px solid rgba(255,255,255,0.1);
+    }
+    #info-panel.active { transform: translateX(0); }
+    @media (min-width: 900px) { #info-panel { width: 360px; } }
+
+    .planet-header { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 2px solid rgba(255,255,255,0.1); }
+    .planet-icon-large { width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+    .data-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { background: #34495e; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 0.85rem; }
+    .fact-card { background: rgba(255,255,255,0.05); border-radius: var(--border-radius); padding: var(--spacing-md); }
+    .fact-card h3 { margin: 0 0 8px; color: var(--accent-color); font-size: 1rem; }
+    .fact-list { padding-left: 18px; line-height: 1.5; }
+    .curiosity-box { background: rgba(255,215,0,0.1); border: 1px solid var(--accent-color); border-radius: var(--border-radius); padding: var(--spacing-md); font-style: italic; margin-top: auto; }
+    .btn-close-panel { align-self: flex-end; }
+
+    button { background: var(--button-bg); color: #fff; border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; transition: background .2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    button:hover { background: var(--button-hover); }
+    button.icon-only { width: 44px; height: 44px; border-radius: 50%; padding: 10px; }
+    .slider-container { display: flex; align-items: center; gap: 10px; flex: 1; }
+    input[type=range] { width: 100%; accent-color: var(--accent-color); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity .25s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-content { background: #1a1e36; padding: var(--spacing-lg); border-radius: var(--border-radius); width: 90%; max-width: 420px; border: 2px solid var(--accent-color); text-align: center; }
+    .challenge-options { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .option-btn.correct { background: #27ae60; }
+    .option-btn.wrong { background: #c0392b; }
+    .footer-credit { position: absolute; bottom: 6px; right: 10px; font-size: .7rem; color: rgba(255,255,255,0.35); }
+    .icon { width: 20px; height: 20px; fill: currentColor; }
+    #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent-color); }
+
+    /* Peu legal */
+    .legal-footer {
+      position: absolute; left: 10px; right: 10px; bottom: 6px; z-index: 11;
+      font-size: .78rem; line-height: 1.35; color: rgba(255,255,255,0.85);
+      background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 8px 10px;
+    }
+    .legal-footer a { color: var(--accent-color); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Explora l'Univers 3D</h1>
+    <div class="header-controls">
+      <button class="icon-only" id="btn-challenge" aria-label="Reptes">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+      </button>
+      <button class="icon-only" id="btn-motion" aria-label="Reduir moviment">
+        <svg class="icon" id="icon-motion" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </button>
+      <button class="icon-only" id="btn-help" aria-label="Ajuda">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="app-container">
+    <div id="loading">Carregant l'espai 3D...</div>
+    <div id="visualization-area"></div>
+
+    <div class="floating-controls">
+      <button id="btn-restart" aria-label="Reinicia vista">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+      </button>
+      <div class="slider-container">
+          <label for="speed-slider">Velocitat:</label>
+          <input type="range" id="speed-slider" min="0" max="5" step="0.25" value="2">
+      </div>
+    </div>
+
+    <div class="zoom-controls">
+      <button class="icon-only" id="btn-zoom-in" aria-label="Apropar">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </button>
+      <button class="icon-only" id="btn-zoom-out" aria-label="Allunyar">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+      </button>
+    </div>
+
+    <div class="footer-credit">Activitat educativa en català</div>
+
+    <div class="legal-footer" id="legal-footer">
+      <div>Explora l'Unvers 3D<br>
+        2026 Raül Torres · Recurs: 
+        <a href="https://raultorres-ia.github.io/apps/univers3d/index.html" target="_blank" rel="noopener">https://raultorres-ia.github.io/apps/univers3d/index.html</a>
+      </div>
+      <div style="margin-top:6px;">
+        El codi d'aquesta aplicació està disponible sota la llicència AGPL v3. Consulteu el text complet a 
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">https://www.gnu.org/licenses/agpl-3.0.html</a>.
+      </div>
+      <div>
+        Els continguts educatius (textos, exercicis, vídeos i imatges) tenen la llicència CC BY-SA 4.0. Consulteu el text complet a 
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">https://creativecommons.org/licenses/by-sa/4.0/</a>.
+      </div>
+    </div>
+
+    <aside id="info-panel" role="dialog" aria-modal="true">
+      <button class="btn-close-panel" id="btn-close-panel">Tancar ✕</button>
+      <div class="planet-header">
+        <div id="panel-icon" class="planet-icon-large"></div>
+        <h2 id="panel-title">Planeta</h2>
+      </div>
+      <div class="data-tags" id="panel-tags"></div>
+      <div class="fact-card">
+        <h3>Dades interessants</h3>
+        <ul class="fact-list" id="panel-facts"></ul>
+      </div>
+      <div class="curiosity-box">
+        <p id="panel-curiosity">Sabies que...?</p>
+      </div>
+      <button id="btn-quiz-planet" style="margin-top: 12px; width: 100%; background: var(--accent-color); color: #000; font-weight: 700;">Jugar al repte!</button>
+    </aside>
+  </div>
+
+  <div id="modal-help" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <h2>Com es juga?</h2>
+      <ul>
+        <li>Arrossega amb el dit o el ratolí per girar la càmera.</li>
+        <li>Toca o clica un planeta per obrir la seva fitxa.</li>
+        <li>Usa el control de velocitat per fer les òrbites més lentes o ràpides.</li>
+        <li>Amb el zoom t'apropes per veure detalls.</li>
+      </ul>
+      <button id="close-help">Entesos!</button>
+    </div>
+  </div>
+
+  <div id="modal-challenge" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <h2 id="challenge-title">Micro repte</h2>
+      <div id="challenge-progress" style="opacity:.9; font-size:.9rem; margin-bottom:6px;">Pregunta 1/1</div>
+      <p id="challenge-question">Pregunta...</p>
+      <div class="challenge-options" id="challenge-options"></div>
+      <div class="feedback-msg" id="challenge-feedback"></div>
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:10px;">
+        <button id="next-question">Següent</button>
+        <button id="close-challenge">Tancar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dades senzilles del sistema solar (escala educativa, no real)
+    const SOLAR_SYSTEM = [
+      { id: 'sol', name: 'Sol', type: 'estrella', radius: 14, orbitRadius: 0, orbitSpeed: 0, color: 0xffd04d, emissive: 0xff9900,
+        facts: ['És una estrella que ens dona llum i calor.', 'Sense el Sol no hi hauria vida a la Terra.'],
+        data: ['Tipus: Estrella', 'Temperatura: molt alta'],
+        curiosity: 'Al Sol hi cabrien més d’un milió de Terres!',
+        challenge: { q: 'Què ens dona principalment el Sol?', options: ['Llum i calor','Aigua','Roca'], correct: 'Llum i calor' }
+      },
+      { id: 'mercuri', name: 'Mercuri', radius: 2, orbitRadius: 28, orbitSpeed: 0.03, color: 0xa5a5a5,
+        facts: ['És el planeta més proper al Sol.', 'És petit i rocós.'],
+        data: ['Tipus: Planeta rocós','Lluna: 0'],
+        curiosity: 'El seu any dura uns 88 dies terrestres.',
+        challenge: { q: 'Quin és el planeta més proper al Sol?', options: ['Mercuri','Mart','Neptú'], correct: 'Mercuri' }
+      },
+      { id: 'venus', name: 'Venus', radius: 3, orbitRadius: 40, orbitSpeed: 0.024, color: 0xe1b16a,
+        facts: ['És molt calent per la seva atmosfera.', 'És de mida semblant a la Terra.'],
+        data: ['Tipus: Planeta rocós','Lluna: 0'],
+        curiosity: 'Gira molt lentament sobre si mateix.',
+        challenge: { q: 'Quin planeta té una mida semblant a la Terra?', options: ['Venus','Urà','Júpiter'], correct: 'Venus' }
+      },
+      { id: 'terra', name: 'Terra', radius: 3.2, orbitRadius: 56, orbitSpeed: 0.02, color: 0x2a84ff,
+        facts: ['El nostre planeta!', 'Té molta aigua i una única Lluna.'],
+        data: ['Tipus: Planeta rocós','Lluna: 1'],
+        curiosity: 'Només aquí hem trobat vida, de moment!',
+        challenge: { q: 'Quantes llunes té la Terra?', options: ['1','2','Cap'], correct: '1' }
+      },
+      { id: 'mart', name: 'Mart', radius: 2.4, orbitRadius: 70, orbitSpeed: 0.016, color: 0xc1440e,
+        facts: ['Se’l coneix com el planeta vermell.', 'Té muntanyes gegants com l’Olimp.'],
+        data: ['Tipus: Planeta rocós','Llunes: 2'],
+        curiosity: 'El seu sòl té molt òxid de ferro.',
+        challenge: { q: 'De quin color és conegut Mart?', options: ['Vermell','Blau','Verd'], correct: 'Vermell' }
+      },
+      { id: 'jupiter', name: 'Júpiter', radius: 7, orbitRadius: 95, orbitSpeed: 0.009, color: 0xd8b07b,
+        facts: ['És el planeta més gran.', 'Té una gran taca vermella.'],
+        data: ['Tipus: Gegant gasós','Moltes Llunes'],
+        curiosity: 'Podria contenir més de 1.300 Terres.',
+        challenge: { q: 'Quin és el planeta més gran?', options: ['Júpiter','Saturn','Neptú'], correct: 'Júpiter' }
+      },
+      { id: 'saturn', name: 'Saturn', radius: 6, orbitRadius: 120, orbitSpeed: 0.007, color: 0xe8d39b,
+        facts: ['Famosos anells de gel i roca.', 'És un gegant gasós.'],
+        data: ['Tipus: Gegant gasós','Moltes Llunes'],
+        curiosity: 'Els seus anells són molt amples però molt prims.',
+        challenge: { q: 'Quin planeta té anells molt visibles?', options: ['Saturn','Mart','Venus'], correct: 'Saturn' }
+      },
+      { id: 'ura', name: 'Urà', radius: 5, orbitRadius: 145, orbitSpeed: 0.005, color: 0x7bd1d1,
+        facts: ['Gira de costat!', 'És molt fred.'],
+        data: ['Tipus: Gegant gelat','Moltes Llunes'],
+        curiosity: 'El seu eix està gairebé horitzontal.',
+        challenge: { q: 'Quin planeta gira gairebé de costat?', options: ['Urà','Terra','Mercuri'], correct: 'Urà' }
+      },
+      { id: 'neptu', name: 'Neptú', radius: 5, orbitRadius: 165, orbitSpeed: 0.004, color: 0x4666ff,
+        facts: ['Vents molt forts.', 'És un gegant gelat.'],
+        data: ['Tipus: Gegant gelat','Moltes Llunes'],
+        curiosity: 'És molt lluny del Sol.',
+        challenge: { q: 'Quin planeta és molt lluny del Sol?', options: ['Neptú','Venus','Mercuri'], correct: 'Neptú' }
+      }
+    ];
+
+    // Elements UI
+    const el = (id) => document.getElementById(id);
+    const area = el('visualization-area');
+    const loading = el('loading');
+    const panel = el('info-panel');
+    const panelTitle = el('panel-title');
+    const panelIcon = el('panel-icon');
+    const panelTags = el('panel-tags');
+    const panelFacts = el('panel-facts');
+    const panelCuriosity = el('panel-curiosity');
+
+    // Escena 3D bàsica
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 2000);
+    camera.position.set(0, 40, 140);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    area.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 40;
+    controls.maxDistance = 320;
+
+    // Llum: Sol com a punt de llum + ambiental suau
+    const ambient = new THREE.AmbientLight(0x404040, 1.6);
+    scene.add(ambient);
+    const sunLight = new THREE.PointLight(0xffffff, 2, 0, 2);
+    scene.add(sunLight);
+
+    // Estrelles de fons
+    function createStarField(count = 2000) {
+      const geo = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        const r = 800 * Math.cbrt(Math.random());
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        positions[i*3+0] = r * Math.sin(phi) * Math.cos(theta);
+        positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+        positions[i*3+2] = r * Math.cos(phi);
+      }
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 1, sizeAttenuation: true, opacity: 0.8, transparent: true });
+      return new THREE.Points(geo, mat);
+    }
+    scene.add(createStarField());
+
+    // Crear cossos del sistema
+      const pivots = []; // grups de rotació orbital
+    const meshes = []; // per a picking
+    const planetByMeshId = new Map();
+
+    function addOrbitRing(radius, color = 0x333333) {
+      const segments = 128;
+      const geo = new THREE.BufferGeometry();
+      const positions = [];
+      for (let i = 0; i <= segments; i++) {
+        const a = i / segments * Math.PI * 2;
+        positions.push(Math.cos(a) * radius, 0, Math.sin(a) * radius);
+      }
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.35 });
+      const line = new THREE.LineLoop(geo, mat);
+      scene.add(line);
+    }
+
+    SOLAR_SYSTEM.forEach((p) => {
+      if (p.orbitRadius > 0) addOrbitRing(p.orbitRadius);
+      const pivot = new THREE.Object3D();
+      scene.add(pivot);
+      pivots.push({ pivot, data: p });
+
+      const geo = new THREE.SphereGeometry(p.radius, 32, 16);
+      const mat = new THREE.MeshStandardMaterial({ color: p.color, emissive: p.emissive || 0x000000, roughness: 0.8, metalness: 0.0 });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.x = p.orbitRadius;
+      mesh.userData = { id: p.id };
+      pivot.add(mesh);
+      if (p.id === 'sol') { sunLight.position.copy(mesh.position); }
+      meshes.push(mesh);
+        planetByMeshId.set(mesh.id, p);
+        // desa el mesh a l'entrada del pivot per poder fer la rotació pròpia
+        pivots[pivots.length - 1].mesh = mesh;
+
+      // Anells simples per Saturn
+      if (p.id === 'saturn') {
+        const ringGeo = new THREE.RingGeometry(p.radius * 1.4, p.radius * 2.2, 64);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xdccca3, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2.2;
+        mesh.add(ring);
+      }
+    });
+
+    // Picking amb ratolí/tacte
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    function pick(clientX, clientY) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(meshes, false);
+      if (hits.length) showPlanet(planetByMeshId.get(hits[0].object.id));
+    }
+    renderer.domElement.addEventListener('click', (e) => pick(e.clientX, e.clientY));
+    renderer.domElement.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; if (t) pick(t.clientX, t.clientY); });
+
+    // UI — panell d'informació
+    function showPanel(open) { panel.classList.toggle('active', open); }
+    function showPlanet(p) {
+      if (!p) return; showPanel(true);
+      panelTitle.textContent = p.name;
+      panelIcon.style.background = `radial-gradient(circle at 30% 30%, #fff6, #0000), #${p.color.toString(16).padStart(6, '0')}`;
+      panelTags.innerHTML = '';
+      const tags = [
+        `Tipus: ${p.type || 'Planeta'}`,
+        p.id !== 'sol' ? `Distància al Sol: ${p.orbitRadius}` : 'Llum i calor per a tots!'
+      ];
+      tags.forEach(t => {
+        const span = document.createElement('span'); span.className = 'tag'; span.textContent = t; panelTags.appendChild(span);
+      });
+      panelFacts.innerHTML = '';
+      p.facts.forEach(f => { const li = document.createElement('li'); li.textContent = f; panelFacts.appendChild(li); });
+      panelCuriosity.textContent = p.curiosity;
+      currentPlanet = p;
+    }
+
+    el('btn-close-panel').addEventListener('click', () => showPanel(false));
+
+    // Reptes
+    let currentPlanet = null;
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    // Generació de preguntes a partir de la informació
+    const ALL_TYPES = ['estrella','Planeta rocós','Gegant gasós','Gegant gelat'];
+    function parseType(p){
+      if (p.type) return p.type;
+      const t = (p.data||[]).find(d => d.toLowerCase().startsWith('tipus:'));
+      return t ? t.split(':')[1].trim() : 'Planeta';
+    }
+    function parseMoons(p){
+      const m = (p.data||[]).find(d => d.toLowerCase().includes('lluna'));
+      if (!m) return null;
+      const num = m.match(/\d+/);
+      return num ? parseInt(num[0],10) : null; // si diu "Moltes Llunes" retorna null
+    }
+    function tfQuestion(text){
+      return { q: text, options: ['Sí','No'], correct: 'Sí' };
+    }
+    function moonsQuestion(p){
+      const n = parseMoons(p); if (n === null) return null;
+      const opts = new Set();
+      const distractors = [Math.max(0,n-1), n+1, n+2];
+      if (n === 0) {
+        opts.add('Cap');
+        distractors.forEach(x=>opts.add(String(x)));
+        return { q: `Quantes llunes té ${p.name}?`, options: shuffle([...opts]).slice(0,4), correct: 'Cap' };
+      } else {
+        opts.add(String(n));
+        distractors.forEach(x=>opts.add(String(x)));
+        return { q: `Quantes llunes té ${p.name}?`, options: shuffle([...opts]).slice(0,4), correct: String(n) };
+      }
+    }
+    function typeQuestion(p){
+      const t = parseType(p);
+      // normalitza per a opcions
+      const pool = new Set(ALL_TYPES);
+      pool.add(t);
+      const options = shuffle([...pool]).slice(0,4);
+      return { q: `Quin tipus de cos és ${p.name}?`, options, correct: t };
+    }
+    function generateQuestionsForPlanet(p){
+      const qs = [];
+      if (p.facts && p.facts[0]) qs.push(tfQuestion(p.facts[0]));
+      if (p.facts && p.facts[1]) qs.push(tfQuestion(p.facts[1]));
+      if (p.curiosity) qs.push(tfQuestion(p.curiosity));
+      const mq = moonsQuestion(p); if (mq) qs.push(mq);
+      qs.push(typeQuestion(p));
+      // limita entre 3 i 6 preguntes
+      return qs.slice(0, Math.min(qs.length, 6));
+    }
+
+    let quizState = null;
+    function renderQuestion(){
+      const modal = document.getElementById('modal-challenge');
+      const qEl = document.getElementById('challenge-question');
+      const optsEl = document.getElementById('challenge-options');
+      const fb = document.getElementById('challenge-feedback');
+      const progress = document.getElementById('challenge-progress');
+      const nextBtn = document.getElementById('next-question');
+      const { questions, index, correctCount, planetName } = quizState;
+      const total = questions.length;
+      const item = questions[index];
+      document.getElementById('challenge-title').textContent = `Repte de ${planetName}`;
+      progress.textContent = `Pregunta ${index+1}/${total}`;
+      qEl.textContent = item.q;
+      fb.textContent = '';
+      nextBtn.disabled = true;
+      optsEl.innerHTML = '';
+      const options = shuffle([...item.options]);
+      options.forEach(opt => {
+        const btn = document.createElement('button'); btn.className = 'option-btn'; btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          // deshabilita totes les opcions
+          [...optsEl.children].forEach(b => b.disabled = true);
+          if (opt === item.correct) { btn.classList.add('correct'); quizState.correctCount = correctCount + 1; fb.textContent = 'Molt bé!'; }
+          else { btn.classList.add('wrong'); fb.textContent = `Resposta correcta: ${item.correct}`; }
+          nextBtn.disabled = false;
+        });
+        optsEl.appendChild(btn);
+      });
+      modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+    }
+
+    function openChallenge(p){
+      const planet = p || SOLAR_SYSTEM[0];
+      quizState = { questions: generateQuestionsForPlanet(planet), index: 0, correctCount: 0, planetName: planet.name, finished: false, planetRef: planet };
+      document.getElementById('next-question').textContent = 'Següent';
+      renderQuestion();
+    }
+
+    document.getElementById('next-question').addEventListener('click', () => {
+      if (!quizState) return;
+      if (quizState.finished) {
+        // reinicia
+        openChallenge(quizState.planetRef);
+        return;
+      }
+      quizState.index++;
+      if (quizState.index >= quizState.questions.length) {
+        // fi del repte
+        const fb = document.getElementById('challenge-feedback');
+        const qEl = document.getElementById('challenge-question');
+        const optsEl = document.getElementById('challenge-options');
+        const progress = document.getElementById('challenge-progress');
+        const nextBtn = document.getElementById('next-question');
+        progress.textContent = 'Fi del repte';
+        qEl.textContent = `Has encertat ${quizState.correctCount} de ${quizState.questions.length}.`;
+        fb.textContent = 'Fantàstic! Vols tornar a jugar?';
+        optsEl.innerHTML = '';
+        nextBtn.textContent = 'Tornar a començar';
+        nextBtn.disabled = false;
+        quizState.finished = true;
+      } else {
+        renderQuestion();
+      }
+    });
+    document.getElementById('close-challenge').addEventListener('click', () => {
+      const m = document.getElementById('modal-challenge'); m.classList.remove('open'); m.setAttribute('aria-hidden', 'true');
+    });
+    document.getElementById('btn-quiz-planet').addEventListener('click', () => openChallenge(currentPlanet));
+    document.getElementById('btn-challenge').addEventListener('click', () => openChallenge(currentPlanet));
+
+    // Ajuda
+    document.getElementById('btn-help').addEventListener('click', () => {
+      const m = document.getElementById('modal-help'); m.classList.add('open'); m.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('close-help').addEventListener('click', () => {
+      const m = document.getElementById('modal-help'); m.classList.remove('open'); m.setAttribute('aria-hidden','true');
+    });
+
+    // Zoom i reinici
+    document.getElementById('btn-zoom-in').addEventListener('click', () => { controls.dollyIn ? controls.dollyIn(1.2) : (camera.position.multiplyScalar(0.85)); controls.update(); });
+    document.getElementById('btn-zoom-out').addEventListener('click', () => { controls.dollyOut ? controls.dollyOut(1.2) : (camera.position.multiplyScalar(1.15)); controls.update(); });
+    document.getElementById('btn-restart').addEventListener('click', () => { camera.position.set(0, 40, 140); controls.target.set(0,0,0); controls.update(); });
+
+    // Velocitat i reducció de moviment
+      let speedMultiplier = 2;
+      let reducedMotion = false;
+    document.getElementById('speed-slider').addEventListener('input', (e) => { speedMultiplier = parseFloat(e.target.value || '1'); });
+    document.getElementById('btn-motion').addEventListener('click', () => {
+      reducedMotion = !reducedMotion; document.getElementById('icon-motion').style.opacity = reducedMotion ? '0.6' : '1';
+    });
+
+    // Mida del renderer
+    function resize() {
+      const w = area.clientWidth || window.innerWidth;
+      const h = area.clientHeight || window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Animació
+      const clock = new THREE.Clock();
+      const ORBIT_SPEED_SCALE = 12; // fa més visibles les òrbites (escala educativa)
+      function animate() {
+        const dt = clock.getDelta();
+        const k = reducedMotion ? 0.15 : 1;
+        pivots.forEach((entry) => {
+          const { pivot, data, mesh } = entry;
+          if (data.orbitRadius > 0) {
+            pivot.rotation.y += data.orbitSpeed * dt * speedMultiplier * k * ORBIT_SPEED_SCALE;
+          }
+          if (mesh) {
+            const spin = (data.id === 'sol') ? 0.2 : 0.8; // rotació pròpia senzilla
+            mesh.rotation.y += spin * dt * k;
+          }
+        });
+        controls.update();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+    loading.style.display = 'none';
+    animate();
+  </script>
+</body>
+</html>
