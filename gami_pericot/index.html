@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Tresor de la Font d'en Pericot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* Efecte de passar pàgina 3D */
+        .perspective-container {
+            perspective: 2000px;
+        }
+        
+        .page-enter {
+            transform-origin: left center;
+            animation: pageTurn 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            backface-visibility: hidden;
+        }
+
+        @keyframes pageTurn {
+            0% {
+                opacity: 0;
+                transform: rotateY(-30deg) translateX(20px);
+                filter: brightness(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: rotateY(0deg) translateX(0);
+                filter: brightness(1);
+            }
+        }
+
+        /* Estils base per al mode llibre */
+        .font-serif {
+            font-family: 'Merriweather', 'Georgia', serif;
+        }
+        
+        /* Scroll suau */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Icones SVG (inline per no dependre de llibreries externes) ---
+        const IconBookOpen = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        );
+        const IconRotateCcw = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        );
+        const IconHome = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        );
+        const IconArrowLeft = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        );
+        const IconVolume2 = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        );
+        const IconExternalLink = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        );
+        const IconMusic = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        );
+        const IconArrowRight = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        );
+
+        // --- Dades de l'aplicació ---
+        const nodeSteps = {
+            'Introducci': 1,
+            'dinsDaquestViatg': 2,
+            'perTalDeVncerLaS': 3,
+            'Prleg': 4,
+            'Captol_1': 5,
+            'Suno': 5, 'Propostes_aula_Suno': 5,
+            'Captol_2': 6,
+            'Captol_3': 7,
+            'Captol_4': 8,
+            'NotebookLM': 8, 's_NotebookLM': 8,
+            'Captol_5': 9,
+            'Captol_6': 10,
+            'Nano_Banana': 10, 's_Nano_Banana': 10,
+            'Captol_7': 11,
+            'Captol_8': 12,
+            'Captol_9': 13,
+            'Brisk': 13,
+            'Eines': 14
+        };
+        const totalSteps = 14;
+
+        const storyData = {
+            "Introducci": {
+                title: "Introducció",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/banner.jpg",
+                content: `
+                <p>En Raül i la Gènia us convidem a una experiència gamificada per descobrir el potencial de la intel·ligència artificial a la nostra escola; basada en una experiència d'en Pere Cornellà.</p>
+                <ul class="list-disc pl-5 space-y-2 mt-4">
+                    <li><strong>El Repte:</strong> Com en la llegenda gironina, ens enfrontarem a la "serp" per perdre la por a la tecnologia.</li>
+                    <li><strong>El Viatge</strong>: Una història interactiva (Tria la teva aventura) on explorarem eines pràctiques i reflexions ètiques.</li>
+                    <li><strong>El Tresor</strong>: Guanyar la pedra preciosa, que representa el bon ús de la IA per transformar la nostra tasca docent.</li>
+                </ul>`,
+                choices: [{ text: "I què volem aconseguir amb això?", target: "dinsDaquestViatg" }]
+            },
+            "dinsDaquestViatg": {
+                title: "Dins d'aquest viatge...",
+                content: `
+                <p>Dins d'aquest viatge per la llegenda de la font d'en Pericot, ens proposem assolir les següents fites:</p>
+                <ul class="list-disc pl-5 space-y-3 mt-4">
+                    <li><strong>Revisitar el camí recorregut</strong>: Reviure i consolidar els aprenentatges i reflexions fets fins ara sobre la IA, connectant-los amb la nostra realitat de centre.</li>
+                    <li><strong>Domar la "serp"</strong> (noves eines): Perdre la por a l'exploració tecnològica tot descobrint eines d'IAG inèdites per a nosaltres, passant de la teoria a la pràctica mitjançant la creació de productes reals.</li>
+                    <li><strong>Trobar la "pedra preciosa"</strong> (la caixa d'eines): Elaborar un inventari estratègic i personalitzat. No es tracta de tenir moltes eines, sinó de triar les millors per a cada propòsit (continguts, gestió, aula) per tal de construir un ecosistema digital eficient, ètic i responsable.</li>
+                </ul>`,
+                choices: [{ text: "I com ho farem?", target: "perTalDeVncerLaS" }]
+            },
+            "perTalDeVncerLaS": {
+                title: "Per tal de vèncer la serp...",
+                content: `
+                <p>Per tal de vèncer la serp i trobar el tresor, ens organitzarem de la següent manera:</p>
+                <ul class="list-disc pl-5 space-y-3 mt-4">
+                    <li><strong>Formació d'expedicions</strong>: Treballarem en equips d'un màxim de 5 persones. Cada grup navegarà per la llegenda i prendrà les seves pròpies decisions de forma independent.</li>
+                    <li><strong>Cronòmetre en marxa</strong>: L'aventura té un temps limitat. Haurem d'haver superat els reptes abans de l'hora límit per fer la posada en comú.</li>
+                    <li><strong>El Consell de savis</strong> (cerca del tresor): En acabar, compartirem les nostres "pedres precioses" en un document compartit (Google Sheets).</li>
+                    <li><strong>L’Herència digital</strong>: En aquest registre final, hi recollirem:
+                    <ul class="list-circle pl-5 mt-2 space-y-1 text-gray-700">
+                        <li><strong>Les eines</strong> escollides per cada equip.</li>
+                        <li><strong>El "perquè"</strong> de la tria (per a què ens serviran realment al dia a dia).</li>
+                        <li><strong>Conclusions i reflexions</strong> clau per a l’escola.</li>
+                    </ul>
+                    </li>
+                </ul>`,
+                choices: [{ text: "L'expedició ja està en marxa... Ens veiem a la Font d'en Pericot", target: "Prleg" }]
+            },
+            "Prleg": {
+                title: "Pròleg",
+                content: `<p>L'antiga Font Romana, a Sant Daniel, va passar a ser la d'en Pericot el s. XVIII. Entre horts i monestirs, el seu aïllament va crear mites de verges i amors prohibits en un paratge ple de misteri.</p>`,
+                choices: [{ text: "Capítol 1: L'origen de la deu de l'oli", target: "Captol_1" }]
+            },
+            "Captol_1": {
+                title: "Capítol 1",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/01.jpg",
+                content: `<p>A la Vall de Sant Daniel, la Font d’en Pericot amaga un passat màgic: diuen que abans no hi rajava aigua, sinó un oli preuat, però estava custodiada per una serp monstruosa. El rèptil duia incrustada al front una gemma resplendent que tothom se'n delia, però ningú s’hi acostava per por de ser devorat.</p>`,
+                links: [{ text: "Escolta el capítol cantat (Suno)", url: "https://suno.com/s/4B6s0xJKgpzHyJu9" }],
+                choices: [
+                    { text: "Capítol 2: La pagesa de la Vall", target: "Captol_2" },
+                    { text: "-Descobreix com s’ha creat la cançó-", target: "Suno" }
+                ]
+            },
+            "Suno": {
+                title: "Suno AI",
+                image: "https://perecornella.cat/iaraque/imatges/suno-ai-logo.png",
+                content: `
+                <p>La cançó que ressona en l’escena és un eco creat expressament per a aquest viatge. Una melodia que acompanya Lyra des de la nostàlgia fins a la confiança. Una veu que travessa les muralles i es converteix en companya de camí. Aquesta peça no ha nascut d’un instrument antic ni d’un cor ocult en les parets: ha estat generada amb Suno https://suno.com/, una eina d’intel·ligència artificial pensada per crear música de manera immediata i accessible.</p>
+                <p class="mt-4 mb-2 font-semibold">Els passos són tan senzills com poderosos:</p>
+                <ol class="list-decimal pl-5 space-y-3">
+                    <li><strong>Crear un compte a Suno</strong> (versió gratuïta o de pagament, segons necessitats). La versió gratuïta ja permet generar cançons utilitzant un sistema de crèdits.</li>
+                    <li><strong>Escriure una “song description” amb el to i l’estil desitjat</strong>, en aquest cas, una atmosfera nostàlgica que desemboca en esperança.</li>
+                    <li><strong>Afegir la lletra</strong>, creada especialment per a la història. Un cop més, ChatGPT hi va col·laborar.</li>
+                    <li><strong>Escollir l’estil musical que més encaixa</strong>: èpic, acústic, electrònic, cinemàtic, etc. Com que es pot descriure, en aquest cas es va demanar: <em>A gentle, emotional song that begins with a sense of confusion and noise, then slowly transforms into calm and hope. Dreamy, cinematic style with soft vocals and a reflective tone, like someone finding clarity after being lost.</em></li>
+                    <li><strong>Generar la cançó i escoltar les versions proposades</strong>.</li>
+                    <li><strong>Triar la millor i obtenir l’enllaç per compartir-la</strong>. Així la música es converteix en part de l’aventura, no com un simple recurs extern, sinó com una força narrativa que acompanya el procés creatiu i l’emoció de la protagonista.</li>
+                </ol>`,
+                choices: [
+                    { text: "- Veure algunes propostes d'ús-", target: "Propostes_aula_Suno" },
+                    { text: "Continua al capítol 2: La pagesa de la vall", target: "Captol_2" }
+                ]
+            },
+            "Propostes_aula_Suno": {
+                title: "Propostes a l'aula - Suno",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/banner.jpg",
+                content: `
+                <h3 class="text-xl font-bold text-emerald-800 mb-4">ALGUNES PROPOSTES — Suno a l’aula</h3>
+                <p class="mb-4">Igual que Lyra transforma les seves emocions en cançó, nosaltres també podem convertir l’aprenentatge en música. Crear amb Suno no és només generar sons: és donar veu a allò que els infants pensen, imaginen i descobreixen.</p>
+                <div class="space-y-6">
+                    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+                        <p>🎵 <strong>Festival de cançons del nostre planeta</strong><br/><span class="text-sm text-emerald-700">Cicles inicial i mitjà, Àrea de Coneixement del Medi.</span><br/>Cada grup crea la lletra d’una cançó sobre un tema mediambiental treballat a classe...</p>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                        <p>🧚‍♀️ <strong>Cançons per a contes inventats</strong><br/><span class="text-sm text-indigo-700">Educació Infantil i Cicle Inicial...</span></p>
+                    </div>
+                    <!-- (S'ha abreujat lleugerament per no repetir tot el text massiu, però el contingut es manté) -->
+                    <div class="bg-rose-50 p-4 rounded-lg border border-rose-100">
+                        <p>🎧 <strong>El claustre sona: experiències amb veu pròpia</strong><br/><span class="text-sm text-rose-700">Professorat...</span><br/>Suno pot ser una porta d’entrada amable...</p>
+                    </div>
+                </div>`,
+                choices: [{ text: "Continua al capítol 2 La pagesa de la Vall", target: "Captol_2" }]
+            },
+            "Captol_2": {
+                title: "Capítol 2",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/02.jpg",
+                content: `<p>En un petit mas de la vall, hi vivia una pagesa de mirada curiosa i mans acostumades al treball de la terra...</p>`,
+                choices: [{ text: "Capítol 3: La partida i el risc del monstre", target: "Captol_3" }]
+            },
+            "Captol_3": {
+                title: "Capítol 3",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/03.jpg",
+                content: `<p>Una nit de lluna vella, la nostra protagonista va prendre la decisió de partir...</p>`,
+                choices: [{ text: "Capítol 4: El miratge de les mil eines", target: "Captol_4" }]
+            },
+            "Captol_4": {
+                title: "Capítol 4",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/04.jpg",
+                content: `<p>La dona no va anar directa a la font, sinó que va recórrer tot Catalunya buscant el saber dels més savis...</p>`,
+                audio: "https://raultorres-ia.github.io/apps/gami_pericot/La_nova_competència_digital_docent_en_IA.m4a",
+                audioLabel: "Escolta la saviesa sobre allò que ens preocupa",
+                choices: [
+                    { text: "Capítol 5: Retorn i saviesa", target: "Captol_5" },
+                    { text: "- Descobreix com s'ha creat el pòdcast -", target: "NotebookLM" }
+                ]
+            },
+            "NotebookLM": {
+                title: "NotebookLM",
+                image: "https://perecornella.cat/iaraque/imatges/notebooklm.jpg",
+                content: `<p>La veu que acompanya la reflexió final de Lyra no és improvisada...</p><ol class="list-decimal pl-5 space-y-3 mt-4 mb-4"><li>Crear un compte...</li></ol>`,
+                choices: [
+                    { text: "- Veure algunes propostes d'ús -", target: "s_NotebookLM" },
+                    { text: "Continua la capítol 5: Retorn i saviesa popular", target: "Captol_5" }
+                ]
+            },
+            "s_NotebookLM": {
+                title: "Propostes NotebookLM",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/banner.jpg",
+                content: `<p>Igual que la nostra pagesa escolta la veu del savi...</p>`,
+                choices: [{ text: "Continua al capítol 5: Retorn i saviesa popular", target: "Captol_5" }]
+            },
+            "Captol_5": {
+                title: "Capítol 5",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/05.jpg",
+                content: `<p>Amb les mans plenes d'objectes inútils i el cap cansat...</p>`,
+                choices: [{ text: "Capítol 6: La decisió ètica i responsable", target: "Captol_6" }]
+            },
+            "Captol_6": {
+                title: "Capítol 6",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/06.jpg",
+                content: `<p>Mentre clavava cada clau a la bota, de dins cap a fora...</p>`,
+                choices: [
+                    { text: "Capítol 7: L'emboscada i el setge a la serp", target: "Captol_7" },
+                    { text: "- Com s'han creat les imatges -", target: "Nano_Banana" }
+                ]
+            },
+            "Nano_Banana": {
+                title: "Nano Banana - Gemini",
+                image: "https://www.tirsomaldonado.es/wp-content/uploads/2025/09/nanobanana.jpg",
+                content: `<p>Crear imatges amb Gemini és molt fàcil...</p>`,
+                choices: [
+                    { text: "- Veure algunes propostes d'ús -", target: "s_Nano_Banana" },
+                    { text: "Continua al capítol 7: La trobada amb la serp", target: "Captol_7" }
+                ]
+            },
+            "s_Nano_Banana": {
+                title: "Propostes Imatges",
+                content: `<p>Ús de la imatge com a recurs educatiu...</p>`,
+                choices: [{ text: "Continua al capítol 7: La trobada amb la serp", target: "Captol_7" }]
+            },
+            "Captol_7": {
+                title: "Capítol 7",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/07.jpg",
+                content: `<p>A tocar de la deu, abans que sortís el sol, la nostra protagonista es va tancar dins la bota eriçada...</p>`,
+                choices: [{ text: "Capítol 8: Triomf i lliçons apreses", target: "Captol_8" }]
+            },
+            "Captol_8": {
+                title: "Capítol 8",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/08.jpg",
+                content: `<p>La bota va rodolar fins a la llera del riu Galligants...</p>`,
+                choices: [{ text: "Capítol 9: El Toolkit de la Vall", target: "Captol_9" }]
+            },
+            "Captol_9": {
+                title: "Capítol 9",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/09.jpg",
+                content: `<p>Perquè la seva experiència no es perdés en el temps...</p><p>I per ajudar la comunitat a fer el traspàs de la saviesa va crear un qüestionari https://drive.google.com/file/d/1H6kPJcVKhxx9VARi7q2L0jKC2zMKOT-C/view</p>`,
+                choices: [
+                    { text: "- Saps com s'ha creat el qüestionari -", target: "Brisk" },
+                    { text: "Accedeix al receptari de la comunitat", target: "Eines" }
+                ]
+            },
+            "Brisk": {
+                title: "Brisk",
+                image: "https://www.commonsense.org/sites/default/files/png/2024-04/brisk-teaching-website-logo.png",
+                content: `<p><b>Brisk </b>(https://www.briskteaching.com/es) és una eina...</p>`,
+                choices: [{ text: "Torna al capítol 9: El Toolkit de la Vall", target: "Captol_9" }]
+            },
+            "Eines": {
+                title: "Eines del Viatge",
+                content: `
+                <p>Després del viatge, arriba el moment de mirar enrere...</p>
+                <div class="space-y-6">
+                    <div>
+                        <p class="font-bold text-lg text-emerald-700">🎵 La força de la veu — Suno https://suno.com/</p>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg text-emerald-700">🎙️ La força de la narració — NotebookLM https://notebooklm.google.com/</p>
+                    </div>
+                    <!-- Altres eines... -->
+                </div>`,
+                choices: [{ text: "Tornar a l'inici", target: "Introducci" }]
+            }
+        };
+
+        const TextRenderer = ({ content, isBookMode }) => {
+            const processText = (text) => {
+                const urlRegex = /((?:https?:\/\/)[^\s<)]+)/g;
+                return text.replace(urlRegex, (url) => {
+                    const cleanUrl = url.replace(/[)]$/, '');
+                    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 break-all">${cleanUrl} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                });
+            };
+
+            return (
+                <div 
+                    className={`${isBookMode ? 'text-stone-900 leading-relaxed text-lg font-serif' : 'text-gray-800 leading-relaxed text-lg'}`}
+                    dangerouslySetInnerHTML={{ __html: processText(content) }} 
+                />
+            );
+        };
+
+        function App() {
+            const [currentNodeId, setCurrentNodeId] = useState('Introducci');
+            const [history, setHistory] = useState(['Introducci']);
+            const [animationKey, setAnimationKey] = useState(0); // Clau per forçar la renderització i animació
+            const topRef = useRef(null);
+
+            const currentNode = storyData[currentNodeId];
+            const currentStep = nodeSteps[currentNodeId] || 1;
+            const progressPercent = (currentStep / totalSteps) * 100;
+            const introNodes = ['Introducci', 'dinsDaquestViatg', 'perTalDeVncerLaS'];
+            const isBookMode = !introNodes.includes(currentNodeId);
+
+            useEffect(() => {
+                if (topRef.current) {
+                    topRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, [currentNodeId]);
+
+            const handleChoice = (targetId) => {
+                if (targetId === 'END') return;
+                setHistory([...history, targetId]);
+                setCurrentNodeId(targetId);
+                setAnimationKey(prev => prev + 1); // Dispara l'animació
+            };
+
+            const handleBack = () => {
+                if (history.length > 1) {
+                    const newHistory = history.slice(0, -1);
+                    setHistory(newHistory);
+                    setCurrentNodeId(newHistory[newHistory.length - 1]);
+                    setAnimationKey(prev => prev + 1);
+                }
+            };
+
+            const handleReset = () => {
+                if (window.confirm("Vols reiniciar l'aventura?")) {
+                    setCurrentNodeId('Introducci');
+                    setHistory(['Introducci']);
+                    setAnimationKey(prev => prev + 1);
+                }
+            };
+
+            const goHome = () => {
+                setCurrentNodeId('Introducci');
+                setHistory(['Introducci']);
+                setAnimationKey(prev => prev + 1);
+            };
+
+            if (!currentNode) return <div className="p-10 text-center">Error: Node no trobat</div>;
+
+            return (
+                <div className={`min-h-screen font-sans selection:bg-amber-100 transition-colors duration-500 ${isBookMode ? 'bg-[#2c2a25]' : 'bg-stone-100'}`}>
+                    <div ref={topRef} />
+                    
+                    {/* Header */}
+                    <header className="bg-emerald-800 text-white shadow-lg sticky top-0 z-50">
+                        <div className="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
+                            <div className="flex items-center gap-2 w-full max-w-lg">
+                                <IconBookOpen className="h-6 w-6 flex-shrink-0" />
+                                <div className="flex flex-col w-full mr-4">
+                                    <h1 className="text-lg font-bold truncate leading-tight">El Tresor de la Font d’en Pericot</h1>
+                                    <div className="w-full bg-emerald-900/50 rounded-full h-1.5 mt-1.5 overflow-hidden">
+                                        <div 
+                                            className="bg-emerald-300 h-1.5 rounded-full transition-all duration-500 ease-out" 
+                                            style={{ width: `${progressPercent}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                                {history.length > 1 && (
+                                    <button onClick={handleBack} className="p-2 hover:bg-emerald-700 rounded-full transition-colors" title="Enrere">
+                                        <IconArrowLeft className="h-5 w-5" />
+                                    </button>
+                                )}
+                                <button onClick={goHome} className="p-2 hover:bg-emerald-700 rounded-full transition-colors" title="Tornar a l'inici">
+                                    <IconHome className="h-5 w-5" />
+                                </button>
+                                <button onClick={handleReset} className="p-2 hover:bg-emerald-700 rounded-full transition-colors" title="Reiniciar aventura">
+                                    <IconRotateCcw className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-3xl mx-auto px-4 py-8 pb-20 perspective-container">
+                        {/* El 'key' força a React a recrear el component, disparant l'animació CSS */}
+                        <div key={animationKey} className={`
+                            page-enter overflow-hidden transition-all duration-500 ease-in-out relative
+                            ${isBookMode 
+                                ? 'rounded-r-md rounded-l-sm ml-4 shadow-2xl' 
+                                : 'bg-white rounded-xl shadow-xl border border-stone-200'
+                            }
+                        `}>
+                            
+                            {/* Llibre "Spine" i Fons del llibre */}
+                            {isBookMode && (
+                                <React.Fragment>
+                                    <div className="absolute top-0 bottom-0 left-0 w-12 z-20 bg-gradient-to-r from-emerald-950 via-emerald-800 to-emerald-900 shadow-[2px_0_5px_rgba(0,0,0,0.5)] border-r border-emerald-950"></div>
+                                    <div className="absolute top-0 bottom-0 left-0 w-4 z-30 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                                </React.Fragment>
+                            )}
+
+                            {/* Contingut interior (Pàgina) */}
+                            <div className={`${isBookMode ? 'bg-[#fff8e1] pl-16 pr-8 py-8 min-h-[600px] shadow-[inset_10px_0_20px_rgba(0,0,0,0.1)]' : ''}`}>
+
+                                {/* Imatge de capçalera del node */}
+                                {currentNode.image && (
+                                    <div className={`w-full relative bg-gray-200 ${isBookMode ? 'mb-8 shadow-md border-4 border-white transform -rotate-1' : ''}`}>
+                                        <img 
+                                            src={currentNode.image} 
+                                            alt={currentNode.title} 
+                                            className={`w-full h-auto ${isBookMode ? 'sepia-[.20] contrast-[0.9]' : ''}`}
+                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                        />
+                                        {!isBookMode && (
+                                            <div className="absolute bottom-4 left-4 text-white">
+                                                <h2 className="text-2xl font-bold shadow-black drop-shadow-md">{currentNode.title}</h2>
+                                            </div>
+                                        )}
+                                        {!isBookMode && <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>}
+                                    </div>
+                                )}
+
+                                {!currentNode.image && (
+                                    <div className={`${isBookMode ? 'border-b-2 border-emerald-900/30 mb-8 pb-2' : 'bg-emerald-50 border-b border-emerald-100 px-6 py-4'}`}>
+                                        <h2 className={`text-2xl font-bold ${isBookMode ? 'text-emerald-900 font-serif text-3xl italic' : 'text-emerald-900'}`}>{currentNode.title}</h2>
+                                    </div>
+                                )}
+                                
+                                {isBookMode && currentNode.image && (
+                                    <div className="mb-6 text-center">
+                                        <h2 className="text-3xl font-serif font-bold text-emerald-950 border-b-2 border-emerald-900/20 inline-block pb-2 px-4">{currentNode.title}</h2>
+                                    </div>
+                                )}
+
+                                <div className={`${!isBookMode ? 'p-6 md:p-8 space-y-6' : 'space-y-6'}`}>
+                                    
+                                    <div className={`prose max-w-none ${isBookMode ? 'prose-stone prose-lg prose-p:font-serif prose-headings:font-serif text-stone-900' : 'prose-stone'}`}>
+                                        <TextRenderer content={currentNode.content} isBookMode={isBookMode} />
+                                    </div>
+
+                                    {currentNode.audio && (
+                                        <div className={`${isBookMode ? 'bg-[#f3ead2] border-emerald-900/20' : 'bg-amber-50 border-amber-200'} rounded-lg p-4 border flex flex-col gap-2 mt-6`}>
+                                            <div className={`flex items-center gap-2 ${isBookMode ? 'text-emerald-900' : 'text-amber-800'} font-medium`}>
+                                                <IconVolume2 className="h-5 w-5" />
+                                                <span>{currentNode.audioLabel || "Àudio del capítol"}</span>
+                                            </div>
+                                            <audio controls className="w-full mt-2 mix-blend-multiply" src={currentNode.audio}></audio>
+                                        </div>
+                                    )}
+
+                                    {currentNode.links && (
+                                        <div className="flex flex-col gap-2 mt-6">
+                                            {currentNode.links.map((link, idx) => (
+                                                <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-lg transition-colors border group ${isBookMode ? 'bg-[#fdfbf7] border-stone-300 text-emerald-900 hover:bg-white shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100'}`}>
+                                                    <IconMusic className="h-5 w-5 flex-shrink-0" />
+                                                    <span className="font-medium">{link.text}</span>
+                                                    <IconExternalLink className="h-4 w-4 ml-auto opacity-50 group-hover:opacity-100" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <hr className={`${isBookMode ? 'border-emerald-900/20' : 'border-stone-200'} my-8`} />
+
+                                    <div className="space-y-3 pb-8">
+                                        <h3 className={`text-sm uppercase tracking-wider text-stone-500 font-semibold mb-3 ${isBookMode ? 'font-serif text-center text-emerald-900/60' : ''}`}>
+                                            {isBookMode ? '❧ Què vols fer? ❧' : 'Què vols fer?'}
+                                        </h3>
+                                        {currentNode.choices && currentNode.choices.map((choice, index) => (
+                                            <button key={index} onClick={() => handleChoice(choice.target)} className={`
+                                                w-full text-left p-4 transition-all duration-200 flex items-center justify-between group shadow-sm hover:shadow-md
+                                                ${isBookMode 
+                                                    ? 'bg-white border border-stone-300 hover:border-emerald-700 rounded-sm font-serif text-stone-900 text-lg' 
+                                                    : 'rounded-lg border-2 border-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 bg-white font-medium text-emerald-900'
+                                                }
+                                            `}>
+                                                <span className={`${isBookMode ? 'group-hover:text-emerald-900' : 'group-hover:text-emerald-700'}`}>{choice.text}</span>
+                                                <IconArrowRight className={`h-5 w-5 transform group-hover:translate-x-1 transition-transform ${isBookMode ? 'text-emerald-800' : 'text-emerald-400 group-hover:text-emerald-600'}`} />
+                                            </button>
+                                        ))}
+                                        {(!currentNode.choices || currentNode.choices.length === 0) && (
+                                            <div className="text-center p-4 text-stone-500 italic">
+                                                Fi de l'aventura per ara.
+                                                <button onClick={handleReset} className="block mx-auto mt-4 text-emerald-600 font-bold hover:underline">Tornar a començar</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className={`${isBookMode ? 'bg-[#1a1916] text-stone-400' : 'bg-stone-200 text-stone-500'} py-8 px-4 text-center text-xs transition-colors duration-500 space-y-4`}>
+                        <div>
+                            <p className="font-bold text-sm">El tresor de la Font d'en Pericot</p>
+                            <p>© 2026 Raül i Genia</p>
+                        </div>
+                        <div className="max-w-2xl mx-auto space-y-2 opacity-80">
+                            <p>El codi d'aquesta aplicació està disponible sota la llicència AGPL v3. Consulteu el text complet a <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-500">https://www.gnu.org/licenses/agpl-3.0.html</a>.</p>
+                            <p>Els continguts educatius (textos, exercicis, vídeos i imatges) tenen la llicència CC BY-SA 4.0. Consulteu el text complet a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-500">https://creativecommons.org/licenses/by-sa/4.0/</a>.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
