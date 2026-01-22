@@ -10,39 +10,222 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        /* Efecte de passar pàgina 3D */
         .perspective-container {
-            perspective: 2000px;
+            perspective: 2500px; /* Perspectiva realista */
+            overflow: visible; 
+            perspective-origin: 50% 50%;
         }
-        
-        .page-enter {
-            transform-origin: left center;
-            animation: pageTurn 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-            backface-visibility: hidden;
+        .transform-style-3d { transform-style: preserve-3d; }
+
+        /* ---------------------------------------------------------
+           ANIMACIÓ 1: FADE SIMPLE (Intro)
+           --------------------------------------------------------- */
+        .fade-enter {
+            animation: fadeInSimple 0.8s ease-in-out forwards;
         }
 
-        @keyframes pageTurn {
+        @keyframes fadeInSimple {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------------------------------------------------------
+           ANIMACIÓ 2: LLIBRE REAL (PAGE FLIP)
+           --------------------------------------------------------- */
+        
+        /* 1. LA PÀGINA QUE MARXA (Overlay) */
+        /* Simula el full actual aixecant-se i girant cap a l'esquerra */
+        .page-turn-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            backface-visibility: hidden; /* Ocultar el reverso al pasar los 90deg */
+            transform-style: preserve-3d; /* Mantener hijos/pseudo en 3D */
+            will-change: transform, box-shadow;
+            contain: layout paint style;
+            
+            /* Textura de papel para la página que se va */
+            background-color: #fdfbf7;
+            pointer-events: none;
+        }
+
+        /* Dorso de la hoja (cara posterior) */
+        .page-turn-overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to left, rgba(0,0,0,0.08), rgba(0,0,0,0)),
+                #faf7f0; /* tono más cálido para la cara posterior */
+            backface-visibility: hidden;
+            transform: rotateY(180deg) translateZ(0.5px);
+            /* sin borde para evitar línea en el lomo */
+        }
+        /* Canto/“grosor” del papel */
+        .page-turn-overlay::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.15)),
+                repeating-linear-gradient( to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 3px );
+            filter: blur(0.1px);
+            transform: translateZ(0.6px);
+            opacity: 0.7;
+        }
+        .page-turn-overlay.flip-left::after { left: 0; }
+        .page-turn-overlay.flip-right::after { right: 0; }
+
+        /* Variantes según dirección */
+        .page-turn-overlay.flip-left {
+            transform-origin: 0% 50%; /* Lomo izquierdo */
+            animation: flipPageLeft 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+            left: -1px; /* Solapa 1px el lomo para ocultar junta */
+            width: calc(100% + 2px);
+        }
+        .page-turn-overlay.flip-right {
+            transform-origin: 100% 50%; /* Lomo derecho */
+            animation: flipPageRight 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+            /* sin bordes para evitar línea en el lomo */
+            right: -1px; /* Solapa 1px el borde derecho */
+            width: calc(100% + 2px);
+        }
+
+        @keyframes flipPageLeft {
             0% {
-                opacity: 0;
-                transform: rotateY(-30deg) translateX(20px);
-                filter: brightness(0.9);
+                transform: rotateY(0deg) skewY(0deg) translateZ(0.2px);
+                box-shadow: inset 0 0 0 rgba(0,0,0,0);
+            }
+            50% {
+                transform: rotateY(-65deg) skewY(0.6deg) translateZ(0.4px);
+                box-shadow: inset -25px 0 40px -20px rgba(0,0,0,0.18);
             }
             100% {
-                opacity: 1;
-                transform: rotateY(0deg) translateX(0);
-                filter: brightness(1);
+                transform: rotateY(-135deg) skewY(0.8deg) translateZ(0.6px); /* Gira hacia la izquierda */
+                /* Sombra interna para simular la curvatura del papel mientras gira */
+                box-shadow: inset -50px 0 60px -20px rgba(0,0,0,0.24); 
             }
+        }
+        @keyframes flipPageRight {
+            0% {
+                transform: rotateY(0deg) skewY(0deg) translateZ(0.2px);
+                box-shadow: inset 0 0 0 rgba(0,0,0,0);
+            }
+            50% {
+                transform: rotateY(65deg) skewY(-0.6deg) translateZ(0.4px);
+                box-shadow: inset 25px 0 40px -20px rgba(0,0,0,0.18);
+            }
+            100% {
+                transform: rotateY(135deg) skewY(-0.8deg) translateZ(0.6px); /* Gira hacia la derecha */
+                box-shadow: inset 50px 0 60px -20px rgba(0,0,0,0.24);
+            }
+        }
+
+        /* 2. L'OMBRA SOBRE LA PÀGINA NOVA */
+        /* Simula l'ombra que projecta el full que s'està passant sobre el nou */
+        .page-shadow-cast {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            will-change: opacity, width, transform;
+        }
+
+        /* Variantes de sombra según dirección */
+        .page-shadow-cast.flip-left {
+            background: linear-gradient(to right, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 28%);
+            animation: shadowSweepLeft 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+        }
+        .page-shadow-cast.flip-right {
+            background: linear-gradient(to left, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 28%);
+            animation: shadowSweepRight 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+        }
+        @keyframes shadowSweepLeft {
+            0% { opacity: 0.6; width: 100%; }
+            60% { opacity: 0.2; }
+            100% { opacity: 0; width: 0%; }
+        }
+        @keyframes shadowSweepRight {
+            0% { opacity: 0.6; width: 100%; }
+            60% { opacity: 0.2; }
+            100% { opacity: 0; width: 0%; }
+        }
+
+        /* 2.1 BISAGRA DEL LOMO (hinge) */
+        .spine-hinge {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            z-index: 85; /* Por encima de la hoja (50), por debajo del brillo del lomo (90) */
+            pointer-events: none;
+        }
+        .spine-hinge.hinge-left {
+            left: 0;
+            width: 0px;
+            background: linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.2) 30%, rgba(0,0,0,0) 70%);
+            animation: hingePulseLeft 1.2s ease-in-out forwards;
+        }
+        .spine-hinge.hinge-right {
+            right: 0;
+            width: 0px;
+            background: linear-gradient(to left, rgba(0,0,0,0.45), rgba(0,0,0,0.2) 30%, rgba(0,0,0,0) 70%);
+            animation: hingePulseRight 1.2s ease-in-out forwards;
+        }
+        @keyframes hingePulseLeft {
+            0% { width: 0px; opacity: 0; }
+            30% { width: 36px; opacity: 0.35; }
+            60% { width: 24px; opacity: 0.22; }
+            100% { width: 0px; opacity: 0; }
+        }
+        @keyframes hingePulseRight {
+            0% { width: 0px; opacity: 0; }
+            30% { width: 36px; opacity: 0.35; }
+            60% { width: 24px; opacity: 0.22; }
+            100% { width: 0px; opacity: 0; }
+        }
+
+        /* Cubre cualquier microjunta visible en el lomo */
+        .spine-seam-mask {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 2px;
+            z-index: 88; /* sobre overlay y hinge, bajo el brillo del lomo */
+            pointer-events: none;
+            background: linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0));
+        }
+
+        /* 3. EL CONTINGUT NOU */
+        /* Ja està "quiet" a sota, només esperant ser descobert. Sense fades ni moviments. */
+        .page-content-static {
+            /* No animation needed, it sits statically underneath */
         }
 
         /* Estils base per al mode llibre */
         .font-serif {
             font-family: 'Merriweather', 'Georgia', serif;
         }
-        
-        /* Scroll suau */
-        html {
-            scroll-behavior: smooth;
+
+        /* Textura de fons de la pàgina base */
+        .book-page-texture {
+            background-color: #fdfbf7;
+            background-image: 
+                linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 5%, rgba(0,0,0,0) 100%),
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            box-shadow: 
+                inset 15px 0 25px -10px rgba(0,0,0,0.15), /* Profundidad en el lomo */
+                2px 0 8px rgba(0,0,0,0.15); /* Sombra externa */
         }
+        
+        html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-stone-100 min-h-screen">
@@ -82,7 +265,7 @@
             'Introducci': 1,
             'dinsDaquestViatg': 2,
             'perTalDeVncerLaS': 3,
-            'PortadaLlibre': 4, // Nova pàgina portada
+            'PortadaLlibre': 4,
             'Prleg': 5,
             'Captol_1': 6,
             'Suno': 6, 'Propostes_aula_Suno': 6,
@@ -146,7 +329,7 @@
             "PortadaLlibre": {
                 title: " ",
                 image: "https://raultorres-ia.github.io/apps/gami_pericot/Portada.jpg",
-                content: `<div class="text-center italic text-stone-600 mt-4 font-serif">A punt per endinsar-te a la llegenda?</div>`,
+                content: `<div class="text-center italic text-stone-600 mt-4 font-serif text-lg">A punt per endinsar-te a la llegenda?</div>`,
                 choices: [{ text: "Llegeix: El Tresor de la Font d’en Pericot", target: "Prleg" }]
             },
             "Prleg": {
@@ -168,15 +351,15 @@
                 title: "Suno AI",
                 image: "https://perecornella.cat/iaraque/imatges/suno-ai-logo.png",
                 content: `
-                <p>La cançó que ressona en l’escena és un eco creat expressament per a aquest viatge. Una melodia que acompanya Lyra des de la nostàlgia fins a la confiança. Una veu que travessa les muralles i es converteix en companya de camí. Aquesta peça no ha nascut d’un instrument antic ni d’un cor ocult en les parets: ha estat generada amb Suno https://suno.com/, una eina d’intel·ligència artificial pensada per crear música de manera immediata i accessible.</p>
+                <p>La cançó que ressonarà ha estat creada expressament per a aquesta història. És la narrativa d'aquest capítol cantada en un estil medieval. Aquesta peça no ha nascut d’un instrument antic ni d’un cor ocult en les parets: ha estat generada amb Suno https://suno.com/, una eina d’intel·ligència artificial pensada per crear música de manera immediata i accessible.</p>
                 <p class="mt-4 mb-2 font-semibold">Els passos són tan senzills com poderosos:</p>
                 <ol class="list-decimal pl-5 space-y-3">
                     <li><strong>Crear un compte a Suno</strong> (versió gratuïta o de pagament, segons necessitats). La versió gratuïta ja permet generar cançons utilitzant un sistema de crèdits.</li>
-                    <li><strong>Escriure una “song description” amb el to i l’estil desitjat</strong>, en aquest cas, una atmosfera nostàlgica que desemboca en esperança.</li>
-                    <li><strong>Afegir la lletra</strong>, creada especialment per a la història. Un cop més, ChatGPT hi va col·laborar.</li>
-                    <li><strong>Escollir l’estil musical que més encaixa</strong>: èpic, acústic, electrònic, cinemàtic, etc. Com que es pot descriure, en aquest cas es va demanar: <em>A gentle, emotional song that begins with a sense of confusion and noise, then slowly transforms into calm and hope. Dreamy, cinematic style with soft vocals and a reflective tone, like someone finding clarity after being lost.</em></li>
+                    <li>(Nosaltres teníem el text del capítol que volíem que fos cantat)</li>
+                    <li><strong>Afegir la lletra</strong>, de la la història cocreada amb Gemini, i modificada amb ChatGPT, per tal que SUNO la llegís i la “transformés” i posar-la al nostre capítol.</li>
+                    <li><strong>Style / Music description</strong> (en anglès, com funciona millor a Suno): <em>Medieval Catalan song in the style of early music and historical performance. Slow to moderate tempo. Modal harmony (Dorian and Phrygian modes). Sparse instrumentation: viola da gamba, medieval lute, rebec, frame drum, and subtle drone. Male and female voices, clear diction, solemn and mystical atmosphere. Inspired by Iberian medieval and Renaissance traditions. Storytelling, sacred and legendary tone, austere and evocative, no modern instruments.</em></li>
                     <li><strong>Generar la cançó i escoltar les versions proposades</strong>.</li>
-                    <li><strong>Triar la millor i obtenir l’enllaç per compartir-la</strong>. Així la música es converteix en part de l’aventura, no com un simple recurs extern, sinó com una força narrativa que acompanya el procés creatiu i l’emoció de la protagonista.</li>
+                    <li><strong>Triar la millor i obtenir l’enllaç per compartir-la</strong>. Així la música es converteix en part de l’aventura, no com un simple recurs extern, sinó com una força narrativa que ens ajuda a entendre el capítol.</li>
                 </ol>`,
                 choices: [
                     { text: "- Veure algunes propostes d'ús-", target: "Propostes_aula_Suno" },
@@ -452,7 +635,8 @@
         function App() {
             const [currentNodeId, setCurrentNodeId] = useState('Introducci');
             const [history, setHistory] = useState(['Introducci']);
-            const [animationKey, setAnimationKey] = useState(0); // Clau per forçar la renderització i animació
+            const [animationKey, setAnimationKey] = useState(0); 
+            const [navDirection, setNavDirection] = useState('forward'); // 'forward' | 'backward'
             const topRef = useRef(null);
 
             const currentNode = storyData[currentNodeId];
@@ -467,16 +651,35 @@
                 }
             }, [currentNodeId]);
 
+            // Oculta hinge/overlay tras completar el pase de página
+            useEffect(() => {
+                if (typeof window === 'undefined' || !window.__turningHTML) return;
+                const t = setTimeout(() => {
+                    try { delete window.__turningHTML; } catch {}
+                }, 1250);
+                return () => clearTimeout(t);
+            }, [animationKey, isBookMode]);
+
             const handleChoice = (targetId) => {
                 if (targetId === 'END') return;
+                try {
+                    const el = document.getElementById('page-body');
+                    window.__turningHTML = el ? el.innerHTML : '';
+                } catch {}
+                setNavDirection('forward');
                 setHistory([...history, targetId]);
                 setCurrentNodeId(targetId);
-                setAnimationKey(prev => prev + 1); // Dispara l'animació
+                setAnimationKey(prev => prev + 1);
             };
 
             const handleBack = () => {
                 if (history.length > 1) {
+                    try {
+                        const el = document.getElementById('page-body');
+                        window.__turningHTML = el ? el.innerHTML : '';
+                    } catch {}
                     const newHistory = history.slice(0, -1);
+                    setNavDirection('backward');
                     setHistory(newHistory);
                     setCurrentNodeId(newHistory[newHistory.length - 1]);
                     setAnimationKey(prev => prev + 1);
@@ -485,6 +688,11 @@
 
             const handleReset = () => {
                 if (window.confirm("Vols reiniciar l'aventura?")) {
+                    try {
+                        const el = document.getElementById('page-body');
+                        window.__turningHTML = el ? el.innerHTML : '';
+                    } catch {}
+                    setNavDirection('backward');
                     setCurrentNodeId('Introducci');
                     setHistory(['Introducci']);
                     setAnimationKey(prev => prev + 1);
@@ -492,6 +700,11 @@
             };
 
             const goHome = () => {
+                try {
+                    const el = document.getElementById('page-body');
+                    window.__turningHTML = el ? el.innerHTML : '';
+                } catch {}
+                setNavDirection('backward');
                 setCurrentNodeId('Introducci');
                 setHistory(['Introducci']);
                 setAnimationKey(prev => prev + 1);
@@ -503,7 +716,6 @@
                 <div className={`min-h-screen font-sans selection:bg-amber-100 transition-colors duration-500 ${isBookMode ? 'bg-[#2c2a25]' : 'bg-stone-100'}`}>
                     <div ref={topRef} />
                     
-                    {/* Header */}
                     <header className="bg-emerald-800 text-white shadow-lg sticky top-0 z-50">
                         <div className="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
                             <div className="flex items-center gap-2 w-full max-w-lg">
@@ -534,110 +746,121 @@
                         </div>
                     </header>
 
-                    {/* Main Content */}
                     <main className="max-w-3xl mx-auto px-4 py-8 pb-20 perspective-container">
-                        {/* El 'key' força a React a recrear el component, disparant l'animació CSS */}
                         <div key={animationKey} className={`
-                            page-enter overflow-hidden transition-all duration-500 ease-in-out relative
+                            ${isBookMode ? 'book-page-texture' : 'fade-enter'}
+                            transition-all duration-500 ease-in-out relative
                             ${isBookMode 
                                 ? 'rounded-r-md rounded-l-sm ml-4 shadow-2xl' 
                                 : 'bg-white rounded-xl shadow-xl border border-stone-200'
                             }
                         `}>
+                            {isBookMode && typeof window !== 'undefined' && window.__turningHTML && (
+                                <React.Fragment>
+                                    <div aria-hidden="true" className={`page-turn-overlay ${navDirection === 'backward' ? 'flip-right' : 'flip-left'}`}>
+                                        <div className="pl-16 pr-8 py-8 min-h-[600px]">
+                                            {typeof window !== 'undefined' && window.__turningHTML && (
+                                                <div className={`prose max-w-none prose-stone prose-lg prose-p:font-serif prose-headings:font-serif text-stone-900`} dangerouslySetInnerHTML={{ __html: window.__turningHTML }} />
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div aria-hidden="true" className={`page-shadow-cast ${navDirection === 'backward' ? 'flip-right' : 'flip-left'}`}></div>
+                                    <div aria-hidden="true" className={`spine-hinge ${navDirection === 'backward' ? 'hinge-right' : 'hinge-left'}`}></div>
+                                    <div aria-hidden="true" className="spine-seam-mask"></div>
+                                </React.Fragment>
+                            )}
                             
-                            {/* Llibre "Spine" i Fons del llibre */}
                             {isBookMode && (
                                 <React.Fragment>
-                                    <div className="absolute top-0 bottom-0 left-0 w-12 z-20 bg-gradient-to-r from-emerald-950 via-emerald-800 to-emerald-900 shadow-[2px_0_5px_rgba(0,0,0,0.5)] border-r border-emerald-950"></div>
-                                    <div className="absolute top-0 bottom-0 left-0 w-4 z-30 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                                    <div className="absolute top-0 bottom-0 left-0 w-12 z-[80] bg-gradient-to-r from-emerald-950 via-emerald-800 to-emerald-900 shadow-[2px_0_5px_rgba(0,0,0,0.5)] pointer-events-none"></div>
+                                    <div className="absolute top-0 bottom-0 left-0 w-4 z-[90] bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
                                 </React.Fragment>
                             )}
 
-                            {/* Contingut interior (Pàgina) */}
-                            <div className={`${isBookMode ? 'bg-[#fff8e1] pl-16 pr-8 py-8 min-h-[600px] shadow-[inset_10px_0_20px_rgba(0,0,0,0.1)]' : ''}`}>
+                            <div className={`${isBookMode ? 'pl-16 pr-8 py-8 min-h-[600px] shadow-[inset_10px_0_20px_rgba(0,0,0,0.1)]' : ''} relative overflow-hidden transform-style-3d`}>
 
-                                {/* Imatge de capçalera del node */}
-                                {currentNode.image && (
-                                    <div className={`w-full relative bg-gray-200 ${isBookMode ? 'mb-8 shadow-md border-4 border-white transform -rotate-1' : ''}`}>
-                                        <img 
-                                            src={currentNode.image} 
-                                            alt={currentNode.title} 
-                                            className={`w-full h-auto ${isBookMode ? 'sepia-[.20] contrast-[0.9]' : ''}`}
-                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                        />
-                                        {!isBookMode && (
-                                            <div className="absolute bottom-4 left-4 text-white">
-                                                <h2 className="text-2xl font-bold shadow-black drop-shadow-md">{currentNode.title}</h2>
-                                            </div>
-                                        )}
-                                        {!isBookMode && <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>}
-                                    </div>
-                                )}
+                                <div id="page-body" className={`${isBookMode ? 'page-content-static relative z-10' : ''}`}>
+                                    {currentNode.image && (
+                                        <div className={`w-full relative bg-gray-200 ${isBookMode ? 'mb-8 shadow-md border-4 border-white transform -rotate-1' : 'bg-gray-200 rounded-lg overflow-hidden mb-6'}`}>
+                                            <img 
+                                                src={currentNode.image} 
+                                                alt={currentNode.title} 
+                                                className={`w-full h-auto ${isBookMode ? 'sepia-[.20] contrast-[0.9]' : ''}`}
+                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                            />
+                                            {!isBookMode && (
+                                                <div className="absolute bottom-4 left-4 text-white">
+                                                    <h2 className="text-2xl font-bold shadow-black drop-shadow-md">{currentNode.title}</h2>
+                                                </div>
+                                            )}
+                                            {!isBookMode && <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>}
+                                        </div>
+                                    )}
 
-                                {!currentNode.image && (
-                                    <div className={`${isBookMode ? 'border-b-2 border-emerald-900/30 mb-8 pb-2' : 'bg-emerald-50 border-b border-emerald-100 px-6 py-4'}`}>
-                                        <h2 className={`text-2xl font-bold ${isBookMode ? 'text-emerald-900 font-serif text-3xl italic' : 'text-emerald-900'}`}>{currentNode.title}</h2>
-                                    </div>
-                                )}
-                                
-                                {isBookMode && currentNode.image && (
-                                    <div className="mb-6 text-center">
-                                        <h2 className="text-3xl font-serif font-bold text-emerald-950 border-b-2 border-emerald-900/20 inline-block pb-2 px-4">{currentNode.title}</h2>
-                                    </div>
-                                )}
-
-                                <div className={`${!isBookMode ? 'p-6 md:p-8 space-y-6' : 'space-y-6'}`}>
+                                    {!currentNode.image && (
+                                        <div className={`${isBookMode ? 'border-b-2 border-emerald-900/30 mb-8 pb-2' : 'bg-emerald-50 border-b border-emerald-100 px-6 py-4'}`}>
+                                            <h2 className={`text-2xl font-bold ${isBookMode ? 'text-emerald-900 font-serif text-3xl italic' : 'text-emerald-900'}`}>{currentNode.title}</h2>
+                                        </div>
+                                    )}
                                     
-                                    <div className={`prose max-w-none ${isBookMode ? 'prose-stone prose-lg prose-p:font-serif prose-headings:font-serif text-stone-900' : 'prose-stone'}`}>
-                                        <TextRenderer content={currentNode.content} isBookMode={isBookMode} />
-                                    </div>
-
-                                    {currentNode.audio && (
-                                        <div className={`${isBookMode ? 'bg-[#f3ead2] border-emerald-900/20' : 'bg-amber-50 border-amber-200'} rounded-lg p-4 border flex flex-col gap-2 mt-6`}>
-                                            <div className={`flex items-center gap-2 ${isBookMode ? 'text-emerald-900' : 'text-amber-800'} font-medium`}>
-                                                <IconVolume2 className="h-5 w-5" />
-                                                <span>{currentNode.audioLabel || "Àudio del capítol"}</span>
-                                            </div>
-                                            <audio controls className="w-full mt-2 mix-blend-multiply" src={currentNode.audio}></audio>
+                                    {isBookMode && currentNode.image && (
+                                        <div className="mb-6 text-center">
+                                            <h2 className="text-3xl font-serif font-bold text-emerald-950 border-b-2 border-emerald-900/20 inline-block pb-2 px-4">{currentNode.title}</h2>
                                         </div>
                                     )}
 
-                                    {currentNode.links && (
-                                        <div className="flex flex-col gap-2 mt-6">
-                                            {currentNode.links.map((link, idx) => (
-                                                <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-lg transition-colors border group ${isBookMode ? 'bg-[#fdfbf7] border-stone-300 text-emerald-900 hover:bg-white shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100'}`}>
-                                                    <IconMusic className="h-5 w-5 flex-shrink-0" />
-                                                    <span className="font-medium">{link.text}</span>
-                                                    <IconExternalLink className="h-4 w-4 ml-auto opacity-50 group-hover:opacity-100" />
-                                                </a>
-                                            ))}
+                                    <div className={`${!isBookMode ? 'p-6 md:p-8 space-y-6' : 'space-y-6'}`}>
+                                        <div className={`prose max-w-none ${isBookMode ? 'prose-stone prose-lg prose-p:font-serif prose-headings:font-serif text-stone-900' : 'prose-stone'}`}>
+                                            <TextRenderer content={currentNode.content} isBookMode={isBookMode} />
                                         </div>
-                                    )}
 
-                                    <hr className={`${isBookMode ? 'border-emerald-900/20' : 'border-stone-200'} my-8`} />
-
-                                    <div className="space-y-3 pb-8">
-                                        <h3 className={`text-sm uppercase tracking-wider text-stone-500 font-semibold mb-3 ${isBookMode ? 'font-serif text-center text-emerald-900/60' : ''}`}>
-                                            {isBookMode ? '❧ Què vols fer? ❧' : 'Què vols fer?'}
-                                        </h3>
-                                        {currentNode.choices && currentNode.choices.map((choice, index) => (
-                                            <button key={index} onClick={() => handleChoice(choice.target)} className={`
-                                                w-full text-left p-4 transition-all duration-200 flex items-center justify-between group shadow-sm hover:shadow-md
-                                                ${isBookMode 
-                                                    ? 'bg-white border border-stone-300 hover:border-emerald-700 rounded-sm font-serif text-stone-900 text-lg' 
-                                                    : 'rounded-lg border-2 border-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 bg-white font-medium text-emerald-900'
-                                                }
-                                            `}>
-                                                <span className={`${isBookMode ? 'group-hover:text-emerald-900' : 'group-hover:text-emerald-700'}`}>{choice.text}</span>
-                                                <IconArrowRight className={`h-5 w-5 transform group-hover:translate-x-1 transition-transform ${isBookMode ? 'text-emerald-800' : 'text-emerald-400 group-hover:text-emerald-600'}`} />
-                                            </button>
-                                        ))}
-                                        {(!currentNode.choices || currentNode.choices.length === 0) && (
-                                            <div className="text-center p-4 text-stone-500 italic">
-                                                Fi de l'aventura per ara.
-                                                <button onClick={handleReset} className="block mx-auto mt-4 text-emerald-600 font-bold hover:underline">Tornar a començar</button>
+                                        {currentNode.audio && (
+                                            <div className={`${isBookMode ? 'bg-[#f3ead2] border-emerald-900/20' : 'bg-amber-50 border-amber-200'} rounded-lg p-4 border flex flex-col gap-2 mt-6`}>
+                                                <div className={`flex items-center gap-2 ${isBookMode ? 'text-emerald-900' : 'text-amber-800'} font-medium`}>
+                                                    <IconVolume2 className="h-5 w-5" />
+                                                    <span>{currentNode.audioLabel || "Àudio del capítol"}</span>
+                                                </div>
+                                                <audio controls className="w-full mt-2 mix-blend-multiply" src={currentNode.audio}></audio>
                                             </div>
                                         )}
+
+                                        {currentNode.links && (
+                                            <div className="flex flex-col gap-2 mt-6">
+                                                {currentNode.links.map((link, idx) => (
+                                                    <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-lg transition-colors border group ${isBookMode ? 'bg-[#fdfbf7] border-stone-300 text-emerald-900 hover:bg-white shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100'}`}>
+                                                        <IconMusic className="h-5 w-5 flex-shrink-0" />
+                                                        <span className="font-medium">{link.text}</span>
+                                                        <IconExternalLink className="h-4 w-4 ml-auto opacity-50 group-hover:opacity-100" />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <hr className={`${isBookMode ? 'border-emerald-900/20' : 'border-stone-200'} my-8`} />
+
+                                        <div className="space-y-3 pb-8">
+                                            <h3 className={`text-sm uppercase tracking-wider text-stone-500 font-semibold mb-3 ${isBookMode ? 'font-serif text-center text-emerald-900/60' : ''}`}>
+                                                {isBookMode ? '❧ Què vols fer? ❧' : 'Què vols fer?'}
+                                            </h3>
+                                            {currentNode.choices && currentNode.choices.map((choice, index) => (
+                                                <button key={index} onClick={() => handleChoice(choice.target)} className={`
+                                                    w-full text-left p-4 transition-all duration-200 flex items-center justify-between group shadow-sm hover:shadow-md
+                                                    ${isBookMode 
+                                                        ? 'bg-white border border-stone-300 hover:border-emerald-700 rounded-sm font-serif text-stone-900 text-lg' 
+                                                        : 'rounded-lg border-2 border-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 bg-white font-medium text-emerald-900'
+                                                    }
+                                                `}>
+                                                    <span className={`${isBookMode ? 'group-hover:text-emerald-900' : 'group-hover:text-emerald-700'}`}>{choice.text}</span>
+                                                    <IconArrowRight className={`h-5 w-5 transform group-hover:translate-x-1 transition-transform ${isBookMode ? 'text-emerald-800' : 'text-emerald-400 group-hover:text-emerald-600'}`} />
+                                                </button>
+                                            ))}
+                                            {(!currentNode.choices || currentNode.choices.length === 0) && (
+                                                <div className="text-center p-4 text-stone-500 italic">
+                                                    Fi de l'aventura per ara.
+                                                    <button onClick={handleReset} className="block mx-auto mt-4 text-emerald-600 font-bold hover:underline">Tornar a començar</button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
