@@ -540,10 +540,19 @@
 
             const handleChoice = (targetId) => {
                 if (targetId === 'END') return;
-                try {
-                    const el = document.getElementById('page-body');
-                    window.__turningHTML = el ? el.innerHTML : '';
-                } catch {}
+                
+                // CONDICIÓ ESPECIAL: Si estem a "perTalDeVncerLaS" i anem a "PortadaLlibre",
+                // no capturem l'HTML previ per evitar l'animació de gir de pàgina.
+                // Això fa que el canvi sigui instantani (o només canvi d'estil de fons).
+                if (currentNodeId === 'perTalDeVncerLaS' && targetId === 'PortadaLlibre') {
+                    try { delete window.__turningHTML; } catch {}
+                } else {
+                    try {
+                        const el = document.getElementById('page-body');
+                        window.__turningHTML = el ? el.innerHTML : '';
+                    } catch {}
+                }
+
                 setNavDirection('forward');
                 setHistory([...history, targetId]);
                 setCurrentNodeId(targetId);
