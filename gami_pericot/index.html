@@ -51,7 +51,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- Icones SVG (inline per no dependre de llibreries externes) ---
+        // --- Icones SVG ---
         const IconBookOpen = ({ className }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         );
@@ -82,23 +82,24 @@
             'Introducci': 1,
             'dinsDaquestViatg': 2,
             'perTalDeVncerLaS': 3,
-            'Prleg': 4,
-            'Captol_1': 5,
-            'Suno': 5, 'Propostes_aula_Suno': 5,
-            'Captol_2': 6,
-            'Captol_3': 7,
-            'Captol_4': 8,
-            'NotebookLM': 8, 's_NotebookLM': 8,
-            'Captol_5': 9,
-            'Captol_6': 10,
-            'Nano_Banana': 10, 's_Nano_Banana': 10,
-            'Captol_7': 11,
-            'Captol_8': 12,
-            'Captol_9': 13,
-            'Brisk': 13,
-            'Eines': 14
+            'PortadaLlibre': 4, // Nova pàgina portada
+            'Prleg': 5,
+            'Captol_1': 6,
+            'Suno': 6, 'Propostes_aula_Suno': 6,
+            'Captol_2': 7,
+            'Captol_3': 8,
+            'Captol_4': 9,
+            'NotebookLM': 9, 's_NotebookLM': 9,
+            'Captol_5': 10,
+            'Captol_6': 11,
+            'Nano_Banana': 11, 's_Nano_Banana': 11,
+            'Captol_7': 12,
+            'Captol_8': 13,
+            'Captol_9': 14,
+            'Brisk': 14,
+            'Eines': 15
         };
-        const totalSteps = 14;
+        const totalSteps = 15;
 
         const storyData = {
             "Introducci": {
@@ -140,7 +141,13 @@
                     </ul>
                     </li>
                 </ul>`,
-                choices: [{ text: "L'expedició ja està en marxa... Ens veiem a la Font d'en Pericot", target: "Prleg" }]
+                choices: [{ text: "L'expedició ja està en marxa... Ens veiem a la Font d'en Pericot", target: "PortadaLlibre" }]
+            },
+            "PortadaLlibre": {
+                title: " ",
+                image: "https://raultorres-ia.github.io/apps/gami_pericot/Portada.jpg",
+                content: `<div class="text-center italic text-stone-600 mt-4 font-serif">A punt per endinsar-te a la llegenda?</div>`,
+                choices: [{ text: "Llegeix: El Tresor de la Font d’en Pericot", target: "Prleg" }]
             },
             "Prleg": {
                 title: "Pròleg",
