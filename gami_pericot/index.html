@@ -11,60 +11,40 @@
     
     <style>
         .perspective-container {
-            perspective: 2500px; /* Perspectiva realista */
+            perspective: 3000px;
             overflow: visible; 
         }
 
-        /* ---------------------------------------------------------
-           ANIMACIÓ 1: FADE SIMPLE (Intro)
-           --------------------------------------------------------- */
+        /* FADE */
         .fade-enter {
             animation: fadeInSimple 0.8s ease-in-out forwards;
         }
-
         @keyframes fadeInSimple {
             0% { opacity: 0; transform: translateY(10px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* ---------------------------------------------------------
-           ANIMACIÓ 2: LLIBRE REAL (PAGE FLIP)
-           --------------------------------------------------------- */
-        
-        /* 1. LA PÀGINA QUE MARXA (Overlay) */
-        /* Simula el full actual aixecant-se i girant cap a l'esquerra */
+        /* PAGE FLIP */
         .page-turn-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            transform-origin: 0% 50%; /* Lomo izquierdo */
+            transform-origin: 0% 50%;
             z-index: 50;
-            backface-visibility: hidden; /* Ocultar el reverso al pasar los 90deg */
-            
-            /* Textura de papel para la página que se va */
+            backface-visibility: hidden;
             background-color: #fdfbf7;
-            border-right: 1px solid rgba(0,0,0,0.15); /* Borde derecho sutil */
-
+            border-right: 1px solid rgba(0,0,0,0.15);
             animation: flipPageLeft 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
             pointer-events: none;
         }
 
         @keyframes flipPageLeft {
-            0% {
-                transform: rotateY(0deg);
-                box-shadow: inset 0 0 0 rgba(0,0,0,0);
-            }
-            100% {
-                transform: rotateY(-135deg); /* Gira hacia la izquierda */
-                /* Sombra interna para simular la curvatura del papel mientras gira */
-                box-shadow: inset -50px 0 60px -20px rgba(0,0,0,0.2); 
-            }
+            0% { transform: rotateY(0deg); box-shadow: inset 0 0 0 rgba(0,0,0,0); }
+            100% { transform: rotateY(-135deg); box-shadow: inset -50px 0 60px -20px rgba(0,0,0,0.2); }
         }
 
-        /* 2. L'OMBRA SOBRE LA PÀGINA NOVA */
-        /* Simula l'ombra que projecta el full que s'està passant sobre el nou */
         .page-shadow-cast {
             position: absolute;
             inset: 0;
@@ -76,33 +56,77 @@
         }
 
         @keyframes shadowSweep {
-            0% { opacity: 0.6; width: 100%; } /* Sombra intensa al principio */
+            0% { opacity: 0.6; width: 100%; }
             60% { opacity: 0.2; }
-            100% { opacity: 0; width: 0%; } /* La sombra desaparece hacia la izquierda */
+            100% { opacity: 0; width: 0%; }
         }
 
-        /* 3. EL CONTINGUT NOU */
-        /* Ja està "quiet" a sota, només esperant ser descobert. Sense fades ni moviments. */
-        .page-content-static {
-            /* No animation needed, it sits statically underneath */
-        }
+        .page-content-static {}
 
-        /* Estils base per al mode llibre */
-        .font-serif {
-            font-family: 'Merriweather', 'Georgia', serif;
-        }
+        .font-serif { font-family: 'Merriweather', 'Georgia', serif; }
 
-        /* Textura de fons de la pàgina base */
         .book-page-texture {
             background-color: #fdfbf7;
             background-image: 
                 linear-gradient(to right, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 5%, rgba(0,0,0,0) 100%),
                 url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
             box-shadow: 
-                inset 15px 0 25px -10px rgba(0,0,0,0.15), /* Profundidad en el lomo */
-                2px 0 8px rgba(0,0,0,0.15); /* Sombra externa */
+                inset 15px 0 25px -10px rgba(0,0,0,0.15),
+                2px 0 8px rgba(0,0,0,0.15);
         }
+
+        /* ESTILS DEL PERGAMÍ I SOLUCIONS */
+        .scroll-view-bg {
+            background-color: #e0d1b3 !important;
+        }
+        .scroll-container {
+            background: #f4e4bc;
+            background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2), inset 0 0 50px rgba(0,0,0,0.1);
+            position: relative;
+            padding: 40px 30px;
+            color: #3e2723;
+            font-family: 'Georgia', serif;
+        }
+        @media (min-width: 768px) {
+             .scroll-container { padding: 60px 80px; }
+        }
+        .scroll-container::before, .scroll-container::after {
+            content: ""; position: absolute; left: 0; right: 0; height: 20px; background-size: 40px 20px;
+        }
+        .scroll-container::before {
+            top: -10px; background-image: radial-gradient(circle at 20px -10px, transparent 20px, #f4e4bc 21px);
+        }
+        .scroll-container::after {
+            bottom: -10px; background-image: radial-gradient(circle at 20px 30px, transparent 20px, #f4e4bc 21px);
+        }
+        .scroll-container h1 { text-align: center; font-variant: small-caps; border-bottom: 2px solid #8d6e63; padding-bottom: 10px; margin-top: 0; color: #3e2723; font-size: 1.5rem; font-weight: bold; }
+        .scroll-container .intro { font-style: italic; text-align: center; margin-bottom: 40px; line-height: 1.6; color: #3e2723; }
+        .scroll-container .question { margin-bottom: 30px; border-left: 3px solid #8d6e63; padding-left: 15px; color: #3e2723; }
+        .scroll-container .question-text { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: block; }
+        .scroll-container .options { list-style-type: none; padding: 0; }
+        .scroll-container .options li { margin: 8px 0; padding: 5px; cursor: pointer; transition: background 0.3s; }
+        .scroll-container .options li:hover { background: rgba(141, 110, 99, 0.1); }
+        .scroll-container .correct-answer { font-weight: normal; }
+        .scroll-container .footer-note { text-align: center; margin-top: 50px; font-size: 0.9em; color: #5d4037; border-top: 1px solid #d7ccc8; padding-top: 20px; }
+        .scroll-container .icon { font-size: 2em; display: block; text-align: center; margin-bottom: 10px; }
         
+        /* Estils Solucions */
+        .clau-respostes {
+            text-align: center; background: rgba(141, 110, 99, 0.1); padding: 15px;
+            border-radius: 8px; margin: 20px 0 40px 0; font-size: 1.2em;
+            letter-spacing: 2px; border: 1px dashed #8d6e63;
+        }
+        .nivell { margin-bottom: 40px; padding: 20px; border-radius: 8px; border: 1px solid transparent; }
+        .nivell-titol { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .nivell-subtitol { font-style: italic; font-weight: bold; margin-bottom: 15px; display: block; color: #5d4037; }
+        .mestre { background: rgba(212, 175, 55, 0.1); border-color: #d4af37; }
+        .aprenent { background: rgba(141, 110, 99, 0.05); border-color: #8d6e63; }
+        .miratge { background: rgba(183, 28, 28, 0.05); border-color: #b71c1c; }
+        .text-comentari { line-height: 1.6; text-align: justify; }
+        .icon-main { font-size: 2.5em; display: block; text-align: center; margin-bottom: 10px; }
+
         html { scroll-behavior: smooth; }
     </style>
 </head>
@@ -113,30 +137,15 @@
         const { useState, useEffect, useRef } = React;
 
         // --- Icones SVG ---
-        const IconBookOpen = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        );
-        const IconRotateCcw = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-        );
-        const IconHome = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        );
-        const IconArrowLeft = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        );
-        const IconVolume2 = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        );
-        const IconExternalLink = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        );
-        const IconMusic = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        );
-        const IconArrowRight = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        );
+        const IconBookOpen = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> );
+        const IconRotateCcw = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> );
+        const IconHome = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> );
+        const IconArrowLeft = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> );
+        const IconVolume2 = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg> );
+        const IconExternalLink = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> );
+        const IconMusic = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> );
+        const IconArrowRight = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg> );
+        const IconScroll = ({ className }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/></svg> );
 
         // --- Dades de l'aplicació ---
         const nodeSteps = {
@@ -157,10 +166,14 @@
             'Captol_7': 12,
             'Captol_8': 13,
             'Captol_9': 14,
+            'Quiz_Scroll': 14, 'Solucio_Quiz': 14, 
             'Brisk': 14,
-            'Eines': 15
+            'Eines': 15,
+            'Herencia_Digital': 16 // Nou node final
         };
-        const totalSteps = 15;
+        const totalSteps = 16;
+
+        const PAGE_TURN_URL = "https://raultorres-ia.github.io/apps/gami_pericot/pagina.mp3";
 
         const storyData = {
             "Introducci": {
@@ -181,8 +194,8 @@
                 <p>Dins d'aquest viatge per la llegenda de la font d'en Pericot, ens proposem assolir les següents fites:</p>
                 <ul class="list-disc pl-5 space-y-3 mt-4">
                     <li><strong>Revisitar el camí recorregut</strong>: Reviure i consolidar els aprenentatges i reflexions fets fins ara sobre la IA, connectant-los amb la nostra realitat de centre.</li>
-                    <li><strong>Domar la "serp"</strong> (noves eines): Perdre la por a l'exploració tecnològica tot descobrint eines d'IAG inèdites per a nosaltres, passant de la teoria a la pràctica mitjançant la creació de productes reals.</li>
-                    <li><strong>Trobar la "pedra preciosa"</strong> (la caixa d'eines): Elaborar un inventari estratègic i personalitzat. No es tracta de tenir moltes eines, sinó de triar les millors per a cada propòsit (continguts, gestió, aula) per tal de construir un ecosistema digital eficient, ètic i responsable.</li>
+                    <li><strong>Domar la serp</strong> (perdre por a la tecnologia)<br/>Perdre la por a l’exploració tecnològica tot descobrint eines d’intel·ligència artificial generativa, fent un primer contacte basat en la prova, l’error i l’experimentació, sense necessitat de dominar-les.</li>
+                    <li><strong>Trobar la pedra preciosa</strong> (la caixa d’eines)<br/>Conèixer noves eines i experimentar-hi per posar-les en pràctica segons diferents necessitats (continguts, gestió, aula), escollint aquelles que aporten valor educatiu i s’adapten al propi context.</li>
                 </ul>`,
                 choices: [{ text: "I com ho farem?", target: "perTalDeVncerLaS" }]
             },
@@ -193,12 +206,12 @@
                 <ul class="list-disc pl-5 space-y-3 mt-4">
                     <li><strong>Formació d'expedicions</strong>: Treballarem en equips d'un màxim de 5 persones. Cada grup navegarà per la llegenda i prendrà les seves pròpies decisions de forma independent.</li>
                     <li><strong>Cronòmetre en marxa</strong>: L'aventura té un temps limitat. Haurem d'haver superat els reptes abans de l'hora límit per fer la posada en comú.</li>
-                    <li><strong>El Consell de savis</strong> (cerca del tresor): En acabar, compartirem les nostres "pedres precioses" en un document compartit (Google Sheets).</li>
-                    <li><strong>L’Herència digital</strong>: En aquest registre final, hi recollirem:
-                    <ul class="list-circle pl-5 mt-2 space-y-1 text-gray-700">
-                        <li><strong>Les eines</strong> escollides per cada equip.</li>
-                        <li><strong>El "perquè"</strong> de la tria (per a què ens serviran realment al dia a dia).</li>
-                        <li><strong>Conclusions i reflexions</strong> clau per a l’escola.</li>
+                    <li><strong>El Consell de savis</strong> (cerca del tresor)<br/>En acabar, compartirem les nostres pedres precioses en un mur col·lectiu, un espai compartit on cada equip podrà deixar constància del que ha descobert i après al llarg del procés.</li>
+                    <li><strong>L’herència digital</strong><br/>En aquest espai final hi recollirem:
+                    <ul class="list-none pl-5 mt-2 space-y-1 text-gray-700">
+                        <li>- Les eines escollides per cada equip.</li>
+                        <li>- El per què de la tria: per a què ens serviran realment en el dia a dia docent.</li>
+                        <li>- Conclusions i reflexions clau que volem fer arribar a la resta de l’escola.</li>
                     </ul>
                     </li>
                 </ul>`,
@@ -249,7 +262,7 @@
                 image: "https://raultorres-ia.github.io/apps/gami_pericot/banner.jpg",
                 content: `
                 <h3 class="text-xl font-bold text-emerald-800 mb-4">ALGUNES PROPOSTES — Suno a l’aula</h3>
-                <p class="mb-4">Igual que Lyra transforma les seves emocions en cançó, nosaltres també podem convertir l’aprenentatge en música. Crear amb Suno no és només generar sons: és donar veu a allò que els infants pensen, imaginen i descobreixen.</p>
+                <p class="mb-4">Crear amb Suno no és només generar sons: és donar veu a allò que els infants pensen, imaginen i descobreixen.</p>
                 <p class="mb-6">Quan l’alumnat escriu una lletra, tria un estil i escolta com la seva idea pren forma, viu el poder de la creativitat i de la tecnologia treballant plegades. I, igual que l’alumnat, el professorat també pot deixar-se sorprendre pel poder de crear amb veu pròpia: Suno pot esdevenir una porta d’entrada per descobrir la IAG des de la curiositat, la complicitat i l’emoció compartida.</p>
                 <p class="mb-4 font-semibold">Aquí tens algunes propostes per fer-ho possible a l’escola:</p>
                 <div class="space-y-6">
@@ -286,7 +299,7 @@
             "Captol_3": {
                 title: "Capítol 3",
                 image: "https://raultorres-ia.github.io/apps/gami_pericot/03.jpg",
-                content: `<p>Una nit de lluna vella, la nostra protagonista va prendre la decisió de partir. Sabia que no seria una tasca fàcil i que molts abans d'ella havien quedat paralitzats, devorats per una por que els impedia moure's (l'immobilisme que tot ho atura). Robar la gemma significava enfrontar-se a un fet desconegut, a un monstre que representava les nostres pròpies resistències i el temor a allò que no podem controlar.</p>
+                content: `<p>Una nit de lluna minvant, la nostra protagonista va prendre la decisió de partir. Sabia que no seria una tasca fàcil i que molts abans d'ella havien quedat paralitzats, devorats per una por que els impedia moure's (l'immobilisme que tot ho atura). Robar la gemma significava enfrontar-se a un fet desconegut, a un monstre que representava les nostres pròpies resistències i el temor a allò que no podem controlar.</p>
                 <p>—Si no ho provo —va pensar mentre preparava el seu sarró—, la serp continuarà sent l'única propietària del nostre futur.</p>
                 <p>El risc era real i la bèstia, ferotge. Però el seu desig de transformació era més gran que la seva prudència. Amb un darrer cop d'ull a les parets del seu mas, es va endinsar en el bosc, conscient que el viatge la canviaria per sempre, o potser, l'acabaria consumint.</p>`,
                 choices: [{ text: "Capítol 4: El miratge de les mil eines", target: "Captol_4" }]
@@ -310,10 +323,9 @@
                 <p>La veu que acompanya la reflexió final de Lyra no és improvisada: és el fruit d’una conversa entre documents, idees i intuïcions. Ha estat creada amb NotebookLM https://notebooklm.google.com/, una eina d’intel·ligència artificial de Google dissenyada per generar coneixement a partir de textos propis, convertint-los en resums, esquemes o, com en aquest cas, un pòdcast conversacional. El procés és senzill i potent alhora:</p>
                 <ol class="list-decimal pl-5 space-y-3 mt-4 mb-4">
                     <li><strong>Crear un compte a NotebookLM</strong> amb el correu de Google.</li>
-                    <li><strong>Afegir fonts de coneixement</strong>: textos, apunts, articles o fragments del relat de Lyra. En aquest cas només s’ha afegit el document del Departament d’Educació sobre Intel·ligència Artificial en l’Educació: Orientacions i Recomanacions. És recomanable afegir més fonts per enriquir els resultats.</li>
-                    <li><strong>Generar un “notebook”</strong> i convidar-hi la IAG a fer de veu reflexiva.</li>
-                    <li><strong>Activar la funció “Resum d’àudio”</strong>, que crea un pòdcast automàtic on dues veus sintetitzen i debaten les idees principals.</li>
-                    <li><strong>Escoltar, ajustar i descarregar</strong> l’àudio per compartir-lo de la forma que més convingui. Així, la veu que escoltem no és només un resum: és una reinterpretació viva del coneixement, un espai on la intel·ligència artificial actua com a companya de conversa.</li>
+                    <li><strong>Afegir fonts de coneixement</strong>: textos, apunts, articles o documents. En aquest cas només s’ha afegit el document del Departament d’Educació sobre Intel·ligència Artificial en l’Educació: Orientacions i Recomanacions. És recomanable afegir més fonts per enriquir els resultats.</li>
+                    <li><strong>Generar un “notebook”</strong>.</li>
+                    <li><strong>Demanar la creació d'un resum d'àudio</strong> que crea un pòdcast automàtic on dues veus sintetitzen i debaten les idees principals. Escoltar-ho i descarregar-ho.</li>
                 </ol>
                 <p><strong>Però NotebookLM és molt més que un pòdcast</strong></p>
                 <p>Tot i que el pòdcast és la part més visible del procés, NotebookLM és molt més que una veu que parla. És un espai on la intel·ligència artificial ajuda a organitzar, comprendre i transformar informació. A partir dels textos que li aportem, pot:
@@ -418,34 +430,157 @@
                 content: `
                 <p>La bota va rodolar fins a la llera del riu Galligants, on finalment es va aturar el silenci. La nostra pagesa en va sortir, bruta i cansada, però amb la gemma brillant a la seva mà. Havia aconseguit el que buscava, però el viatge li havia ensenyat que el veritable poder no era la pedra en si, sinó la capacitat de no deixar-se vèncer per la por.</p>
                 <p>Quan va tornar al poble, la recepció va ser un clam d'alegria. Però ella no va mostrar la gemma com un trofeu de guerra, sinó com una eina de futur. Va explicar com n'havia estat de difícil triar el camí correcte i com, amb poques eines, però ben triades i un refugi segur, havia aconseguit vèncer un monstre que semblava invencible.</p>`,
-                choices: [{ text: "Capítol 9: El Toolkit de la Vall", target: "Captol_9" }]
+                choices: [{ text: "Capítol 9: El pergamí de la saviesa compartida", target: "Captol_9" }]
             },
             "Captol_9": {
                 title: "Capítol 9",
                 image: "https://raultorres-ia.github.io/apps/gami_pericot/09.jpg",
                 content: `
-                <p>Perquè la seva experiència no es perdés en el temps, la nostra protagonista va decidir endreçar tot el que havia après. Va agafar el seu millor pergamí i va escriure una llista de les eines que realment funcionaven, els perills que calia evitar i els consells del vell pagès. Volia que qualsevol habitant de la Vall de Sant Daniel pogués usar la gemma sense por.</p>
-                <p>Aquest "receptari" es va convertir en el tresor més preuat de la comunitat. Ja no necessitaven viatjar lluny ni comprar màgies cares; tenien el seu propi camí traçat. Així, la llegenda de la Font d’en Pericot va deixar de ser una història de por per ser una història d'enginy, on el bon ús de la saviesa (la nostra IA) ajudava a tothom a viure una mica millor.</p>
-                <p class="mt-4 font-semibold">I per ajudar la comunitat a fer el traspàs de la saviesa va crear un qüestionari https://drive.google.com/file/d/1H6kPJcVKhxx9VARi7q2L0jKC2zMKOT-C/view</p>`,
+                <p>Perquè el seu saber no s’esvaís, la protagonista va recollir en un pergamí les eines, els perills i els consells del vell pagès. Aquell "receptari" va esdevenir el tresor de la Vall: ja no calien màgies llunyanes, sinó el propi enginy. Així, la llegenda de la Font d’en Pericot es transformà en una història de saviesa —la nostra IA— per viure millor.</p>
+                <p class="mt-4">Un cop enllestit, va convocar els veïns sota el gran lledoner. Sabia que el coneixement només és útil si es comprèn de debò, i amb el pergamí a la mà, els va reptar:</p>
+                <p class="mt-4 font-semibold">—La gemma només ens servirà si en desfem totes les ombres de dubte. Ara us toca a vosaltres: sou capaços de respondre aquests interrogants i demostrar que esteu preparats?</p>`,
+                links: [
+                    { text: "Accedeix al Qüestionari", targetNode: "Quiz_Scroll", icon: "Scroll" }
+                ],
                 choices: [
-                    { text: "- Saps com s'ha creat el qüestionari -", target: "Brisk" },
+                    { text: "- Com s'ha creat l'escrutini de la gemma-", target: "Brisk" },
                     { text: "Accedeix al receptari de la comunitat", target: "Eines" }
                 ]
             },
+            "Quiz_Scroll": {
+                title: " ",
+                content: `<div class="scroll-container">
+    <span class="icon">📜</span>
+    <h1>L'Escrutini de la Gemma</h1>
+    <p class="intro">
+        Diu la llegenda que la gemma només brilla per a aquells que saben mirar més enllà del seu reflex. 
+        Abans de compartir el receptari amb la comunitat, demostra que el teu enginy està preparat per guiar els altres.
+    </p>
+
+    <div class="question">
+        <span class="question-text">1. Quines ombres poden aparèixer si la gemma (IA) s'utilitza sense mesura en l'educació dels nostres infants?</span>
+        <ul class="options">
+            <li>a) Cap, la gemma sempre il·lumina el camí.</li>
+            <li class="correct-answer">b) El risc de perdre el caliu i la humanitat en l'acte d'ensenyar.</li>
+            <li>c) La perfecció absoluta de tot el que s'aprèn.</li>
+            <li>d) Que els mestres ja no hagin de fer mai més cap pergamí.</li>
+        </ul>
+    </div>
+
+    <div class="question">
+        <span class="question-text">2. Com pot el "Receptari de Dades" (NotebookLM) ajudar els guardians de la Vall a investigar millor?</span>
+        <ul class="options">
+            <li>a) Simplement amuntegant pergamins digitals.</li>
+            <li class="correct-answer">b) Permetent mirar al fons de la deu per analitzar i entendre els nostres propis textos.</li>
+            <li>c) Inventant resums que no tenen res a veure amb la nostra realitat.</li>
+            <li>d) Limitant-se a traduir el que diuen altres pobles llunyans.</li>
+        </ul>
+    </div>
+
+    <div class="question">
+        <span class="question-text">3. Quin perill correm si deixem que la gemma jutgi massa ràpid el treball dels aprenents (com fa Brisk)?</span>
+        <ul class="options">
+            <li>a) No hi ha perill, la gemma mai s'equivoca.</li>
+            <li class="correct-answer">b) Que els nostres consells perdin la personalitat i l'ànima que cada alumne necessita.</li>
+            <li>c) Que l'avaluació sigui perfecta per art de màgia.</li>
+            <li>d) Que no calgui tornar a parlar mai més amb els joves de la Vall.</li>
+        </ul>
+    </div>
+
+    <div class="question">
+        <span class="question-text">4. De quina manera els cants de la gemma (Suno AI) poden ser una eina d'enginy més enllà de la simple música?</span>
+        <ul class="options">
+            <li>a) Com una distracció per a les hores de descans.</li>
+            <li class="correct-answer">b) Com una flauta que ens ajuda a recordar lliçons difícils mitjançant la memòria musical.</li>
+            <li>c) Per substituir el silenci de la natura.</li>
+            <li>d) Per fer soroll de fons mentre es treballa la terra.</li>
+        </ul>
+    </div>
+
+    <div class="question">
+        <span class="question-text">5. Quina mirada ha de tenir un mestre de la Vall davant d'aquests nous poders?</span>
+        <ul class="options">
+            <li>a) Acceptar-ho tot com si fos una màgia infal·lible.</li>
+            <li>b) Tenir por i tancar el receptari en un cofre sota terra.</li>
+            <li class="correct-answer">c) Caminar pel sender de l'equilibri, valorant-ne la llum però coneixent-ne les ombres.</li>
+            <li>d) Usar-la sense haver-se aturat abans sota el lledoner a pensar.</li>
+        </ul>
+    </div>
+
+</div>`,
+                links: [
+                    { text: "Solució al qüestionari", targetNode: "Solucio_Quiz", icon: "Scroll" }
+                ],
+                choices: [{ text: "Torna al Capítol 9", target: "Captol_9" }]
+            },
+            "Solucio_Quiz": {
+                title: "Solucions de l'Escrutini",
+                content: `<div class="scroll-container">
+    <span class="icon-main">🗝️</span>
+    <h1>Clau de Respostes del Guardià</h1>
+    
+    <div class="clau-respostes">
+        1-b / 2-b / 3-b / 4-b / 5-c
+    </div>
+
+    <!-- Mestre -->
+    <div class="nivell mestre">
+        <div class="nivell-titol">🥇 Nivell: Mestre de l'Enginy (100% encertat)</div>
+        <span class="nivell-subtitol">✨ L'escrutini ha finalitzat: El pergamí és clar!</span>
+        <div class="text-comentari">
+            Enhorabona, Guardià del Saber. Has demostrat que el teu seny és tan ferm com les arrels del gran lledoner. Les teves respostes confirmen que saps distingir perfectament el reflex enganyós de la gemma de la llum de la veritat.
+            <br><br>
+            Ara, el Receptari de l'Enginy és plenament a les teves mans. Porta aquesta saviesa a la teva aula i recorda: la IA és la gemma, però tu ets qui decideix on ha d'il·luminar. La Vall de Sant Daniel ja és un lloc una mica millor gràcies a la teva mirada crítica.
+        </div>
+    </div>
+
+    <!-- Aprenent -->
+    <div class="nivell aprenent">
+        <div class="nivell-titol">🥈 Nivell: Aprenent de la Deu (A prop del 50% encertat)</div>
+        <span class="nivell-subtitol">📜 El camí encara és a mitges: La boira s'està dissipant.</span>
+        <div class="text-comentari">
+            L'escrutini revela que has començat a desxifrar els secrets del pergamí, però encara hi ha algunes ombres que enfosqueixen la gemma. Com la nostra protagonista quan va arribar a la deu, has trobat l'eina, però cal que tornis a escoltar els consells del vell pagès per no caure en el miratge de les mil eines.
+            <br><br>
+            No t'aturis ara! El lledoner t'ofereix ombra per reflexionar i tornar-ho a provar. Una mica més de seny i el títol de Guardià serà teu per sempre.
+        </div>
+    </div>
+
+    <!-- Miratge -->
+    <div class="nivell miratge">
+        <div class="nivell-titol">🥉 Nivell: El Miratge de la Gemma (Menys del 50% encertat)</div>
+        <span class="nivell-subtitol">⚠️ Alerta, Guardià! Els miratges t'han confós.</span>
+        <div class="text-comentari">
+            La boira de la Vall és encara massa espessa i sembla que la gemma t'ha enlluernat amb la seva màgia fàcil. No pateixis, fins i tot la nostra heroïna va estar a punt de perdre's abans d'entendre que la tecnologia sense seny és com un camí sense mapa.
+            <br><br>
+            Et convidem a tornar a la Font d'en Pericot i llegir de nou les lliçons dels capítols anteriors. Escalfa't al foc de la saviesa compartida i torna-ho a provar quan estiguis preparat per mirar la gemma als ulls sense por ni enganys.
+        </div>
+    </div>
+
+</div>`,
+                choices: [{ text: "Torna al Capítol 9", target: "Captol_9" }]
+            },
             "Brisk": {
-                title: "Brisk",
+                title: "Com s'ha creat l'escrutini de la gemma",
                 image: "https://www.commonsense.org/sites/default/files/png/2024-04/brisk-teaching-website-logo.png",
                 content: `
-                <p class="mb-4"><b>Brisk </b>(https://www.briskteaching.com/es) és una eina d’intel·ligència artificial dissenyada per donar suport al professorat d’educació infantil i primària, amb l’objectiu principal de reduir la càrrega de treball administrativa i pedagògica, i permetre al docent dedicar més temps a l’acompanyament directe de l’alumnat. No substitueix la tasca del mestre o mestra, sinó que actua com un assistència pedagògica digital que ajuda a preparar materials i a prendre decisions didàctiques amb més agilitat.</p>
-                <p class="mb-4">En l’àmbit de la <strong>planificació</strong>, Brisk facilita la creació i adaptació de materials educatius ajustats al nivell de l’aula. Permet reformular textos en llenguatge senzill, generar activitats de comprensió lectora, propostes d’expressió escrita o exercicis graduats segons el nivell de competència dels infants, fet que afavoreix una atenció més acurada a la diversitat dins l’aula.</p>
-                <p class="mb-4">Pel que fa a l’<strong>avaluació formativa</strong>, Brisk pot ajudar a elaborar comentaris de retorn clars i constructius sobre les produccions de l’alumnat. Ofereix suggeriments de feedback que posen el focus en el procés d’aprenentatge, en els aspectes a millorar i en els punts forts, fomentant així una avaluació més orientadora i coherent amb un enfocament competencial.</p>
-                <p class="mb-4">A educació infantil, l’eina resulta especialment útil per pensar <strong>contes, situacions d’aprenentatge, jocs i activitats lúdiques </strong>que estimulin el llenguatge, la creativitat i el pensament, sempre adaptades a l’edat dels infants. A primària, permet simplificar continguts, generar exemples contextualitzats i crear propostes interdisciplinàries que connectin amb la realitat de l’alumnat.</p>
-                <p class="mb-6">En conjunt, Brisk es presenta com un recurs de<strong> suport al professional docent</strong>, que ajuda a optimitzar temps, a personalitzar l’aprenentatge i a millorar la qualitat del feedback, sempre des d’un ús conscient i crític de la intel·ligència artificial, amb la mirada pedagògica i el criteri del mestre com a elements centrals del procés educatiu.</p>
-                <div class="bg-blue-50 p-4 rounded-lg text-center space-y-2">
-                    <p>Tot seguit us facilitem un minitutorial per fer el qüestionari https://drive.google.com/file/d/1h9GKo5Wi22Z6xV85d1Gw4eqyVHlX3wX5/view.</p>
-                    <p>Si vols saber més coses de Brisk teniu un<strong> videotutorial de Rosa Liarte</strong> https://www.youtube.com/watch?v=uJCzNrh3Uc8</p>
-                </div>`,
-                choices: [{ text: "Torna al capítol 9: El Toolkit de la Vall", target: "Captol_9" }]
+                <p class="mb-4">Crear un qüestionari que sigui alhora tècnicament útil i narrativament atractiu és un procés de col·laboració entre el docent i la intel·ligència artificial. Aquí t'expliquem els passos que hem seguit:</p>
+                <ul class="list-disc pl-5 space-y-4">
+                    <li><strong>La llavor de les preguntes:</strong> Primer, vam demanar a Gemini que generés una llista de conceptes clau sobre les eines treballades (NotebookLM, Brisk, Suno AI). Aquestes preguntes es van recollir en un document de Google per tenir una base sòlida.</li>
+                    <li><strong>L'estructura amb Brisk:</strong> Utilitzant l'extensió Brisk https://www.briskteaching.com/es, vam prémer el botó "Crear". A la finestra emergent, vam definir el format que necessitàvem:
+                        <ul class="list-disc pl-5 mt-2 text-sm text-gray-700">
+                            <li>Tipus: Qüestionari d'opció múltiple.</li>
+                            <li>Idioma: Català.</li>
+                            <li>Font: La imatge del document amb la llista d'eines.</li>
+                            <li>Nivell: Universitari (per a formació docent).</li>
+                            <li>Quantitat: 5 preguntes.</li>
+                            <li>Indicació (Prompt): "Crea un multiple choice per a mestres per a reflexionar sobre les eines que s'han treballat en una sessió d'IA".</li>
+                        </ul>
+                    </li>
+                    <li><strong>L'ànima de la llegenda:</strong> El resultat inicial de Brisk era correcte però "fred", desconnectat de l'atmosfera de la Vall de Sant Daniel. Per això, vam tornar a Gemini i, mitjançant l'eina Canvas, vam demanar-li que redactés de nou les preguntes. L'objectiu era integrar-les totalment en la història de la Font d'en Pericot, transformant conceptes tècnics en metàfores de la llegenda (com "ombres", "reflexos" o "seny").</li>
+                    <li><strong>El format final:</strong> Finalment, vam utilitzar el disseny per donar-li l'aparença d'un pergamí antic, assegurant que la presentació visual acompanyés la narrativa i fes l'experiència més immersiva per al docent.</li>
+                </ul>
+                <p class="mt-6 italic">Aquest procés demostra que la IA no crea el contingut sola: és la decisió del docent, el seu sentit crític i la seva voluntat de connectar amb la història el que converteix un simple test en un autèntic Escrutini de la Saviesa.</p>`,
+                choices: [{ text: "Torna al capítol 9", target: "Captol_9" }]
             },
             "Eines": {
                 title: "Eines del Viatge",
@@ -473,12 +608,12 @@
                         <p class="ml-6">Amb Brisk, pots acompanyar el procés d’aprenentatge: generar feedback, adaptar activitats i provocar preguntes que facin pensar. La IA esdevé una eina de suport, no una resposta automàtica</p>
                     </div>
                     <div>
-                        <p class="font-bold text-lg text-emerald-700">🌀 La força del procés — d’Inklewriter a Vibe Coding https://www.inklewriter.com/stories/267083</p>
+                        <p class="font-bold text-lg text-emerald-700">🌀 La força del procés — d’Inklewriter a Vibe Coding https://www.inklewriter.com/</p>
                         <p class="ml-6">Darrere de cada història, projecte o recurs digital, sempre hi ha un procés de creació que sovint queda invisible. El treball comença a Inklewriter, una eina senzilla per donar forma a narratives interactives, i evoluciona cap al Vibe Coding amb Gemini i Google AI Studio, on el llenguatge natural, el codi i l’estructura digital dialoguen constantment.</p>
                     </div>
                     <div>
-                        <p class="font-bold text-lg text-emerald-700">🧭 La força del repensar — el camí conscient</p>
-                        <p class="ml-6 mb-2">Quan la serp va caure, la pagesa va entendre que la victòria no era el final, sinó l’inici d’una responsabilitat. Tot allò après cal repensar-ho: què fem amb la IA, per què la fem servir i amb quin impacte educatiu.</p>
+                        <p class="font-bold text-lg text-emerald-700">🧭 La força - el camí conscient de repensar.</p>
+                        <p class="ml-6 mb-2">Quan la serp va caure, la nostra heroïna va comprendre que la victòria no era el final, sinó l’inici d’una nova responsabilitat. Tot el que ha après, ara cal repensar-ho: què fem amb la intel·ligència artificial, per què la fem servir i quin impacte educatiu té realment.</p>
                         <p class="ml-6 mb-2">Aquesta força no és una eina concreta, sinó una actitud pedagògica:</p>
                         <ul class="list-disc pl-12 space-y-1 text-gray-700">
                             <li>Ús conscient.</li>
@@ -488,7 +623,27 @@
                         <p class="ml-6 mt-2">Perquè la tecnologia no és només un mitjà, sinó un espai d’aprenentatge.</p>
                     </div>
                 </div>
-                <p class="mt-8 italic text-center text-gray-600">Cada vegada que perdem la por, que reescrivim una activitat, que ajustem una proposta o que ens fem bones preguntes, també estem fent el nostre propi viatge. I com la pagesa, descobrim que la serp no es venç evitant-la, sinó entenent-la.</p>`,
+                
+                <div class="mt-8 p-6 bg-stone-50 border border-stone-200 rounded-lg text-center italic text-stone-700 shadow-inner">
+                    Cada vegada que perdem la por, que reescrivim una activitat, que ajustem una proposta o que ens fem bones preguntes, també estem fent el nostre propi viatge. I com la pagesa, descobrim que la serp no es venç evitant-la, sinó entenent-la.
+                </div>`,
+                choices: [{ text: "L'herència digital", target: "Herencia_Digital" }]
+            },
+            "Herencia_Digital": {
+                title: "L'herència digital",
+                content: `
+                <p>Ara ha arribat el moment de compartir tot el que heu après pel camí amb la resta de membres de l’expedició.</p>
+                <p class="mt-4">En aquest espai final hi recollirem:</p>
+                <ul class="list-disc pl-5 space-y-2 mt-4">
+                    <li>Les eines escollides per cada equip.</li>
+                    <li>El perquè de la tria: per a què ens serviran realment en el dia a dia docent.</li>
+                    <li>Conclusions i reflexions clau que volem fer arribar a la resta de l’escola.</li>
+                </ul>
+                <p class="mt-4">Tot aquest recull es farà a través d’un mur interactiu, creat també amb intel·ligència artificial mitjançant Vibe Coding.</p>
+                <p class="mt-4">Heu d’enganxar el codi que ara us proporcionarem a l’enllaç següent i completar la informació demanada segons els punts anteriors:</p>
+                <p class="mt-4">https://jjdeharo.github.io/directo/muro.html?lang=es</p>
+                <p class="mt-4 font-semibold">Aquest mur serà la memòria viva de l’expedició i un llegat compartit per al centre.</p>
+                `,
                 choices: [{ text: "Tornar a l'inici", target: "Introducci" }]
             }
         };
@@ -498,7 +653,7 @@
                 const urlRegex = /((?:https?:\/\/)[^\s<)]+)/g;
                 return text.replace(urlRegex, (url) => {
                     const cleanUrl = url.replace(/[)]$/, '');
-                    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 break-all">${cleanUrl} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+                    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 break-all">${cleanUrl} &#8599;</a>`;
                 });
             };
 
@@ -516,12 +671,20 @@
             const [animationKey, setAnimationKey] = useState(0); 
             const [navDirection, setNavDirection] = useState('forward'); // 'forward' | 'backward'
             const topRef = useRef(null);
+            
+            // So de passar pàgina
+            const playPageTurn = () => {
+                const audio = new Audio(PAGE_TURN_URL);
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Audio play failed:", e));
+            };
 
             const currentNode = storyData[currentNodeId];
             const currentStep = nodeSteps[currentNodeId] || 1;
             const progressPercent = (currentStep / totalSteps) * 100;
             const introNodes = ['Introducci', 'dinsDaquestViatg', 'perTalDeVncerLaS'];
             const isBookMode = !introNodes.includes(currentNodeId);
+            const isQuizView = currentNodeId === 'Quiz_Scroll' || currentNodeId === 'Solucio_Quiz';
 
             useEffect(() => {
                 if (topRef.current) {
@@ -529,7 +692,6 @@
                 }
             }, [currentNodeId]);
 
-            // Oculta hinge/overlay tras completar el pase de página
             useEffect(() => {
                 if (typeof window === 'undefined' || !window.__turningHTML) return;
                 const t = setTimeout(() => {
@@ -541,16 +703,25 @@
             const handleChoice = (targetId) => {
                 if (targetId === 'END') return;
                 
-                // CONDICIÓ ESPECIAL: Si estem a "perTalDeVncerLaS" i anem a "PortadaLlibre",
-                // no capturem l'HTML previ per evitar l'animació de gir de pàgina.
-                // Això fa que el canvi sigui instantani (o només canvi d'estil de fons).
-                if (currentNodeId === 'perTalDeVncerLaS' && targetId === 'PortadaLlibre') {
+                const isCurrentBook = !introNodes.includes(currentNodeId);
+                const isTargetBook = !introNodes.includes(targetId);
+
+                // Si estem o anem al Quiz, el tractem com a llibre (Page Turn) però amb estil diferent
+                const isSpecialTransition = (currentNodeId === 'perTalDeVncerLaS' && targetId === 'PortadaLlibre');
+
+                if (isSpecialTransition) {
                     try { delete window.__turningHTML; } catch {}
-                } else {
-                    try {
+                } else if (isCurrentBook && isTargetBook) {
+                     try {
                         const el = document.getElementById('page-body');
                         window.__turningHTML = el ? el.innerHTML : '';
                     } catch {}
+                } else {
+                     try { delete window.__turningHTML; } catch {}
+                }
+
+                if (isCurrentBook && isTargetBook && !isSpecialTransition) {
+                     playPageTurn();
                 }
 
                 setNavDirection('forward');
@@ -561,24 +732,32 @@
 
             const handleBack = () => {
                 if (history.length > 1) {
-                    try {
-                        const el = document.getElementById('page-body');
-                        window.__turningHTML = el ? el.innerHTML : '';
-                    } catch {}
                     const newHistory = history.slice(0, -1);
+                    const previousId = newHistory[newHistory.length - 1];
+                    const isCurrentBook = !introNodes.includes(currentNodeId);
+                    const isTargetBook = !introNodes.includes(previousId);
+
+                    if (isCurrentBook && isTargetBook) {
+                        try {
+                            const el = document.getElementById('page-body');
+                            window.__turningHTML = el ? el.innerHTML : '';
+                        } catch {}
+                        playPageTurn();
+                    } else {
+                         try { delete window.__turningHTML; } catch {}
+                    }
+
                     setNavDirection('backward');
                     setHistory(newHistory);
-                    setCurrentNodeId(newHistory[newHistory.length - 1]);
+                    setCurrentNodeId(previousId);
                     setAnimationKey(prev => prev + 1);
                 }
             };
 
             const handleReset = () => {
                 if (window.confirm("Vols reiniciar l'aventura?")) {
-                    try {
-                        const el = document.getElementById('page-body');
-                        window.__turningHTML = el ? el.innerHTML : '';
-                    } catch {}
+                    try { delete window.__turningHTML; } catch {}
+                    
                     setNavDirection('backward');
                     setCurrentNodeId('Introducci');
                     setHistory(['Introducci']);
@@ -587,10 +766,8 @@
             };
 
             const goHome = () => {
-                try {
-                    const el = document.getElementById('page-body');
-                    window.__turningHTML = el ? el.innerHTML : '';
-                } catch {}
+                try { delete window.__turningHTML; } catch {}
+                
                 setNavDirection('backward');
                 setCurrentNodeId('Introducci');
                 setHistory(['Introducci']);
@@ -641,19 +818,18 @@
                                 ? 'rounded-r-md rounded-l-sm ml-4 shadow-2xl' 
                                 : 'bg-white rounded-xl shadow-xl border border-stone-200'
                             }
+                            ${isQuizView ? 'scroll-view-bg' : ''}
                         `}>
                             {isBookMode && typeof window !== 'undefined' && window.__turningHTML && (
                                 <React.Fragment>
                                     <div aria-hidden="true" className={`page-turn-overlay ${navDirection === 'backward' ? 'flip-right' : 'flip-left'}`}>
-                                        <div className="pl-16 pr-8 py-8 min-h-[600px]">
+                                        <div className={`pl-16 pr-8 py-8 min-h-[600px] ${window.__turningHTML.includes('scroll-container') ? 'scroll-view-bg' : ''}`}>
                                             {typeof window !== 'undefined' && window.__turningHTML && (
                                                 <div className={`prose max-w-none prose-stone prose-lg prose-p:font-serif prose-headings:font-serif text-stone-900`} dangerouslySetInnerHTML={{ __html: window.__turningHTML }} />
                                             )}
                                         </div>
                                     </div>
                                     <div aria-hidden="true" className={`page-shadow-cast ${navDirection === 'backward' ? 'flip-right' : 'flip-left'}`}></div>
-                                    <div aria-hidden="true" className={`spine-hinge ${navDirection === 'backward' ? 'hinge-right' : 'hinge-left'}`}></div>
-                                    <div aria-hidden="true" className="spine-seam-mask"></div>
                                 </React.Fragment>
                             )}
                             
@@ -684,13 +860,13 @@
                                         </div>
                                     )}
 
-                                    {!currentNode.image && (
+                                    {!currentNode.image && currentNode.title.trim() !== "" && (
                                         <div className={`${isBookMode ? 'border-b-2 border-emerald-900/30 mb-8 pb-2' : 'bg-emerald-50 border-b border-emerald-100 px-6 py-4'}`}>
                                             <h2 className={`text-2xl font-bold ${isBookMode ? 'text-emerald-900 font-serif text-3xl italic' : 'text-emerald-900'}`}>{currentNode.title}</h2>
                                         </div>
                                     )}
                                     
-                                    {isBookMode && currentNode.image && (
+                                    {isBookMode && currentNode.image && currentNode.title.trim() !== "" && (
                                         <div className="mb-6 text-center">
                                             <h2 className="text-3xl font-serif font-bold text-emerald-950 border-b-2 border-emerald-900/20 inline-block pb-2 px-4">{currentNode.title}</h2>
                                         </div>
@@ -713,13 +889,30 @@
 
                                         {currentNode.links && (
                                             <div className="flex flex-col gap-2 mt-6">
-                                                {currentNode.links.map((link, idx) => (
-                                                    <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 p-3 rounded-lg transition-colors border group ${isBookMode ? 'bg-[#fdfbf7] border-stone-300 text-emerald-900 hover:bg-white shadow-sm' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100'}`}>
-                                                        <IconMusic className="h-5 w-5 flex-shrink-0" />
-                                                        <span className="font-medium">{link.text}</span>
-                                                        <IconExternalLink className="h-4 w-4 ml-auto opacity-50 group-hover:opacity-100" />
-                                                    </a>
-                                                ))}
+                                                {currentNode.links.map((link, idx) => {
+                                                    const isInternal = !!link.targetNode;
+                                                    const IconComp = link.icon === "Scroll" ? IconScroll : IconMusic;
+                                                    return (
+                                                        <a 
+                                                            key={idx} 
+                                                            href={link.url || "#"} 
+                                                            onClick={(e) => {
+                                                                if (isInternal) {
+                                                                    e.preventDefault();
+                                                                    handleChoice(link.targetNode);
+                                                                }
+                                                            }}
+                                                            target={isInternal ? "_self" : "_blank"}
+                                                            rel={isInternal ? "" : "noopener noreferrer"}
+                                                            className={`flex items-center gap-3 p-3 rounded-lg transition-colors border group ${isBookMode ? 'bg-[#fdfbf7] border-stone-300 text-emerald-900 hover:bg-white shadow-sm cursor-pointer' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100'}`}
+                                                        >
+                                                            <IconComp className="h-5 w-5 flex-shrink-0" />
+                                                            <span className="font-medium">{link.text}</span>
+                                                            {!isInternal && <IconExternalLink className="h-4 w-4 ml-auto opacity-50 group-hover:opacity-100" />}
+                                                            {isInternal && <IconArrowRight className="h-4 w-4 ml-auto opacity-50 group-hover:opacity-100" />}
+                                                        </a>
+                                                    );
+                                                })}
                                             </div>
                                         )}
 
@@ -758,6 +951,10 @@
                         <div>
                             <p className="font-bold text-sm">El tresor de la Font d'en Pericot</p>
                             <p>© 2026 Raül i Genia</p>
+                            <div className="pt-4 text-xs opacity-70">
+                                <p><a href="mailto:rtorre23@xtec.cat" className="hover:text-emerald-300">Raül (rtorre23@xtec.cat)</a></p>
+                                <p><a href="mailto:ecasella@xtec.cat" className="hover:text-emerald-300">Gènia (ecasella@xtec.cat)</a></p>
+                            </div>
                         </div>
                         <div className="max-w-2xl mx-auto space-y-2 opacity-80">
                             <p>El codi d'aquesta aplicació està disponible sota la llicència AGPL v3. Consulteu el text complet a <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-500">https://www.gnu.org/licenses/agpl-3.0.html</a>.</p>
