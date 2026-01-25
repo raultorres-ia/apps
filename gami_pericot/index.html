@@ -817,18 +817,8 @@
                 if (history.length > 1) {
                     const newHistory = history.slice(0, -1);
                     const previousId = newHistory[newHistory.length - 1];
-                    const isCurrentBook = !introNodes.includes(currentNodeId);
-                    const isTargetBook = !introNodes.includes(previousId);
-
-                    if (isCurrentBook && isTargetBook) {
-                        try {
-                            const el = document.getElementById('page-body');
-                            window.__turningHTML = el ? el.innerHTML : '';
-                        } catch {}
-                        playPageTurn();
-                    } else {
-                         try { delete window.__turningHTML; } catch {}
-                    }
+                    // Atrás: evitar efecto pasar página y sonido
+                    try { delete window.__turningHTML; } catch {}
 
                     setNavDirection('backward');
                     setHistory(newHistory);
@@ -849,6 +839,7 @@
             };
 
             const goHome = () => {
+                // Casa: evitar efecto pasar página y sonido
                 try { delete window.__turningHTML; } catch {}
                 
                 setNavDirection('backward');
@@ -895,7 +886,7 @@
 
                     <main className="max-w-3xl mx-auto px-4 py-8 pb-0 perspective-container">
                         <div key={animationKey} className={`
-                            ${isBookMode ? 'book-page-texture' : 'fade-enter'}
+                            ${isBookMode ? (navDirection === 'backward' ? 'book-page-texture fade-enter' : 'book-page-texture') : 'fade-enter'}
                             transition-all duration-500 ease-in-out relative
                             ${isBookMode 
                                 ? 'rounded-r-md rounded-l-sm ml-4 shadow-2xl' 
