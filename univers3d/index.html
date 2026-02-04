@@ -204,57 +204,59 @@
   </div>
 
   <script>
-    // Dades senzilles del sistema solar (escala educativa, no real)
+    // Dades del sistema solar
+    // Nota: 'orbitRadius' és per al dibuix (escala visual)
+    // 'realDistance' és el text que es mostra (dades reals)
     const SOLAR_SYSTEM = [
-      { id: 'sol', name: 'Sol', type: 'estrella', radius: 14, orbitRadius: 0, orbitSpeed: 0, color: 0xffd04d, emissive: 0xff9900,
+      { id: 'sol', name: 'Sol', type: 'estrella', radius: 14, orbitRadius: 0, realDistance: '0 km', orbitSpeed: 0, color: 0xffd04d, emissive: 0xff9900,
         facts: ['És una estrella que ens dona llum i calor.', 'Sense el Sol no hi hauria vida a la Terra.'],
         data: ['Tipus: Estrella', 'Temperatura: molt alta'],
         curiosity: 'Al Sol hi cabrien més d’un milió de Terres!',
         challenge: { q: 'Què ens dona principalment el Sol?', options: ['Llum i calor','Aigua','Roca'], correct: 'Llum i calor' }
       },
-      { id: 'mercuri', name: 'Mercuri', radius: 2, orbitRadius: 28, orbitSpeed: 0.03, color: 0xa5a5a5,
+      { id: 'mercuri', name: 'Mercuri', radius: 2, orbitRadius: 28, realDistance: '58 milions de km', orbitSpeed: 0.03, color: 0xa5a5a5,
         facts: ['És el planeta més proper al Sol.', 'És petit i rocós.'],
         data: ['Tipus: Planeta rocós','Lluna: 0'],
         curiosity: 'El seu any dura uns 88 dies terrestres.',
         challenge: { q: 'Quin és el planeta més proper al Sol?', options: ['Mercuri','Mart','Neptú'], correct: 'Mercuri' }
       },
-      { id: 'venus', name: 'Venus', radius: 3, orbitRadius: 40, orbitSpeed: 0.024, color: 0xe1b16a,
+      { id: 'venus', name: 'Venus', radius: 3, orbitRadius: 40, realDistance: '108 milions de km', orbitSpeed: 0.024, color: 0xe1b16a,
         facts: ['És molt calent per la seva atmosfera.', 'És de mida semblant a la Terra.'],
         data: ['Tipus: Planeta rocós','Lluna: 0'],
         curiosity: 'Gira molt lentament sobre si mateix.',
         challenge: { q: 'Quin planeta té una mida semblant a la Terra?', options: ['Venus','Urà','Júpiter'], correct: 'Venus' }
       },
-      { id: 'terra', name: 'Terra', radius: 3.2, orbitRadius: 56, orbitSpeed: 0.02, color: 0x2a84ff,
+      { id: 'terra', name: 'Terra', radius: 3.2, orbitRadius: 56, realDistance: '150 milions de km', orbitSpeed: 0.02, color: 0x2a84ff,
         facts: ['El nostre planeta!', 'Té molta aigua i una única Lluna.'],
         data: ['Tipus: Planeta rocós','Lluna: 1'],
         curiosity: 'Només aquí hem trobat vida, de moment!',
         challenge: { q: 'Quantes llunes té la Terra?', options: ['1','2','Cap'], correct: '1' }
       },
-      { id: 'mart', name: 'Mart', radius: 2.4, orbitRadius: 70, orbitSpeed: 0.016, color: 0xc1440e,
+      { id: 'mart', name: 'Mart', radius: 2.4, orbitRadius: 70, realDistance: '228 milions de km', orbitSpeed: 0.016, color: 0xc1440e,
         facts: ['Se’l coneix com el planeta vermell.', 'Té muntanyes gegants com l’Olimp.'],
         data: ['Tipus: Planeta rocós','Llunes: 2'],
         curiosity: 'El seu sòl té molt òxid de ferro.',
         challenge: { q: 'De quin color és conegut Mart?', options: ['Vermell','Blau','Verd'], correct: 'Vermell' }
       },
-      { id: 'jupiter', name: 'Júpiter', radius: 7, orbitRadius: 95, orbitSpeed: 0.009, color: 0xd8b07b,
+      { id: 'jupiter', name: 'Júpiter', radius: 7, orbitRadius: 95, realDistance: '778 milions de km', orbitSpeed: 0.009, color: 0xd8b07b,
         facts: ['És el planeta més gran.', 'Té una gran taca vermella.'],
         data: ['Tipus: Gegant gasós','Moltes Llunes'],
         curiosity: 'Podria contenir més de 1.300 Terres.',
         challenge: { q: 'Quin és el planeta més gran?', options: ['Júpiter','Saturn','Neptú'], correct: 'Júpiter' }
       },
-      { id: 'saturn', name: 'Saturn', radius: 6, orbitRadius: 120, orbitSpeed: 0.007, color: 0xe8d39b,
+      { id: 'saturn', name: 'Saturn', radius: 6, orbitRadius: 120, realDistance: '1.434 milions de km', orbitSpeed: 0.007, color: 0xe8d39b,
         facts: ['Famosos anells de gel i roca.', 'És un gegant gasós.'],
         data: ['Tipus: Gegant gasós','Moltes Llunes'],
         curiosity: 'Els seus anells són molt amples però molt prims.',
         challenge: { q: 'Quin planeta té anells molt visibles?', options: ['Saturn','Mart','Venus'], correct: 'Saturn' }
       },
-      { id: 'ura', name: 'Urà', radius: 5, orbitRadius: 145, orbitSpeed: 0.005, color: 0x7bd1d1,
+      { id: 'ura', name: 'Urà', radius: 5, orbitRadius: 145, realDistance: '2.871 milions de km', orbitSpeed: 0.005, color: 0x7bd1d1,
         facts: ['Gira de costat!', 'És molt fred.'],
         data: ['Tipus: Gegant gelat','Moltes Llunes'],
         curiosity: 'El seu eix està gairebé horitzontal.',
         challenge: { q: 'Quin planeta gira gairebé de costat?', options: ['Urà','Terra','Mercuri'], correct: 'Urà' }
       },
-      { id: 'neptu', name: 'Neptú', radius: 5, orbitRadius: 165, orbitSpeed: 0.004, color: 0x4666ff,
+      { id: 'neptu', name: 'Neptú', radius: 5, orbitRadius: 165, realDistance: '4.495 milions de km', orbitSpeed: 0.004, color: 0x4666ff,
         facts: ['Vents molt forts.', 'És un gegant gelat.'],
         data: ['Tipus: Gegant gelat','Moltes Llunes'],
         curiosity: 'És molt lluny del Sol.',
@@ -303,6 +305,7 @@
         const r = 800 * Math.cbrt(Math.random());
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
+        const phi_deg = phi * 180 / Math.PI;
         positions[i*3+0] = r * Math.sin(phi) * Math.cos(theta);
         positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
         positions[i*3+2] = r * Math.cos(phi);
@@ -381,10 +384,14 @@
       panelTitle.textContent = p.name;
       panelIcon.style.background = `radial-gradient(circle at 30% 30%, #fff6, #0000), #${p.color.toString(16).padStart(6, '0')}`;
       panelTags.innerHTML = '';
+      
+      // Construïm les etiquetes.
+      // Aquí és on fem servir p.realDistance en comptes de p.orbitRadius
       const tags = [
         `Tipus: ${p.type || 'Planeta'}`,
-        p.id !== 'sol' ? `Distància al Sol: ${p.orbitRadius}` : 'Llum i calor per a tots!'
+        p.id !== 'sol' ? `Distància al Sol: ${p.realDistance}` : 'Llum i calor per a tots!'
       ];
+      
       tags.forEach(t => {
         const span = document.createElement('span'); span.className = 'tag'; span.textContent = t; panelTags.appendChild(span);
       });
