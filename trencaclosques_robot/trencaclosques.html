@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="title">Puzle Deslizante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+        #puzzle-container {
+            display: grid;
+            border: 4px solid #334155;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background-color: #f1f5f9;
+            /* Aspect ratio 1:1 */
+            width: 90vw;
+            height: 90vw;
+            max-width: 500px;
+            max-height: 500px;
+        }
+        .puzzle-tile {
+            background-image: url('https://raultorres-ia.github.io/apps/trencaclosques_robot/robot.png');
+            background-repeat: no-repeat;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #94a3b8;
+            box-sizing: border-box;
+        }
+        .puzzle-tile:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .puzzle-tile.empty {
+            background-image: none;
+            background-color: #cbd5e1;
+            cursor: default;
+        }
+        .puzzle-tile.empty:hover {
+            transform: none;
+        }
+        #help-modal {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        /* Fireworks */
+        .fireworks-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            opacity: 1;
+            animation: firework-fly 1.5s ease-out forwards;
+        }
+        @keyframes firework-fly {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0.5; }
+        }
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div id="fireworks-container" class="fireworks-container"></div>
+
+    <div id="main-content" class="text-center flex flex-col items-center gap-4 w-full">
+        <h1 class="text-4xl md:text-5xl font-bold text-slate-700" data-lang-key="title">Puzle Deslizante</h1>
+        <p class="text-lg text-slate-500" data-lang-key="level">Nivel: <span id="level-display">1</span></p>
+
+        <div id="puzzle-container"></div>
+        
+        <div id="win-message" class="hidden flex-col items-center gap-4 bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-lg">
+             <h2 class="text-3xl font-bold text-green-600" data-lang-key="winTitle">¡Resuelto!</h2>
+             <p class="text-slate-600" data-lang-key="winText">¡Felicidades! ¿Listo para el siguiente reto?</p>
+             <button id="next-level-btn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-transform transform hover:scale-105" data-lang-key="nextLevel">
+                Siguiente Nivel
+             </button>
+        </div>
+
+        <div class="mt-4 flex gap-4">
+            <button id="help-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition-transform transform hover:scale-105" data-lang-key="help">
+                Ayuda
+            </button>
+            <button id="lang-toggle-btn" class="px-4 py-2 bg-slate-600 text-white font-semibold rounded-lg shadow-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-75 transition-transform transform hover:scale-105" data-lang-key="toggleLang">
+                Català
+            </button>
+        </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div id="help-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="relative bg-white p-4 rounded-lg shadow-2xl max-w-[90vw] max-h-[90vh]">
+            <button id="close-help-btn" class="absolute -top-4 -right-4 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold hover:bg-red-700 focus:outline-none">&times;</button>
+            <img src="https://raultorres-ia.github.io/apps/trencaclosques_robot/robot.png" alt="Imagen del puzle completo" class="rounded-md object-contain w-full h-full max-w-[80vw] max-h-[80vh]">
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const puzzleContainer = document.getElementById('puzzle-container');
+            const levelDisplay = document.getElementById('level-display');
+            const winMessage = document.getElementById('win-message');
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            const langToggleBtn = document.getElementById('lang-toggle-btn');
+            const fireworksContainer = document.getElementById('fireworks-container');
+            const helpBtn = document.getElementById('help-btn');
+            const helpModal = document.getElementById('help-modal');
+            const closeHelpBtn = document.getElementById('close-help-btn');
+
+            // --- Game State ---
+            let gridSize = 3; // UPDATED: Start at 3x3 grid
+            let tiles = []; // Data model for our tiles
+            let emptyTileIndex = -1;
+            let isSolved = false;
+            let currentLang = 'es';
+
+            // --- Translations ---
+            const translations = {
+                es: {
+                    title: "Puzle Deslizante",
+                    level: "Nivel:",
+                    winTitle: "¡Resuelto!",
+                    winText: "¡Felicidades! ¿Listo para el siguiente reto?",
+                    nextLevel: "Siguiente Nivel",
+                    toggleLang: "Català",
+                    help: "Ayuda"
+                },
+                ca: {
+                    title: "Trencaclosques Lliscant",
+                    level: "Nivell:",
+                    winTitle: "Resolt!",
+                    winText: "Felicitats! Preparat per al següent repte?",
+                    nextLevel: "Següent Nivell",
+                    toggleLang: "Castellano",
+                    help: "Ajuda"
+                }
+            };
+
+            // --- Audio Setup (Tone.js) ---
+            let moveSynth, winSynth;
+            
+            function setupAudio() {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                moveSynth = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.0, release: 0.1 } }).toDestination();
+                winSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.5 } }).toDestination();
+            }
+            
+            // --- Language ---
+            function setLanguage(lang) {
+                currentLang = lang;
+                document.documentElement.lang = lang;
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.dataset.langKey;
+                    if(key === 'level') {
+                        el.childNodes[0].nodeValue = `${translations[lang][key]} `;
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+            }
+            
+            langToggleBtn.addEventListener('click', () => {
+                const newLang = currentLang === 'es' ? 'ca' : 'es';
+                setLanguage(newLang);
+            });
+
+            // --- Help Modal Logic ---
+            helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
+            closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
+            helpModal.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    helpModal.classList.add('hidden');
+                }
+            });
+
+            // --- Render Function ---
+            function renderPuzzle() {
+                puzzleContainer.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+                const orderedElements = new Array(tiles.length);
+                tiles.forEach(tileData => {
+                    tileData.element.dataset.index = tileData.currentIndex;
+                    orderedElements[tileData.currentIndex] = tileData.element;
+                });
+                orderedElements.forEach(el => fragment.appendChild(el));
+                puzzleContainer.appendChild(fragment);
+            }
+            
+            // --- Puzzle Creation ---
+            function createPuzzle() {
+                isSolved = false;
+                tiles = [];
+                puzzleContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+                puzzleContainer.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+                winMessage.classList.add('hidden');
+                puzzleContainer.classList.remove('hidden');
+                levelDisplay.textContent = gridSize - 2; // UPDATED: Level is gridSize - 2
+
+                const tileCount = gridSize * gridSize;
+                for (let i = 0; i < tileCount; i++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('puzzle-tile');
+                    
+                    if (i === tileCount - 1) {
+                        tile.classList.add('empty');
+                    } else {
+                        const row = Math.floor(i / gridSize);
+                        const col = i % gridSize;
+                        const bgPosX = (col * 100) / (gridSize - 1);
+                        const bgPosY = (row * 100) / (gridSize - 1);
+                        tile.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
+                        tile.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+                    }
+                    
+                    tiles.push({ element: tile, correctIndex: i, currentIndex: i });
+                }
+                
+                setLanguage(currentLang);
+                shufflePuzzle(); 
+                renderPuzzle();
+            }
+            
+            // --- Puzzle Shuffle ---
+            function shufflePuzzle() {
+                const tileCount = gridSize * gridSize;
+                const bottomRightIndex = tileCount - 1;
+                let currentEmptyPos = tiles.find(t => t.element.classList.contains('empty')).correctIndex;
+
+                let shuffles = gridSize * gridSize * 15;
+                for (let i = 0; i < shuffles; i++) {
+                    const neighbors = getNeighbors(currentEmptyPos);
+                    const randomNeighborIndex = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    const tileToMoveData = tiles.find(t => t.currentIndex === randomNeighborIndex);
+                    const emptyTileData = tiles.find(t => t.currentIndex === currentEmptyPos);
+                    if (tileToMoveData && emptyTileData) {
+                        [tileToMoveData.currentIndex, emptyTileData.currentIndex] = [emptyTileData.currentIndex, tileToMoveData.currentIndex];
+                    }
+                    currentEmptyPos = randomNeighborIndex;
+                }
+                
+                const finalEmptyTileData = tiles.find(t => t.element.classList.contains('empty'));
+                const tileInCornerData = tiles.find(t => t.currentIndex === bottomRightIndex);
+
+                if (finalEmptyTileData.currentIndex !== bottomRightIndex) {
+                    [finalEmptyTileData.currentIndex, tileInCornerData.currentIndex] = [tileInCornerData.currentIndex, finalEmptyTileData.currentIndex];
+                }
+
+                emptyTileIndex = bottomRightIndex;
+            }
+            
+            function getNeighbors(index) {
+                const neighbors = [];
+                const row = Math.floor(index / gridSize);
+                const col = index % gridSize;
+                if (row > 0) neighbors.push(index - gridSize); // Top
+                if (row < gridSize - 1) neighbors.push(index + gridSize); // Bottom
+                if (col > 0) neighbors.push(index - 1); // Left
+                if (col < gridSize - 1) neighbors.push(index + 1); // Right
+                return neighbors;
+            }
+
+            // --- Tile Interaction ---
+            puzzleContainer.addEventListener('click', (e) => {
+                if (isSolved || !e.target.classList.contains('puzzle-tile') || e.target.classList.contains('empty')) return;
+                const clickedIndex = parseInt(e.target.dataset.index, 10);
+                const neighbors = getNeighbors(emptyTileIndex);
+                if (neighbors.includes(clickedIndex)) {
+                    swapTiles(clickedIndex, true);
+                    checkWinCondition();
+                }
+            });
+
+            // --- Tile Swapping Logic ---
+            function swapTiles(clickedIndex, playSound) {
+                 if (playSound && moveSynth) {
+                    moveSynth.triggerAttackRelease('C4', '8n');
+                }
+                const clickedTileData = tiles.find(t => t.currentIndex === clickedIndex);
+                const emptyTileData = tiles.find(t => t.currentIndex === emptyTileIndex);
+                if (clickedTileData && emptyTileData) {
+                    [clickedTileData.currentIndex, emptyTileData.currentIndex] = [emptyTileData.currentIndex, clickedTileData.currentIndex];
+                }
+                emptyTileIndex = clickedIndex;
+                renderPuzzle();
+            }
+
+            // --- Win Condition ---
+            function checkWinCondition() {
+                for (let i = 0; i < tiles.length; i++) {
+                    if (tiles[i].currentIndex !== tiles[i].correctIndex) {
+                        return false;
+                    }
+                }
+                handleWin();
+                return true;
+            }
+
+            function handleWin() {
+                isSolved = true;
+                if(winSynth) {
+                    const now = Tone.now();
+                    winSynth.triggerAttackRelease(['C4', 'E4', 'G4'], '8n', now);
+                    winSynth.triggerAttackRelease(['G4', 'B4', 'D5'], '8n', now + 0.2);
+                    winSynth.triggerAttackRelease(['C5', 'E5', 'G5'], '4n', now + 0.4);
+                }
+                puzzleContainer.classList.add('hidden');
+                winMessage.classList.remove('hidden');
+                setLanguage(currentLang);
+                launchFireworks();
+            }
+            
+            nextLevelBtn.addEventListener('click', () => {
+                gridSize++;
+                createPuzzle();
+            });
+
+            // --- Fireworks ---
+            function launchFireworks() {
+                const numFireworks = 25;
+                const colors = ['#ff4500', '#ff8c00', '#ffd700', '#32cd32', '#1e90ff', '#9400d3'];
+                for (let i = 0; i < numFireworks; i++) {
+                    setTimeout(() => {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.style.left = `${Math.random() * 100}vw`;
+                        firework.style.top = `${Math.random() * 20 + 80}vh`;
+                        firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        fireworksContainer.appendChild(firework);
+                        firework.addEventListener('animationend', () => {
+                            createExplosion(firework.style.left, firework.style.top);
+                            firework.remove();
+                        });
+                    }, Math.random() * 2000);
+                }
+            }
+
+            function createExplosion(x, y) {
+                const numParticles = 30;
+                for (let i = 0; i < numParticles; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    const explosionDiv = document.createElement('div');
+                    explosionDiv.style.position = 'absolute';
+                    explosionDiv.style.left = x;
+                    explosionDiv.style.top = `calc(${y} - 80vh)`; 
+                    explosionDiv.style.width = '1px';
+                    explosionDiv.style.height = '1px';
+                    const color = ['#ff4500', '#ff8c00', '#ffd700', '#32cd32', '#1e90ff', '#9400d3'][Math.floor(Math.random() * 6)];
+                    particle.style.backgroundColor = color;
+                    const angle = Math.random() * 360;
+                    const speed = Math.random() * 50 + 50;
+                    const endX = Math.cos(angle * Math.PI / 180) * speed;
+                    const endY = Math.sin(angle * Math.PI / 180) * speed;
+                    particle.animate([
+                        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                        { transform: `translate(${endX}px, ${endY}px) scale(0)`, opacity: 0 }
+                    ], { duration: 800 + Math.random() * 400, easing: 'ease-out' });
+                    explosionDiv.appendChild(particle);
+                    fireworksContainer.appendChild(explosionDiv);
+                    setTimeout(() => explosionDiv.remove(), 1200);
+                }
+            }
+
+            // --- Initial Setup ---
+            setupAudio();
+            createPuzzle();
+            setLanguage('es');
+            window.addEventListener('resize', () => {
+                 const container = document.getElementById('puzzle-container');
+                 const size = Math.min(window.innerWidth * 0.9, 500);
+                 container.style.width = `${size}px`;
+                 container.style.height = `${size}px`;
+            });
+            window.dispatchEvent(new Event('resize'));
+        });
+    </script>
+
+</body>
+</html>

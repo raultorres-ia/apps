@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robo-Detectiu: Missió Proves</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #1a202c;
+            color: #a0aec0;
+        }
+        .game-title {
+            font-family: 'Press Start 2P', cursive;
+        }
+        .grid-cell {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #4a5568;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            transition: background-color 0.3s ease;
+        }
+        @media (max-width: 640px) {
+            .grid-cell {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+            }
+        }
+        .robot {
+            transition: transform 0.3s linear;
+        }
+        .robot.up { transform: rotate(0deg); }
+        .robot.right { transform: rotate(90deg); }
+        .robot.down { transform: rotate(180deg); }
+        .robot.left { transform: rotate(270deg); }
+
+        .visited {
+            background-color: rgba(56, 161, 105, 0.2);
+        }
+        .control-button {
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .control-button:active {
+            transform: translateY(0);
+        }
+        .toast {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.5s linear;
+        }
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        #command-sequence {
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+        }
+        .command-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem; /* Equivalent to p-2 */
+        }
+        .lang-button.active {
+            background-color: #f59e0b; /* amber-500 */
+            color: #1a202c;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+    
+    <!-- Selector de Idioma -->
+    <div id="language-switcher" class="absolute top-4 right-4 flex gap-2">
+        <button id="lang-ca" class="lang-button p-2 rounded bg-gray-700 text-white font-bold transition-colors">CAT</button>
+        <button id="lang-es" class="lang-button p-2 rounded bg-gray-700 text-white font-bold transition-colors">ESP</button>
+    </div>
+
+    <!-- Título y Nivel -->
+    <h1 id="game-title" class="game-title text-3xl md:text-5xl text-yellow-400 mb-2 text-center"></h1>
+    <p id="level-display" class="text-center text-xl text-gray-400 mb-8"></p>
+
+    <div class="flex flex-col lg:flex-row gap-8 w-full max-w-6xl">
+
+        <!-- Panel Izquierdo: Controles y Comandos -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl w-full lg:w-1/3 flex flex-col">
+            <h2 id="control-panel-title" class="text-2xl font-bold text-white mb-4 border-b-2 border-yellow-400 pb-2"></h2>
+            
+            <div>
+                <h3 id="add-commands-title" class="text-lg text-white mb-2 font-semibold"></h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="add-forward" class="control-button bg-blue-500 hover:bg-blue-600 text-white font-bold p-3 rounded-lg">
+                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                    </button>
+                    <button id="add-left" class="control-button bg-blue-500 hover:bg-blue-600 text-white font-bold p-3 rounded-lg">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a4 4 0 0 1 4 4v5"/></svg>
+                    </button>
+                    <button id="add-right" class="control-button bg-blue-500 hover:bg-blue-600 text-white font-bold p-3 rounded-lg">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a4 4 0 0 0-4 4v5"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 flex-grow">
+                <label id="sequence-title" class="block text-lg text-white mb-2 font-semibold"></label>
+                <div id="command-sequence" class="w-full bg-gray-900 p-3 rounded-md border-2 border-gray-600"></div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 gap-4">
+                 <div class="grid grid-cols-2 gap-4">
+                    <button id="run-button" class="control-button w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg"></button>
+                    <button id="delete-last-button" class="control-button w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg"></button>
+                </div>
+                <button id="reset-button" class="control-button w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg"></button>
+            </div>
+            
+             <div class="mt-6">
+                <h3 id="proofs-title" class="text-lg text-white mb-2 font-semibold"></h3>
+                <div id="collected-proofs" class="flex space-x-4 text-3xl h-12 items-center"></div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Tablero del Juego -->
+        <div class="flex-1 flex flex-col items-center">
+            <div id="game-board" class="grid grid-cols-6 gap-1 bg-gray-900 p-2 rounded-lg shadow-inner"></div>
+            <div id="toast" class="toast mt-4 text-center text-lg font-bold p-3 rounded-lg w-full max-w-md"></div>
+        </div>
+    </div>
+
+    <footer id="footer" class="text-center text-gray-500 mt-8 text-sm">
+        <!-- El contenido del footer se generará con JavaScript -->
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const BOARD_SIZE = 6;
+            const directions = ['up', 'right', 'down', 'left'];
+            // Define SVG icons as strings for easy reuse
+            const commandIcons = {
+                'AVANZAR': `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>`,
+                'GIRAR_I': `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a4 4 0 0 1 4 4v5"/></svg>`,
+                'GIRAR_D': `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a4 4 0 0 0-4 4v5"/></svg>`
+            };
+
+
+            // --- Traducciones ---
+            const translations = {
+                ca: {
+                    gameTitle: "Robo-Detectiu",
+                    level: "Nivell",
+                    controlPanelTitle: "Panell de Control",
+                    addCommandsTitle: "Afegeix Ordres",
+                    sequenceTitle: "La Teva Seqüència",
+                    runButton: "▶️ Executa",
+                    deleteButton: "⏪ Esborra",
+                    resetButton: "🔄 Reinicia-ho Tot",
+                    proofsTitle: "Proves Trobades",
+                    footer: {
+                        author: "Aplicació feta per Raül Torres",
+                        license: `Aquesta obra està sota una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-300">llicència Creative Commons BY-SA</a>.`
+                    },
+                    toasts: {
+                        noCommands: "No has afegit cap ordre.",
+                        crash: "Xoc! Torna-ho a provar.",
+                        proofCollected: "Prova recollida!",
+                        levelComplete: (lvl) => `Nivell ${lvl} superat!`,
+                        allLevelsComplete: "Felicitats! Has completat tots els nivells!",
+                        proofsMissing: "Han faltat proves. Torna-ho a provar!",
+                    }
+                },
+                es: {
+                    gameTitle: "Robo-Detective",
+                    level: "Nivel",
+                    controlPanelTitle: "Panel de Control",
+                    addCommandsTitle: "Añadir Comandos",
+                    sequenceTitle: "Tu Secuencia",
+                    runButton: "▶️ Ejecutar",
+                    deleteButton: "⏪ Borrar",
+                    resetButton: "🔄 Reiniciar Todo",
+                    proofsTitle: "Pruebas Encontradas",
+                     footer: {
+                        author: "Aplicación hecha por Raül Torres",
+                        license: `Esta obra está bajo una <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-300">licencia Creative Commons BY-SA</a>.`
+                    },
+                    toasts: {
+                        noCommands: "No has añadido ningún comando.",
+                        crash: "¡Choque! Inténtalo de nuevo.",
+                        proofCollected: "¡Prueba recogida!",
+                        levelComplete: (lvl) => `¡Nivel ${lvl} superado!`,
+                        allLevelsComplete: "¡Felicidades! ¡Has completado todos los niveles!",
+                        proofsMissing: "Faltaron pruebas. ¡Inténtalo de nuevo!",
+                    }
+                }
+            };
+            let currentLanguage = 'ca';
+
+            // --- Elementos del DOM ---
+            const uiElements = {
+                gameTitle: document.getElementById('game-title'),
+                levelDisplay: document.getElementById('level-display'),
+                controlPanelTitle: document.getElementById('control-panel-title'),
+                addCommandsTitle: document.getElementById('add-commands-title'),
+                sequenceTitle: document.getElementById('sequence-title'),
+                runButton: document.getElementById('run-button'),
+                deleteLastButton: document.getElementById('delete-last-button'),
+                resetButton: document.getElementById('reset-button'),
+                proofsTitle: document.getElementById('proofs-title'),
+                gameBoard: document.getElementById('game-board'),
+                commandSequenceContainer: document.getElementById('command-sequence'),
+                collectedProofsContainer: document.getElementById('collected-proofs'),
+                toast: document.getElementById('toast'),
+                langCaBtn: document.getElementById('lang-ca'),
+                langEsBtn: document.getElementById('lang-es'),
+                footer: document.getElementById('footer')
+            };
+
+            // --- Estado del Juego ---
+            let state = {};
+            let currentLevel = 0;
+            const levels = [
+                { grid: ['......','..P...','......','..X...','..R...','......'], robot: { dir: 0 } },
+                { grid: ['.P....','..X...','......','...X.P','R.....','......'], robot: { dir: 1 } },
+                { grid: ['P.X..P','......','..X...','..P...','.X....','R.....'], robot: { dir: 0 } },
+                { grid: ['P.X..P','......','..X.X.','.P....','.X....','R...XP'], robot: { dir: 0 } }
+            ];
+
+            function getInitialState(levelIndex) {
+                const levelData = levels[levelIndex];
+                let proofs = [];
+                const gridDefinition = levelData.grid.map(row => row.split(''));
+                let robotStartPos = {};
+
+                gridDefinition.forEach((row, y) => {
+                    for(let x = 0; x < row.length; x++){
+                        if(row[x] === 'P') proofs.push({x, y});
+                        if(row[x] === 'R') {
+                            robotStartPos = { x, y, dir: levelData.robot.dir };
+                            gridDefinition[y][x] = '.';
+                        }
+                    }
+                });
+
+                return {
+                    robot: { ...robotStartPos },
+                    initialRobotState: { ...robotStartPos },
+                    grid: gridDefinition.map(row => [...row]),
+                    initialGrid: gridDefinition.map(row => [...row]),
+                    proofs,
+                    collected: [],
+                    path: [],
+                    commandQueue: [],
+                    isExecuting: false
+                };
+            }
+
+            // --- Lógica de Renderizado y Lenguaje ---
+            function render() {
+                const t = translations[currentLanguage];
+                // Actualizar textos de la UI
+                uiElements.gameTitle.textContent = t.gameTitle;
+                uiElements.levelDisplay.textContent = `${t.level} ${currentLevel + 1}`;
+                uiElements.controlPanelTitle.textContent = t.controlPanelTitle;
+                uiElements.addCommandsTitle.textContent = t.addCommandsTitle;
+                uiElements.sequenceTitle.textContent = t.sequenceTitle;
+                uiElements.runButton.innerHTML = t.runButton;
+                uiElements.deleteLastButton.innerHTML = t.deleteButton;
+                uiElements.resetButton.innerHTML = t.resetButton;
+                uiElements.proofsTitle.textContent = t.proofsTitle;
+                uiElements.footer.innerHTML = `<p>${t.footer.author}</p><p>${t.footer.license}</p>`;
+
+                // Renderizar tablero
+                uiElements.gameBoard.innerHTML = '';
+                uiElements.gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+                for (let y = 0; y < BOARD_SIZE; y++) {
+                    for (let x = 0; x < BOARD_SIZE; x++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('grid-cell');
+                        if(state.path.some(p => p.x === x && p.y === y)) cell.classList.add('visited');
+                        
+                        if (state.robot.x === x && state.robot.y === y) {
+                            const robotEl = document.createElement('span');
+                            robotEl.classList.add('robot', directions[state.robot.dir]);
+                            robotEl.textContent = '🔼';
+                            cell.appendChild(robotEl);
+                        } else {
+                            const gridItem = state.grid[y][x];
+                            if (gridItem === 'P') cell.textContent = '🔎';
+                            else if (gridItem === 'X') cell.textContent = '🧱';
+                        }
+                        uiElements.gameBoard.appendChild(cell);
+                    }
+                }
+                
+                // Renderizar secuencia y pruebas
+                uiElements.commandSequenceContainer.innerHTML = '';
+                state.commandQueue.forEach(cmd => {
+                    const iconEl = document.createElement('span');
+                    iconEl.classList.add('command-icon', 'bg-gray-700', 'rounded');
+                    iconEl.innerHTML = commandIcons[cmd];
+                    uiElements.commandSequenceContainer.appendChild(iconEl);
+                });
+                uiElements.collectedProofsContainer.innerHTML = state.collected.map(() => '🔎').join('');
+            }
+            
+            function setLanguage(lang) {
+                currentLanguage = lang;
+                document.documentElement.lang = lang;
+                uiElements.langCaBtn.classList.toggle('active', lang === 'ca');
+                uiElements.langEsBtn.classList.toggle('active', lang === 'es');
+                render();
+            }
+
+            function showToast(messageKey, type = 'success', args) {
+                const t = translations[currentLanguage].toasts;
+                let message = t[messageKey];
+                if (typeof message === 'function') {
+                    message = message(args);
+                }
+                uiElements.toast.textContent = message;
+                uiElements.toast.className = 'toast show';
+                if (type === 'success') uiElements.toast.classList.add('bg-green-500', 'text-white');
+                else if (type === 'error') uiElements.toast.classList.add('bg-red-500', 'text-white');
+                else uiElements.toast.classList.add('bg-blue-500', 'text-white');
+                setTimeout(() => { uiElements.toast.classList.remove('show'); }, 2500);
+            }
+
+            // --- Lógica del Juego ---
+            function processCommands() {
+                if (state.commandQueue.length === 0) {
+                    showToast("noCommands", "error");
+                    return;
+                }
+                
+                state.robot = { ...state.initialRobotState };
+                state.grid = state.initialGrid.map(row => [...row]);
+                state.collected = [];
+                state.path = [{...state.robot}];
+                render();
+
+                state.isExecuting = true;
+                toggleControls(false);
+                let commandIndex = 0;
+
+                const interval = setInterval(() => {
+                    if (commandIndex >= state.commandQueue.length) {
+                        clearInterval(interval);
+                        checkWinCondition();
+                        return;
+                    }
+                    const command = state.commandQueue[commandIndex];
+                    let success = false;
+                    switch (command) {
+                        case 'AVANZAR': success = moveRobot(); break;
+                        case 'GIRAR_D': state.robot.dir = (state.robot.dir + 1) % 4; success = true; break;
+                        case 'GIRAR_I': state.robot.dir = (state.robot.dir + 3) % 4; success = true; break;
+                    }
+                    if(success) {
+                        if (command === 'AVANZAR') state.path.push({x: state.robot.x, y: state.robot.y});
+                        checkForProof();
+                        render();
+                    } else {
+                        clearInterval(interval);
+                        setTimeout(resetTurn, 1000);
+                        return;
+                    }
+                    commandIndex++;
+                }, 500);
+            }
+
+            function moveRobot() {
+                let { x, y, dir } = state.robot;
+                let nextX = x, nextY = y;
+                if (dir === 0) nextY--; if (dir === 1) nextX++;
+                if (dir === 2) nextY++; if (dir === 3) nextX--;
+                if (nextX < 0 || nextX >= BOARD_SIZE || nextY < 0 || nextY >= BOARD_SIZE || state.grid[nextY][nextX] === 'X') {
+                    showToast("crash", 'error');
+                    return false;
+                }
+                state.robot.x = nextX; state.robot.y = nextY;
+                return true;
+            }
+
+            function checkForProof() {
+                const { x, y } = state.robot;
+                const isAlreadyCollected = state.collected.some(p => p.x === x && p.y === y);
+                if (state.grid[y][x] === 'P' && !isAlreadyCollected) {
+                    state.collected.push({x, y});
+                    showToast("proofCollected", "success");
+                }
+            }
+
+            function checkWinCondition() {
+                if (state.collected.length === state.proofs.length) {
+                    currentLevel++;
+                    if (currentLevel < levels.length) {
+                        showToast("levelComplete", "success", currentLevel);
+                        setTimeout(loadLevel, 2000);
+                    } else {
+                        showToast("allLevelsComplete", "success");
+                        toggleControls(false); 
+                    }
+                } else {
+                    showToast("proofsMissing", "info");
+                    setTimeout(resetTurn, 1500);
+                }
+            }
+            
+            function toggleControls(enabled) {
+                const buttons = Object.values(uiElements).filter(el => el.tagName === 'BUTTON');
+                 buttons.forEach(btn => {
+                    btn.disabled = !enabled;
+                    btn.classList.toggle('opacity-50', !enabled);
+                    btn.classList.toggle('cursor-not-allowed', !enabled);
+                 });
+            }
+            
+            function loadLevel() {
+                state = getInitialState(currentLevel);
+                uiElements.toast.classList.remove('show');
+                render();
+                toggleControls(true);
+            }
+
+            function resetTurn() {
+                state.commandQueue = [];
+                state.robot = { ...state.initialRobotState };
+                state.collected = [];
+                state.path = [];
+                state.isExecuting = false;
+                render();
+                toggleControls(true);
+            }
+            
+            function addCommand(command) {
+                if (state.isExecuting) return;
+                state.commandQueue.push(command);
+                render();
+            }
+
+            function deleteLastCommand() {
+                if (state.isExecuting) return;
+                state.commandQueue.pop();
+                render();
+            }
+
+            // --- INICIALIZACIÓN ---
+            document.getElementById('add-forward').addEventListener('click', () => addCommand('AVANZAR'));
+            document.getElementById('add-left').addEventListener('click', () => addCommand('GIRAR_I'));
+            document.getElementById('add-right').addEventListener('click', () => addCommand('GIRAR_D'));
+            document.getElementById('delete-last-button').addEventListener('click', deleteLastCommand);
+            document.getElementById('run-button').addEventListener('click', processCommands);
+            document.getElementById('reset-button').addEventListener('click', () => { currentLevel = 0; loadLevel(); });
+            uiElements.langCaBtn.addEventListener('click', () => setLanguage('ca'));
+            uiElements.langEsBtn.addEventListener('click', () => setLanguage('es'));
+            
+            loadLevel(); // Carga el primer nivel e inicializa el estado
+            setLanguage(currentLanguage); // Establece el idioma inicial, ahora con el estado ya inicializado
+        });
+    </script>
+</body>
+</html>
