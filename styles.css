@@ -1,0 +1,79 @@
+﻿:root {
+  --bg: #101827;
+  --panel: #16243a;
+  --grid: #203553;
+  --snake: #4ade80;
+  --snake-head: #22c55e;
+  --food: #f97316;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top, #1d3557 0%, var(--bg) 60%);
+}
+
+.container {
+  width: min(92vw, 540px);
+  text-align: center;
+  padding: 20px;
+  border-radius: 14px;
+  background: color-mix(in hsl, var(--panel), black 8%);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
+h1 {
+  margin: 0 0 12px;
+  letter-spacing: 0.08em;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hud p,
+.help p {
+  margin: 0;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  background: linear-gradient(180deg, #12253d, #0e1d31);
+  border: 2px solid var(--grid);
+  border-radius: 10px;
+}
+
+.help {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.status {
+  min-height: 1.4em;
+  margin: 10px 0 0;
+  color: #facc15;
+}
+
+kbd {
+  border: 1px solid #334155;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: #0b1422;
+}

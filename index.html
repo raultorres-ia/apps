@@ -1,0 +1,26 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de la Serpiente</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Snake</h1>
+    <section class="hud">
+      <p>Puntos: <span id="score">0</span></p>
+      <p>Mejor: <span id="best">0</span></p>
+    </section>
+    <canvas id="game" width="480" height="480" aria-label="Juego de la serpiente"></canvas>
+    <section class="help">
+      <p>Controles: Flechas o WASD</p>
+      <p><kbd>P</kbd> pausa · <kbd>Espacio</kbd> reinicia</p>
+    </section>
+    <p id="status" class="status" aria-live="polite"></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
