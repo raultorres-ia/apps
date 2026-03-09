@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joc de Reacció per Seqüència</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #1a202c; /* bg-gray-900 */
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+            margin: auto;
+        }
+        .arrow-cell {
+            background-color: #2d3748; /* bg-gray-800 */
+            border: 2px solid #4a5568; /* border-gray-600 */
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s ease-in-out;
+        }
+        .arrow-cell svg {
+            width: 60%;
+            height: 60%;
+            color: #4a5568; /* text-gray-600 */
+            transition: all 0.1s ease-in-out;
+        }
+        /* Flecha activa que el jugador debe pulsar (blanca) */
+        .arrow-cell.active svg {
+            color: #E2E8F0; /* text-gray-200 */
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px #E2E8F0);
+        }
+        /* Flecha ya pulsada correctamente (azul) */
+        .arrow-cell.completed svg {
+            color: #4299e1; /* text-blue-500 */
+        }
+        /* Flash rojo cuando el jugador se equivoca */
+        .arrow-cell.incorrect {
+            animation: shake 0.4s;
+            background-color: #c53030;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .hud-display {
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid #4a5568;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: white;
+            min-width: 120px;
+        }
+        #time-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #2d3748;
+            border-radius: 5px;
+            margin-top: 1rem;
+            overflow: hidden;
+            border: 1px solid #4a5568;
+        }
+        #time-bar {
+            width: 100%;
+            height: 100%;
+            background-color: #63b3ed;
+            border-radius: 5px;
+            transition: width 0.1s linear;
+        }
+        .action-button {
+            transition: all 0.2s ease;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(99, 179, 237, 0.4);
+        }
+        .lang-button {
+            background-color: #4a5568;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .lang-button.active {
+            background-color: #63b3ed;
+            font-weight: bold;
+        }
+        footer {
+            position: absolute;
+            bottom: 10px;
+            text-align: center;
+            width: 100%;
+            color: #a0aec0; /* text-gray-400 */
+            font-size: 0.8rem;
+        }
+        footer a {
+            color: #63b3ed;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="absolute top-4 right-4 flex space-x-2">
+        <button id="lang-ca" class="lang-button active">CAT</button>
+        <button id="lang-es" class="lang-button">ESP</button>
+    </div>
+
+    <div id="game-container" class="w-full max-w-lg mx-auto text-center">
+        <h1 class="text-4xl font-bold mb-4 text-blue-300 tracking-wider" data-lang-ca="NETEJA EL TAULER" data-lang-es="LIMPIA EL TABLERO">NETEJA EL TAULER</h1>
+        
+        <div class="flex justify-around items-center mb-4 space-x-2">
+            <div class="hud-display">
+                <span data-lang-ca="NIVELL" data-lang-es="NIVEL">NIVELL</span>
+                <span id="level" class="ml-2">1</span>
+            </div>
+            <div class="hud-display">
+                <span data-lang-ca="VIDES" data-lang-es="VIDAS">VIDES</span>
+                <div id="lives-container" class="flex items-center ml-2">
+                    <!-- Heart icons will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- INSTRUCTIONS -->
+        <div id="instructions" class="my-2 text-lg text-blue-200">
+            <p data-lang-ca="Fes servir les tecles del cursor per indicar la direcció de la fletxa." 
+               data-lang-es="Usa las teclas del cursor para indicar la dirección de la flecha.">
+               Fes servir les tecles del cursor per indicar la direcció de la fletxa.
+            </p>
+        </div>
+
+        <div id="game-board" class="game-board mb-4"></div>
+        
+        <div id="time-bar-container" class="invisible">
+            <div id="time-bar"></div>
+        </div>
+        
+        <div id="message-container" class="h-20 flex items-center justify-center mt-2">
+             <button id="start-button" class="action-button bg-blue-500 text-white font-bold py-3 px-8 rounded-lg text-2xl shadow-lg" data-lang-ca="COMENÇAR" data-lang-es="EMPEZAR">COMENÇAR</button>
+            <div id="message" class="hidden text-3xl font-bold"></div>
+        </div>
+    </div>
+
+    <footer>
+        Aplicació feta per Raül Torres<br>
+        <span data-lang-ca="Aquesta obra està sota una " data-lang-es="Esta obra está bajo una ">Aquesta obra està sota una </span>
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" data-lang-ca="llicència Creative Commons BY-SA" data-lang-es="licencia Creative Commons BY-SA">llicència Creative Commons BY-SA</a>.
+    </footer>
+
+    <script>
+    // Wait for the entire page to load.
+    window.addEventListener('load', () => {
+        // --- DOM Elements ---
+        const gameBoard = document.getElementById('game-board');
+        const levelDisplay = document.getElementById('level');
+        const livesContainer = document.getElementById('lives-container');
+        const startButton = document.getElementById('start-button');
+        const messageDiv = document.getElementById('message');
+        const langCaButton = document.getElementById('lang-ca');
+        const langEsButton = document.getElementById('lang-es');
+        const timeBarContainer = document.getElementById('time-bar-container');
+        const timeBar = document.getElementById('time-bar');
+        const instructions = document.getElementById('instructions');
+
+        // --- Game Constants ---
+        const GRID_SIZE = 16;
+        const DIRECTIONS = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
+        const DIRECTIONS_MAP = { 'ArrowUp': 0, 'ArrowRight': 90, 'ArrowDown': 180, 'ArrowLeft': 270 };
+        
+        // --- Audio Context for Basic Sounds ---
+        let audioContext;
+        
+        // --- Game State ---
+        let level = 1;
+        let lives = 3;
+        let gameInProgress = false;
+        let cells = [];
+        let levelSequence = [];
+        let currentTargetIndex = 0;
+        let currentLanguage = 'ca';
+        let timerInterval;
+        let levelTime;
+
+        // --- Sound Functions ---
+        function playSound(type, frequency, duration, startTime = 0) {
+            if (!audioContext) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime + startTime);
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime + startTime); // Lower volume a bit
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + startTime + duration);
+            
+            oscillator.start(audioContext.currentTime + startTime);
+            oscillator.stop(audioContext.currentTime + startTime + duration);
+        }
+
+        function playCorrectSound() {
+            playSound('triangle', 800, 0.1);
+        }
+
+        function playIncorrectSound() {
+            playSound('square', 200, 0.2);
+        }
+
+        function playLevelUpSound() {
+            playSound('sine', 440, 0.1, 0);
+            playSound('sine', 554, 0.1, 0.1);
+            playSound('sine', 659, 0.1, 0.2);
+            playSound('sine', 880, 0.1, 0.3);
+        }
+
+        function playGameOverSound() {
+            playSound('sawtooth', 400, 0.2, 0);
+            playSound('sawtooth', 300, 0.2, 0.2);
+            playSound('sawtooth', 200, 0.3, 0.4);
+        }
+
+        // --- Localization ---
+        const translations = {
+            'NETEJA EL TAULER': { ca: 'NETEJA EL TAULER', es: 'LIMPIA EL TABLERO' },
+            'NIVELL': { ca: 'NIVELL', es: 'NIVEL' },
+            'VIDES': { ca: 'VIDES', es: 'VIDAS' },
+            'COMENÇAR': { ca: 'COMENÇAR', es: 'EMPEZAR' },
+            'NIVELL SUPERAT!': { ca: 'NIVELL SUPERAT!', es: '¡NIVEL SUPERADO!' },
+            'S\'HA ACABAT EL TEMPS!': { ca: 'S\'HA ACABAT EL TEMPS!', es: '¡SE ACABÓ EL TIEMPO!' },
+            'PARTIDA NOVA': { ca: 'PARTIDA NOVA', es: 'PARTIDA NUEVA' },
+            'llicència Creative Commons BY-SA': { ca: 'llicència Creative Commons BY-SA', es: 'licencia Creative Commons BY-SA' },
+            'Aquesta obra està sota una ': { ca: 'Aquesta obra està sota una ', es: 'Esta obra está bajo una ' }
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.documentElement.lang = lang;
+            langCaButton.classList.toggle('active', lang === 'ca');
+            langEsButton.classList.toggle('active', lang === 'es');
+
+            document.querySelectorAll('[data-lang-ca]').forEach(el => {
+                 const keyEs = el.dataset.langEs;
+                 if (lang === 'es' && keyEs) {
+                     el.innerText = keyEs;
+                 } else {
+                     el.innerText = el.dataset.langCa;
+                 }
+            });
+        }
+        
+        // --- Functions ---
+        function createArrowSvg(rotation) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            const path = document.createElementNS(svgNS, "path");
+            svg.setAttribute("viewBox", "0 0 24 24");
+            svg.setAttribute("fill", "none");
+            svg.setAttribute("stroke", "currentColor");
+            path.setAttribute("d", "M12 19V5M5 12l7-7 7 7");
+            svg.appendChild(path);
+            svg.style.transform = `rotate(${rotation}deg)`;
+            return svg;
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function setupGrid() {
+            gameBoard.innerHTML = '';
+            cells = [];
+            for (let i = 0; i < GRID_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('arrow-cell');
+                const direction = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+                cell.dataset.direction = direction;
+                cell.appendChild(createArrowSvg(DIRECTIONS_MAP[direction]));
+                gameBoard.appendChild(cell);
+                cells.push(cell);
+            }
+        }
+        
+        function updateHUD(){
+            levelDisplay.innerText = level;
+            livesContainer.innerHTML = ''; // Clear previous hearts
+            for (let i = 0; i < lives; i++) {
+                const heartSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                heartSvg.setAttribute('class', 'w-6 h-6 text-red-500');
+                heartSvg.setAttribute('viewBox', '0 0 24 24');
+                heartSvg.setAttribute('fill', 'currentColor');
+                heartSvg.style.filter = 'drop-shadow(0 0 4px #ef4444)';
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute('d', 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+                
+                heartSvg.appendChild(path);
+                livesContainer.appendChild(heartSvg);
+            }
+        }
+
+        function resetGame() {
+            level = 1;
+            lives = 3;
+            gameInProgress = false;
+            updateHUD();
+            showMessage(false);
+            startButton.classList.remove('hidden');
+            const startKey = startButton.dataset.langCa;
+            startButton.innerText = translations[startKey][currentLanguage];
+            cells.forEach(cell => cell.className = 'arrow-cell');
+            timeBarContainer.classList.add('invisible');
+            clearInterval(timerInterval);
+        }
+
+        function showMessage(key, duration = 1500, isRawText = false) {
+            if (!key) {
+                messageDiv.classList.add('hidden');
+                return;
+            }
+            const text = isRawText ? key : (translations[key] ? translations[key][currentLanguage] : key);
+            messageDiv.innerText = text;
+            messageDiv.classList.remove('hidden');
+            if (duration > 0) {
+                setTimeout(() => messageDiv.classList.add('hidden'), duration);
+            }
+        }
+
+        async function startGame() {
+            if (gameInProgress) return;
+            // Initialize AudioContext on first user interaction
+            if (!audioContext) {
+                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                 await audioContext.resume();
+            }
+            instructions.classList.add('hidden');
+            resetGame();
+            gameInProgress = true;
+            startButton.classList.add('hidden');
+            startLevel();
+        }
+        
+        function generateLevelSequence() {
+             const indices = Array.from(Array(GRID_SIZE).keys());
+            if (level === 1) {
+                levelSequence = indices;
+            } else {
+                levelSequence = shuffleArray(indices);
+            }
+        }
+        
+        function startLevel() {
+            cells.forEach(cell => cell.className = 'arrow-cell');
+            setupGrid();
+            generateLevelSequence();
+            currentTargetIndex = 0;
+            activateNextArrow();
+            startTimer();
+        }
+        
+        function startTimer() {
+            levelTime = Math.max(8000, 20000 - (level - 1) * 1500);
+            timeBar.style.transition = 'none';
+            timeBar.style.width = '100%';
+            timeBarContainer.classList.remove('invisible');
+
+            setTimeout(() => { timeBar.style.transition = `width ${levelTime / 1000}s linear`; timeBar.style.width = '0%'; }, 100);
+
+            clearInterval(timerInterval);
+            timerInterval = setTimeout(() => {
+                if (gameInProgress) {
+                    handleIncorrect(null, true); // Timeout counts as an incorrect action
+                }
+            }, levelTime);
+        }
+
+        function activateNextArrow() {
+            if (currentTargetIndex >= levelSequence.length) return;
+            const activeIndex = levelSequence[currentTargetIndex];
+            cells[activeIndex].classList.add('active');
+        }
+        
+        function handleIncorrect(cell, isTimeout = false) {
+             if (cell) {
+                cell.classList.add('incorrect');
+                setTimeout(() => cell.classList.remove('incorrect'), 400);
+            }
+            playIncorrectSound();
+            lives--;
+            updateHUD();
+
+            if (lives <= 0) {
+                gameOver(isTimeout);
+            } else if (isTimeout) {
+                // If timeout but still has lives, reset level
+                 showMessage("S'HA ACABAT EL TEMPS!");
+                 clearInterval(timerInterval);
+                 setTimeout(() => { startLevel(); }, 2000);
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (!gameInProgress || !DIRECTIONS.includes(e.key)) return;
+            
+            const activeCellIndex = levelSequence[currentTargetIndex];
+            const activeCell = cells[activeCellIndex];
+            const correctKey = activeCell.dataset.direction;
+            
+            if (e.key === correctKey) {
+                // Correct Press
+                playCorrectSound();
+                activeCell.classList.remove('active');
+                activeCell.classList.add('completed');
+                currentTargetIndex++;
+
+                if (currentTargetIndex >= levelSequence.length) {
+                    levelUp();
+                } else {
+                    activateNextArrow();
+                }
+            } else {
+                // Incorrect Press
+                handleIncorrect(activeCell);
+            }
+        }
+
+        function levelUp() {
+            gameInProgress = false; 
+            clearInterval(timerInterval);
+            playLevelUpSound();
+            
+            level++;
+            updateHUD();
+            showMessage('NIVELL SUPERAT!');
+            setTimeout(() => {
+                gameInProgress = true;
+                startLevel();
+            }, 2000);
+        }
+
+        function gameOver(isTimeOut) {
+            gameInProgress = false;
+            clearInterval(timerInterval);
+            timeBarContainer.classList.add('invisible');
+            
+            playGameOverSound();
+
+            if (isTimeOut && lives > 0) {
+                 // This case is handled in handleIncorrect
+            } else {
+                instructions.classList.remove('hidden');
+                showMessage("GAME OVER", 0, true);
+                startButton.innerText = translations['PARTIDA NOVA'][currentLanguage];
+                startButton.classList.remove('hidden');
+            }
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+        document.addEventListener('keydown', handleKeyPress);
+        langCaButton.addEventListener('click', () => setLanguage('ca'));
+        langEsButton.addEventListener('click', () => setLanguage('es'));
+
+        // --- Initial Setup ---
+        setupGrid();
+        setLanguage('ca');
+        updateHUD(); // Initial drawing of hearts
+    });
+    </script>
+</body>
+</html>

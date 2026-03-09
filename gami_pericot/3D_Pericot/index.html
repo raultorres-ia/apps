@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor 3D Interactivo</title>
+    <style>
+        body { margin: 0; background-color: #e0e0e0; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; }
+        #ui {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8); padding: 10px 20px;
+            border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            pointer-events: none; transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">Click y arrastra para rotar • Scroll para Zoom</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- ESCENA Y RENDER ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0); // Fondo gris claro
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(2, 2, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // Ajustes de color y brillo definitivos
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.4; 
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        
+        document.body.appendChild(renderer.domElement);
+
+        // --- ILUMINACIÓN POTENTE ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); 
+        scene.add(ambientLight);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+        scene.add(hemiLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+
+        // --- CONTROLES ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; 
+        controls.dampingFactor = 0.05;
+
+        // --- CARGA DEL MODELO ---
+        const loader = new GLTFLoader();
+        
+        loader.load('textured_mesh.glb', (gltf) => {
+            const model = gltf.scene;
+
+            // Centrar y ajustar escala automáticamente
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            
+            model.position.x += (model.position.x - center.x);
+            model.position.y += (model.position.y - center.y);
+            model.position.z += (model.position.z - center.z);
+
+            scene.add(model);
+            
+            // Ajustar la cámara según el tamaño del objeto
+            const maxDim = Math.max(size.x, size.y, size.z);
+            camera.position.z = maxDim * 2.5;
+            
+            console.log("Modelo cargado con éxito");
+        }, 
+        (xhr) => { 
+            console.log((xhr.loaded / xhr.total * 100) + '% cargado'); 
+        }, 
+        (error) => { 
+            console.error("Error al cargar:", error); 
+        });
+
+        // --- BUCLE DE ANIMACIÓN ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Ajuste al cambiar tamaño de ventana
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

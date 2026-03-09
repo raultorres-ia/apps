@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Descomposició i Sumes – 3r Primària</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Jocs de descomposició de nombres i sumes per a 3r de primària." />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Descomposició i Sumes</h1>
+    <div class="subtitle">Per a 3r de Primària</div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="descomp">Descomposició</button>
+      <button class="tab-btn" data-tab="sumes">Sumes</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- PANELL: DESCOMPOSICIÓ -->
+    <section id="tab-descomp" class="tab-panel active" aria-labelledby="Descomposició">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Descompon el nombre</div>
+          <div class="controls">
+            <label>
+              Nivell:
+              <select id="descomp-diff">
+                <option value="facil">Fàcil (0–99)</option>
+                <option value="mitja" selected>Mitjà (100–499)</option>
+                <option value="dificil">Difícil (500–999)</option>
+              </select>
+            </label>
+            <button id="descomp-new" class="secondary">Nou nombre</button>
+          </div>
+        </div>
+
+        <div class="big-number" id="descomp-number">—</div>
+
+        <div class="inputs-3">
+          <div class="input-block">
+            <div class="place">Centenes</div>
+            <div class="number-input-container">
+              <button class="arrow-btn up" data-for="centenes" data-action="increment">▲</button>
+              <input type="number" id="centenes" min="0" max="9" inputmode="numeric" />
+              <button class="arrow-btn down" data-for="centenes" data-action="decrement">▼</button>
+            </div>
+            <div class="unit">× 100</div>
+          </div>
+          <div class="input-block">
+            <div class="place">Desenes</div>
+            <div class="number-input-container">
+              <button class="arrow-btn up" data-for="desenes" data-action="increment">▲</button>
+              <input type="number" id="desenes" min="0" max="9" inputmode="numeric" />
+              <button class="arrow-btn down" data-for="desenes" data-action="decrement">▼</button>
+            </div>
+            <div class="unit">× 10</div>
+          </div>
+          <div class="input-block">
+            <div class="place">Unitats</div>
+            <div class="number-input-container">
+              <button class="arrow-btn up" data-for="unitats" data-action="increment">▲</button>
+              <input type="number" id="unitats" min="0" max="9" inputmode="numeric" />
+              <button class="arrow-btn down" data-for="unitats" data-action="decrement">▼</button>
+            </div>
+            <div class="unit">× 1</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="descomp-help" class="ghost">Pista</button>
+          <button id="descomp-check" class="primary">Comprova</button>
+          <button id="descomp-next" class="secondary">Següent</button>
+        </div>
+
+        <div id="descomp-feedback" class="feedback" aria-live="polite"></div>
+        <div id="descomp-expanded" class="expanded"></div>
+
+        <div id="descomp-abacus" class="abacus" aria-label="Àbac de centenes, desenes i unitats">
+            <div class="ab-col">
+                <div class="ab-label">Centenes</div>
+                <div class="ab-track" data-abacus-col="C"></div>
+            </div>
+            <div class="ab-col">
+                <div class="ab-label">Desenes</div>
+                <div class="ab-track" data-abacus-col="D"></div>
+            </div>
+            <div class="ab-col">
+                <div class="ab-label">Unitats</div>
+                <div class="ab-track" data-abacus-col="U"></div>
+            </div>
+        </div>
+
+        <div class="score score-inline">
+          <span>Encerts: <strong data-score="correct">0</strong></span>
+          <span>Intentats: <strong data-score="attempts">0</strong></span>
+          <span>Ràtxa: <strong data-score="streak">0</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANELL: SUMES -->
+    <section id="tab-sumes" class="tab-panel" aria-labelledby="Sumes">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Resol la suma</div>
+          <div class="controls">
+            <label>
+              Xifres:
+              <select id="sumes-digits">
+                <option value="2">2 xifres</option>
+                <option value="3" selected>3 xifres</option>
+              </select>
+            </label>
+            <button id="sumes-new" class="secondary">Nova suma</button>
+          </div>
+        </div>
+
+        <div class="sum-grid" id="sum-grid">
+          <div class="sum-row headers">
+            <div class="hdr hdr-h">Centenes</div>
+            <div class="hdr hdr-t">Desenes</div>
+            <div class="hdr hdr-u">Unitats</div>
+          </div>
+          <div class="sum-row carry">
+            <input type="number" id="carry-h" class="carry-input" inputmode="numeric" min="0" max="9" step="1" aria-label="Porta a centenes" placeholder="↟" />
+            <input type="number" id="carry-t" class="carry-input" inputmode="numeric" min="0" max="9" step="1" aria-label="Porta a desenes" placeholder="↟" />
+            <input type="number" id="carry-u" class="carry-input" inputmode="numeric" min="0" max="9" step="1" aria-label="Porta a unitats" placeholder="↟" />
+          </div>
+          <div class="sum-row op" id="row-a" aria-label="Primer sumand">
+            <div id="a-h" class="digit">&nbsp;</div>
+            <div id="a-t" class="digit">&nbsp;</div>
+            <div id="a-u" class="digit">&nbsp;</div>
+          </div>
+          <div class="sum-row op plus" id="row-b" aria-label="Segon sumand">
+            <div id="b-h" class="digit">&nbsp;</div>
+            <div id="b-t" class="digit">&nbsp;</div>
+            <div id="b-u" class="digit">&nbsp;</div>
+          </div>
+          <div class="sum-row divider"><div class="line"></div></div>
+          <div class="sum-row ans" aria-label="Resposta">
+            <input type="number" id="ans-h" class="ans-input" inputmode="numeric" min="0" max="9" step="1" aria-label="Centenes del resultat" />
+            <input type="number" id="ans-t" class="ans-input" inputmode="numeric" min="0" max="9" step="1" aria-label="Desenes del resultat" />
+            <input type="number" id="ans-u" class="ans-input" inputmode="numeric" min="0" max="9" step="1" aria-label="Unitats del resultat" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="sumes-check" class="primary">Comprova</button>
+          <button id="sumes-next" class="secondary">Següent</button>
+        </div>
+
+        <div id="sumes-feedback" class="feedback" aria-live="polite"></div>
+
+        <div class="score score-inline">
+          <span>Encerts: <strong data-score="correct">0</strong></span>
+          <span>Intentats: <strong data-score="attempts">0</strong></span>
+          <span>Ràtxa: <strong data-score="streak">0</strong></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="credit">Aplicació creada per Raül Torres.</div>
+  </footer>
+
+  <script src="app.js"></script>
+  <noscript>
+    Necessites activar JavaScript per utilitzar l'aplicació.
+  </noscript>
+  
+</body>
+</html>
