@@ -1,0 +1,194 @@
+﻿:root {
+  --bg: #f0f8ff; /* AliceBlue - slightly tinted background */
+  --card: #ffffff;
+  --primary: #4CAF50; /* Vibrant green */
+  --primary-dark: #388E3C; /* Darker green */
+  --accent: #FFC107; /* Warm yellow */
+  --text: #203047;
+  --muted: #5a6f8f;
+  --ok: #4CAF50; /* Vibrant green */
+  --shadow: 0 8px 20px rgba(32, 48, 71, 0.1); /* Softer shadow */
+  --radius: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Fredoka", sans-serif; /* Child-friendly font */
+  color: var(--text);
+  background:
+    radial-gradient(circle at 10% 20%, #dff0ff 0, transparent 36%),
+    radial-gradient(circle at 90% 10%, #fff4d9 0, transparent 35%),
+    var(--bg);
+}
+
+.app {
+  width: min(1100px, 100% - 2rem);
+  margin: 0 auto;
+  padding: 2.2rem 0 1.5rem; /* Increased padding */
+}
+
+.hero {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem; /* Increased padding */
+  text-align: center;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3.2vw, 2.8rem); /* Slightly larger font */
+}
+
+.hero p {
+  margin: 0.9rem auto 0;
+  max-width: 65ch;
+  font-size: clamp(1.1rem, 2.4vw, 1.4rem); /* Slightly larger font */
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.audio-grid {
+  margin-top: 1.5rem; /* Increased margin */
+  display: grid;
+  gap: 1.2rem; /* Increased gap */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Slightly wider cards */
+}
+
+.audio-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem; /* Increased padding */
+  display: grid;
+  gap: 1rem; /* Increased gap */
+  border: 3px solid transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.audio-card:hover {
+  transform: translateY(-5px) scale(1.02); /* Subtle hover effect */
+  box-shadow: 0 12px 25px rgba(32, 48, 71, 0.15);
+}
+
+.audio-card.is-playing {
+  border-color: var(--ok);
+  transform: translateY(-2px);
+}
+
+.audio-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Increased gap */
+}
+
+.icon-wrap {
+  width: 60px; /* Slightly larger */
+  height: 60px; /* Slightly larger */
+  border-radius: 16px;
+  background: rgb(220, 237, 200); /* More vibrant light green */
+  display: grid;
+  place-items: center;
+  font-size: 2rem; /* Larger icon */
+}
+
+.audio-title {
+  margin: 0;
+  font-size: 1.5rem; /* Larger font */
+}
+
+.state {
+  margin: 0.3rem 0 0;
+  font-size: 1rem; /* Slightly larger font */
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.audio-card.is-playing .state {
+  color: var(--ok);
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem; /* Slightly increased gap */
+}
+
+.btn {
+  border: none;
+  border-radius: 20px; /* More rounded */
+  padding: 0.7rem 0.6rem; /* Adjusted padding for larger symbols */
+  font-size: 1.8rem; /* Larger font size for symbols */
+  line-height: 1; /* Center symbols vertically */
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  background: var(--primary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  background: var(--primary-dark);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+.btn-restart {
+  background: #FF9800; /* More vibrant orange */
+}
+
+.btn-restart:hover,
+.btn-restart:focus-visible {
+  background: #FB8C00; /* Darker orange */
+}
+
+.credits {
+  width: min(1100px, 100% - 2rem);
+  margin: 0 auto 1.8rem; /* Increased margin */
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem; /* Increased padding */
+  font-size: 1rem; /* Slightly larger font */
+  line-height: 1.6;
+}
+
+.credits p {
+  margin: 0 0 0.8rem;
+}
+
+.credits p:last-child {
+  margin-bottom: 0;
+}
+
+.credits a {
+  color: var(--primary-dark);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .app,
+  .credits {
+    width: min(1100px, 100% - 1rem);
+  }
+
+  .audio-title {
+    font-size: 1.4rem;
+  }
+
+  .btn {
+    font-size: 1.6rem; /* Larger font size for symbols on mobile */
+    padding: 0.6rem 0.4rem; /* Adjusted padding for mobile */
+  }
+}
