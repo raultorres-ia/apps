@@ -1,0 +1,246 @@
+﻿<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L'aigua es pot acabar?</title>
+  <style>
+    :root {
+      --bg-1: #e0f2fe;
+      --bg-2: #dbeafe;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --cat-presentacio: #0ea5e9;
+      --cat-investigacio: #2563eb;
+      --cat-recursos: #1d4ed8;
+      --cat-jocs: #1e40af;
+      --cat-avaluacio: #172554;
+      --shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 10% 10%, #f0f9ff 0%, transparent 40%),
+                  radial-gradient(circle at 90% 0%, #a7f3d0 0%, transparent 30%),
+                  linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      padding: 24px;
+    }
+
+    .container {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(6px);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 2vw + 1rem, 2.3rem);
+      line-height: 1.2;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      display: block;
+      background: linear-gradient(90deg, #0ea5e9 0%, #1d4ed8 55%, #172554 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 10px 24px rgba(29, 78, 216, 0.18);
+      position: relative;
+      padding-bottom: 6px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #334155;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      display: block;
+      width: fit-content;
+      margin-top: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(37, 99, 235, 0.18);
+    }
+
+    .groups {
+      display: grid;
+      gap: 18px;
+    }
+
+    .group {
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .group h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      line-height: 1.2;
+      color: #0f172a;
+    }
+
+    .group.presentacio h2 { color: var(--cat-presentacio); }
+    .group.investigacio h2 { color: var(--cat-investigacio); }
+    .group.recursos h2 { color: var(--cat-recursos); }
+    .group.jocs h2 { color: var(--cat-jocs); }
+    .group.avaluacio h2 { color: var(--cat-avaluacio); }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    .tile {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      min-height: 120px;
+      border-radius: 18px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      line-height: 1.25;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform .16s ease, filter .16s ease;
+      isolation: isolate;
+    }
+
+    .tile::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(150deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, 0));
+      z-index: -1;
+    }
+
+    .tile:hover,
+    .tile:focus-visible {
+      transform: translateY(-3px);
+      filter: brightness(1.05);
+      outline: none;
+    }
+
+    .tile.theme-presentacio { background: var(--cat-presentacio); }
+    .tile.theme-investigacio { background: var(--cat-investigacio); }
+    .tile.theme-recursos { background: var(--cat-recursos); }
+    .tile.theme-jocs { background: var(--cat-jocs); }
+    .tile.theme-avaluacio { background: var(--cat-avaluacio); }
+
+    .tile.disabled {
+      cursor: not-allowed;
+      background: #1e40af !important;
+      opacity: 0.9;
+    }
+
+    .tile small {
+      display: block;
+      font-size: 0.78rem;
+      margin-top: 6px;
+      font-weight: 600;
+      opacity: 0.92;
+    }
+
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 14px; }
+      header { padding: 16px; }
+      .tile { min-height: 105px; border-radius: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>L'aigua es pot acabar?</h1>
+      <p class="subtitle">Activitats del projecte per als participants de la fira.</p>
+    </header>
+
+    <main class="groups" aria-label="Activitats del projecte agrupades per temàtiques">
+      <section class="group presentacio">
+        <h2>Presentació</h2>
+        <div class="grid">
+          <a class="tile theme-presentacio" href="https://drive.google.com/file/d/1OOy6V_pHaqkixXdNTimhVYzTAwetmQiW/view?usp=sharing" target="_blank" rel="noopener noreferrer">Eco</a>
+          <a class="tile theme-presentacio" href="https://drive.google.com/file/d/1qEfosbrz2-jnwsRZM4Ue34gVymzvRmHu/view?usp=sharing" target="_blank" rel="noopener noreferrer">Vídeo Eco</a>
+          <a class="tile theme-presentacio" href="https://drive.google.com/file/d/1F11UvagDe0md4GcmmgdtfXn8hprvTa5Y/view?usp=sharing" target="_blank" rel="noopener noreferrer">3r A ECO Classe</a>
+          <a class="tile theme-presentacio" href="https://drive.google.com/file/d/1VV9C-EtfmCHPCzV1grIiq0ANTXvBPMr1/view?usp=sharing" target="_blank" rel="noopener noreferrer">3r B ECO Classe</a>
+        </div>
+      </section>
+
+      <section class="group investigacio">
+        <h2>Investigació</h2>
+        <div class="grid">
+          <a class="tile theme-investigacio" href="https://drive.google.com/file/d/1V3r8mkFtMnyg1yVdaCZ65g4MdSaSUJgw/view?usp=sharing" target="_blank" rel="noopener noreferrer">L'aigua es pot acabar?</a>
+          <a class="tile theme-investigacio" href="https://drive.google.com/file/d/1eH2qwrxxRo9fFfrkDWlrDvk0I0IeAG9F/view?usp=sharing" target="_blank" rel="noopener noreferrer">Notícies</a>
+          <a class="tile theme-investigacio" href="https://drive.google.com/file/d/1ieANWFMoA6RFSyrA5W_GUW4o7OYRbKCV/view?usp=sharing" target="_blank" rel="noopener noreferrer">On podem trobar aigua?</a>
+          <a class="tile theme-investigacio" href="https://drive.google.com/file/d/1SwcZ8OXlCRb1-oDoTzhJC1AacWYRFUCP/view?usp=sharing" target="_blank" rel="noopener noreferrer">Pòdcast</a>
+          <a class="tile theme-investigacio" href="https://drive.google.com/file/d/1BMsw49TslW4YGxz4hjGZ2xZlpfT5nkPQ/view?usp=sharing" target="_blank" rel="noopener noreferrer">Cicle de l'aigua</a>
+          <a class="tile theme-investigacio" href="https://drive.google.com/file/d/1Mi2jnbLY4Ds-IRFHA0lEH2cCvQ9_93qw/view?usp=sharing" target="_blank" rel="noopener noreferrer">Flashcards cicle d'aigua</a>
+        </div>
+      </section>
+
+      <section class="group recursos">
+        <h2>Recursos</h2>
+        <div class="grid">
+          <a class="tile theme-recursos" href="https://drive.google.com/file/d/1WCMP8tOyS7j3NwM-Oel6tKLMu0veicuD/view?usp=sharing" target="_blank" rel="noopener noreferrer">Carta ECO</a>
+          <a class="tile theme-recursos" href="https://drive.google.com/file/d/1ie_yboODTB9EVMrxQd-SPRdzMzvpuood/view?usp=sharing" target="_blank" rel="noopener noreferrer">Cartes Eco 1</a>
+          <a class="tile theme-recursos" href="https://drive.google.com/file/d/1WCMP8tOyS7j3NwM-Oel6tKLMu0veicuD/view?usp=sharing" target="_blank" rel="noopener noreferrer">Cartes Eco 2</a>
+          <a class="tile theme-recursos" href="https://drive.google.com/file/d/1z5-IDVbaT1jRj7JnoLZRR0l_hW4TSsy-/view?usp=sharing" target="_blank" rel="noopener noreferrer">Carta de l'Eco 3</a>
+          <a class="tile theme-recursos" href="https://drive.google.com/file/d/1BUzd3zIPOxBse8jr-Us5aW76XfJEEbRe/view?usp=sharing" target="_blank" rel="noopener noreferrer">Carta de l'Eco 4</a>
+        </div>
+      </section>
+
+      <section class="group jocs">
+        <h2>Jocs i apps</h2>
+        <div class="grid">
+          <a class="tile theme-jocs" href="https://raultorres-ia.github.io/apps/gamificacio_eco/" target="_blank" rel="noopener noreferrer">Gamificació app</a>
+          <a class="tile theme-jocs" href="https://raultorres-ia.github.io/apps/consum_aigua/index.html" target="_blank" rel="noopener noreferrer">APP Consum d'aigua</a>
+          <a class="tile theme-jocs disabled" href="#" aria-disabled="true">Bingo dels sons de l'aigua<small>Pròximament</small></a>
+          <a class="tile theme-jocs" href="https://drive.google.com/file/d/1I2vnR1GPqmm6-7-PWZ-dT8yWIwQrzq_p/view?usp=sharing" target="_blank" rel="noopener noreferrer">Kaboom!</a>
+          <a class="tile theme-jocs" href="https://drive.google.com/file/d/17fJDf-Yu2MxwBy04w-1WGIcKMZihPFxa/view?usp=sharing" target="_blank" rel="noopener noreferrer">Sopa de lletres</a>
+        </div>
+      </section>
+
+      <section class="group avaluacio">
+        <h2>Avaluació i tancament</h2>
+        <div class="grid">
+          <a class="tile theme-avaluacio" href="https://drive.google.com/file/d/1_otuyl9e0A1ed-_8PAkKOxZ8f8aJFZjz/view?usp=sharing" target="_blank" rel="noopener noreferrer">Autoavaluació</a>
+          <a class="tile theme-avaluacio" href="https://drive.google.com/file/d/1bT-dj6S-09LviQ0zTE341rBx_ZIYblaa/view?usp=sharing" target="_blank" rel="noopener noreferrer">Diploma</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      projecte realitzat per Raül Torres i Montse Sànchez (Escola Pericot, Curs 2025-2026)
+    </footer>
+  </div>
+</body>
+</html>
