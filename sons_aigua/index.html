@@ -1,0 +1,307 @@
+﻿<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bingo de Sons de l'Aigua</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-top: #d9f2ff;
+      --bg-bottom: #e6fff5;
+      --ink: #0f3551;
+      --card: #ffffffcc;
+      --accent: #0077b6;
+      --accent-2: #00a896;
+      --accent-3: #f4a261;
+      --danger: #d1495b;
+      --radius: 18px;
+      --shadow: 0 12px 28px rgba(15, 53, 81, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Atkinson Hyperlegible", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 20%, #ffffff99 0, #ffffff00 35%),
+        radial-gradient(circle at 80% 70%, #7bdff233 0, #7bdff200 50%),
+        linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: min(960px, 100%);
+      background: var(--card);
+      backdrop-filter: blur(6px);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-family: "Baloo 2", cursive;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 1.1;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      font-size: 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: #ffffffc7;
+      border: 2px solid #ffffff;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: inset 0 0 0 1px #d7ebf7;
+    }
+
+    .current-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+
+    .current-sound {
+      min-height: 64px;
+      font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+      font-weight: 700;
+      line-height: 1.2;
+      font-family: "Baloo 2", cursive;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #drawBtn {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+
+    #resetBtn {
+      background: #fff;
+      color: var(--danger);
+      border: 2px solid #ffd2d8;
+    }
+
+    .meta {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      background: #e7f6ff;
+      border: 1px solid #ccecff;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 700;
+    }
+
+    .history-title {
+      margin: 0 0 10px;
+      font-family: "Baloo 2", cursive;
+      font-size: 1.4rem;
+    }
+
+    .history {
+      margin: 0;
+      padding-left: 20px;
+      max-height: 50vh;
+      overflow: auto;
+    }
+
+    .history li {
+      margin: 0 0 8px;
+      line-height: 1.2;
+    }
+
+    .empty {
+      opacity: 0.7;
+      font-style: italic;
+      margin: 0;
+    }
+
+    @media (max-width: 780px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .history {
+        max-height: 34vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="header">
+      <h1>Bingo de Sons de l'Aigua</h1>
+      <p>Prem el botó per treure un so aleatori. No es repeteixen fins que surtin tots.</p>
+    </section>
+
+    <section class="layout">
+      <article class="panel">
+        <div class="current-label">So actual</div>
+        <div id="currentSound" class="current-sound">Encara no n'ha sortit cap</div>
+
+        <div class="controls">
+          <button id="drawBtn" type="button">Treure so aleatori</button>
+          <button id="resetBtn" type="button">Reiniciar bingo</button>
+        </div>
+
+        <div class="meta">
+          <span id="remainingBadge" class="badge">Queden: 17</span>
+          <span id="drawnBadge" class="badge">Han sortit: 0</span>
+        </div>
+
+        <audio id="player" preload="auto"></audio>
+      </article>
+
+      <article class="panel">
+        <h2 class="history-title">Sons que ja han sortit</h2>
+        <p id="emptyMessage" class="empty">La llista s'anirà omplint aquí.</p>
+        <ol id="historyList" class="history"></ol>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const sounds = [
+      "aixeta.mp3",
+      "aspersor.mp3",
+      "calamarsa.mp3",
+      "cascada d_aigua.mp3",
+      "copa d_aigua.mp3",
+      "dutxa.mp3",
+      "glaçons de gel.mp3",
+      "got d_aigua.mp3",
+      "gota d_aigua en una cova.mp3",
+      "gotes d_aigua.mp3",
+      "mar.mp3",
+      "mànega d_aigua.mp3",
+      "pipí.mp3",
+      "pluja.mp3",
+      "rentadora.mp3",
+      "riu.mp3",
+      "tempesta de neu.mp3"
+    ];
+
+    const player = document.getElementById("player");
+    const drawBtn = document.getElementById("drawBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const currentSound = document.getElementById("currentSound");
+    const historyList = document.getElementById("historyList");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const remainingBadge = document.getElementById("remainingBadge");
+    const drawnBadge = document.getElementById("drawnBadge");
+
+    let remaining = [...sounds];
+    let drawn = [];
+
+    function prettyName(filename) {
+      return filename
+        .replace(/\.mp3$/i, "")
+        .replace(/_/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function updateMeta() {
+      remainingBadge.textContent = `Queden: ${remaining.length}`;
+      drawnBadge.textContent = `Han sortit: ${drawn.length}`;
+    }
+
+    function addToHistory(filename) {
+      const li = document.createElement("li");
+      li.textContent = prettyName(filename);
+      historyList.appendChild(li);
+    }
+
+    function drawSound() {
+      if (remaining.length === 0) {
+        currentSound.textContent = "Ja han sortit tots els sons";
+        drawBtn.disabled = true;
+        return;
+      }
+
+      const index = Math.floor(Math.random() * remaining.length);
+      const [selected] = remaining.splice(index, 1);
+      drawn.push(selected);
+
+      currentSound.textContent = prettyName(selected);
+      emptyMessage.style.display = "none";
+      addToHistory(selected);
+      updateMeta();
+
+      player.src = encodeURI(selected);
+      player.currentTime = 0;
+      player.play().catch(() => {
+        currentSound.textContent += " (no s'ha pogut reproduir automàticament)";
+      });
+
+      if (remaining.length === 0) {
+        drawBtn.disabled = true;
+      }
+    }
+
+    function resetGame() {
+      remaining = [...sounds];
+      drawn = [];
+      historyList.innerHTML = "";
+      emptyMessage.style.display = "block";
+      currentSound.textContent = "Encara no n'ha sortit cap";
+      drawBtn.disabled = false;
+      player.pause();
+      player.removeAttribute("src");
+      player.load();
+      updateMeta();
+    }
+
+    drawBtn.addEventListener("click", drawSound);
+    resetBtn.addEventListener("click", resetGame);
+
+    updateMeta();
+  </script>
+</body>
+</html>
