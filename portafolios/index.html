@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="title">Raül Torres | Portafolio IA</title>
+  <meta name="description" content="Cortometrajes y APPs educativas hechas con Inteligencia Artificial Generativa.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&family=Syne:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  
+  <div class="background-effects">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+  </div>
+
+  <nav class="lang-switcher">
+    <button onclick="changeLang('es')" class="lang-btn active" id="btn-es">ES</button>
+    <button onclick="changeLang('cat')" class="lang-btn" id="btn-cat">CAT</button>
+    <button onclick="changeLang('en')" class="lang-btn" id="btn-en">EN</button>
+  </nav>
+
+  <div class="container">
+    <header class="profile-header">
+      <div class="avatar-container">
+        <img class="avatar" src="raul.jpg" alt="Raül Torres">
+        <div class="status-badge"></div>
+      </div>
+      <h1 class="brand-name">Raül Torres</h1>
+      <p class="brand-handle">@raultorres_ia</p>
+      <p class="bio" data-i18n="bio">Cortometrajes y APPs educativas creadas con Inteligencia Artificial Generativa 🤖✨</p>
+    </header>
+
+    <main class="links-section">
+      
+      <!-- Destacado -->
+      <section class="highlight-card">
+        <div class="highlight-image">
+          <img src="portada.png" alt="POWER OFF">
+          <span class="badge" data-i18n="badge">Nuevo Lanzamiento</span>
+        </div>
+        <div class="highlight-content">
+          <h2>POWER OFF</h2>
+          <p data-i18n="highlight_p">Cortometraje de ciencia ficción</p>
+          <a href="https://www.youtube.com/watch?v=x-19UQ3p2NY" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            <span data-i18n="highlight_btn">Ver Cortometraje</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- Enlaces Generales -->
+      <div class="link-grid">
+        <a href="https://www.youtube.com/@ra%C3%BCltorres_2b" target="_blank" rel="noopener noreferrer" class="glass-link">
+          <div class="link-info">
+            <h3 data-i18n="link1_h3">🎥 Canal de YouTube</h3>
+            <p data-i18n="link1_p">Suscríbete para más contenido de IA + Creatividad</p>
+          </div>
+          <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+        </a>
+
+        <a href="https://vibe-coding-educativo.github.io/app_edu/?search=raul+torres&author=Ra%C3%BCl+Torres" target="_blank" rel="noopener noreferrer" class="glass-link">
+          <div class="link-info">
+            <h3 data-i18n="link2_h3">📱 APPs Educativas</h3>
+            <p data-i18n="link2_p">Explora mis proyectos educativos con IAG</p>
+          </div>
+          <svg class="arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+        </a>
+      </div>
+
+    </main>
+
+    <footer class="social-footer">
+      <p data-i18n="footer_p">Conecta conmigo</p>
+      <div class="social-icons">
+        <a href="https://www.linkedin.com/in/ra%C3%BCl-torres-a18217365/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <img src="linkedin.png" alt="LinkedIn">
+        </a>
+        <a href="https://www.instagram.com/raul_torres_ia/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <img src="instagram.png" alt="Instagram">
+        </a>
+        <a href="https://x.com/rtorres_co" target="_blank" rel="noopener noreferrer" aria-label="X">
+          <img src="x.png" alt="X">
+        </a>
+        <a href="https://www.youtube.com/@ra%C3%BCltorres_2b" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+          <img src="youtube.png" alt="YouTube">
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const translations = {
+      es: {
+        title: "Raül Torres | Portafolio IA",
+        bio: "Cortometrajes y APPs educativas creadas con Inteligencia Artificial Generativa 🤖✨",
+        badge: "Nuevo Lanzamiento",
+        highlight_p: "En un lado, una madre y su hija sobreviven en un entorno devastado por la guerra. En el otro, una madre y su hija viven con calma, ajenas al caos exterior. Mismos gestos. Mismos momentos. Dos realidades opuestas que avanzan en perfecta sincronía… hasta que todo se rompe.",
+        highlight_btn: "Ver Cortometraje",
+        link1_h3: "🎥 Canal de YouTube",
+        link1_p: "Suscríbete para más contenido de IA + Creatividad",
+        link2_h3: "📱 APPs Educativas",
+        link2_p: "Explora mis proyectos educativos con IAG",
+        footer_p: "Conecta conmigo"
+      },
+      cat: {
+        title: "Raül Torres | Portafoli IA",
+        bio: "Curtmetratges i APPs educatives creades amb Intel·ligència Artificial Generativa 🤖✨",
+        badge: "Nou Llançament",
+        highlight_p: "En un costat, una mare i la seva filla sobreviuen en un entorn devastat per la guerra. En l'altre, una mare i la seva filla viuen amb calma, ajenes al caos exterior. Mateixos gestos. Mateixos moments. Dues realitats oposades que avancen en perfecta sincronia… fins que tot es trenca.",
+        highlight_btn: "Veure Curtmetratge",
+        link1_h3: "🎥 Canal de YouTube",
+        link1_p: "Subscriu-te per a més contingut d'IA + Creativitat",
+        link2_h3: "📱 APPs Educatives",
+        link2_p: "Explora els meus projectes educatius amb IAG",
+        footer_p: "Connecta amb mi"
+      },
+      en: {
+        title: "Raül Torres | AI Portfolio",
+        bio: "Short films and educational APPs created with Generative Artificial Intelligence 🤖✨",
+        badge: "New Release",
+        highlight_p: "On one side, a mother and her daughter survive in a war-torn environment. On the other, a mother and her daughter live calmly, oblivious to the outside chaos. Same gestures. Same moments. Two opposing realities moving in perfect synchrony… until everything breaks.",
+        highlight_btn: "Watch Short Film",
+        link1_h3: "🎥 YouTube Channel",
+        link1_p: "Subscribe for more AI + Creativity content",
+        link2_h3: "📱 Educational APPs",
+        link2_p: "Explore my educational projects with GAI",
+        footer_p: "Connect with me"
+      }
+    };
+
+    function changeLang(lang) {
+      // Update text content
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (el.tagName === 'TITLE') {
+          document.title = translations[lang][key];
+        } else {
+          el.textContent = translations[lang][key];
+        }
+      });
+
+      // Update active button
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`btn-${lang}`).classList.add('active');
+
+      // Save preference
+      localStorage.setItem('preferredLang', lang);
+    }
+
+    // Load preferred language
+    const savedLang = localStorage.getItem('preferredLang') || 'es';
+    changeLang(savedLang);
+  </script>
+</body>
+</html>
