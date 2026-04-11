@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Indiana Jones: El Temple de la Pedra</title>
+    <style>
+        :root {
+            --temple-brown: #5d4037;
+            --gold: #ffd700;
+            --jungle-green: #2e7d32;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #2c1e1a, #1a0f0d);
+        }
+
+        canvas {
+            background: linear-gradient(to bottom, #4e342e, #263238);
+            display: block;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--gold);
+            pointer-events: none;
+            gap: 10px;
+        }
+
+        .score-board {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        #password-display {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        #double-jump-status {
+            font-size: 14px;
+            background: rgba(46, 125, 50, 0.7);
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: none;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); border-color: var(--gold); }
+            50% { transform: scale(1.1); border-color: #fff; }
+            100% { transform: scale(1); border-color: var(--gold); }
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 10;
+        }
+
+        h1 {
+            color: var(--gold);
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background-color: var(--temple-brown);
+            color: var(--gold);
+            border: 3px solid var(--gold);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+            pointer-events: auto;
+        }
+
+        .btn:hover {
+            background-color: var(--gold);
+            color: var(--temple-brown);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            pointer-events: none;
+        }
+
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: white;
+            pointer-events: auto;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            #controls { display: none; }
+        }
+
+        .instructions {
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #ccc;
+            text-align: center;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="ui-layer">
+        <div class="score-board">Punts: <span id="current-score">0</span></div>
+        <div id="double-jump-status">DOBLE SALT ACTIVAT!</div>
+        <div id="password-display">CONTRASENYA: <span style="color:white">Indiana</span></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="overlay">
+        <h1 id="title">INDY: LA PEDRA</h1>
+        <p class="instructions" id="desc">Esquiva les pedres del temple per sobreviure!</p>
+        <button class="btn" id="start-btn">Començar</button>
+        <p class="instructions">Espai / Amunt / Click per saltar</p>
+    </div>
+
+    <div id="controls">
+        <div class="control-btn" id="jump-btn">JUMP</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startBtn = document.getElementById('start-btn');
+    const overlay = document.getElementById('overlay');
+    const scoreElement = document.getElementById('current-score');
+    const djStatus = document.getElementById('double-jump-status');
+    const passDisplay = document.getElementById('password-display');
+    const title = document.getElementById('title');
+    const jumpBtn = document.getElementById('jump-btn');
+
+    // Configuració del joc
+    let gameActive = false;
+    let score = 0;
+    let speed = 6;
+    let gravity = 0.8;
+    let animationId;
+
+    function resize() {
+        canvas.width = Math.min(window.innerWidth, 800);
+        canvas.height = Math.min(window.innerHeight * 0.7, 400);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // El Personatge (Indy)
+    const indy = {
+        x: 50,
+        y: 0,
+        width: 40,
+        height: 60,
+        velocityY: 0,
+        jumpForce: -14,
+        jumps: 0,
+        maxJumps: 1,
+        draw() {
+            // Cos
+            ctx.fillStyle = '#8d6e63'; // Jaqueta
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            
+            // Pantalons
+            ctx.fillStyle = '#4e342e';
+            ctx.fillRect(this.x, this.y + this.height * 0.6, this.width, this.height * 0.4);
+
+            // Cap
+            ctx.fillStyle = '#ffccbc';
+            ctx.fillRect(this.x + 10, this.y - 20, 20, 20);
+
+            // Barret
+            ctx.fillStyle = '#3e2723';
+            ctx.fillRect(this.x + 2, this.y - 25, 36, 8);
+            ctx.fillRect(this.x + 10, this.y - 35, 20, 10);
+
+            // Fuet
+            ctx.strokeStyle = '#3e2723';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x + this.width, this.y + 20);
+            ctx.quadraticCurveTo(this.x + this.width + 10, this.y + 30, this.x + this.width + 5, this.y + 50);
+            ctx.stroke();
+
+            // Efecte de doble salt (partícules sota)
+            if (this.jumps === 2 && this.velocityY < 0) {
+                ctx.fillStyle = "rgba(255, 215, 0, 0.5)";
+                ctx.fillRect(this.x, this.y + this.height, this.width, 5);
+            }
+        },
+        update() {
+            this.y += this.velocityY;
+            if (this.y + this.height < canvas.height - 20) {
+                this.velocityY += gravity;
+            } else {
+                this.y = canvas.height - 20 - this.height;
+                this.velocityY = 0;
+                this.jumps = 0; // Resetejem salts al tocar terra
+            }
+
+            // Activar doble salt als 100 punts
+            if (score >= 100) {
+                this.maxJumps = 2;
+                djStatus.style.display = 'block';
+            } else {
+                this.maxJumps = 1;
+                djStatus.style.display = 'none';
+            }
+        },
+        jump() {
+            if (this.jumps < this.maxJumps) {
+                this.velocityY = this.jumpForce;
+                this.jumps++;
+            }
+        }
+    };
+
+    // Obstacles
+    let obstacles = [];
+    function createObstacle() {
+        const size = Math.random() * 40 + 30;
+        obstacles.push({
+            x: canvas.width,
+            y: canvas.height - 20 - size,
+            width: size,
+            height: size,
+            speed: speed + (Math.random() * 2),
+            rotation: 0
+        });
+    }
+
+    function drawObstacle(obs) {
+        ctx.save();
+        ctx.translate(obs.x + obs.width/2, obs.y + obs.height/2);
+        obs.rotation += 0.1;
+        ctx.rotate(obs.rotation);
+        ctx.fillStyle = '#757575';
+        ctx.beginPath();
+        ctx.arc(0, 0, obs.width/2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#424242';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-obs.width/4, -obs.width/4);
+        ctx.lineTo(obs.width/4, obs.width/4);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawFloor() {
+        ctx.fillStyle = '#3e2723';
+        ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+        ctx.strokeStyle = '#2c1e1a';
+        for(let i=0; i<canvas.width; i+=40) {
+            ctx.strokeRect(i, canvas.height - 20, 40, 20);
+        }
+    }
+
+    function checkCollision(a, b) {
+        // Reduïm una mica la hitbox per fer-ho més just
+        return a.x + 5 < b.x + b.width &&
+               a.x + a.width - 5 > b.x &&
+               a.y + 5 < b.y + b.height &&
+               a.y + a.height - 5 > b.y;
+    }
+
+    function gameLoop() {
+        if (!gameActive) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawFloor();
+        indy.update();
+        indy.draw();
+
+        // Mostrar contrasenya als 500 punts
+        if (score >= 500) {
+            passDisplay.style.display = 'block';
+        } else {
+            passDisplay.style.display = 'none';
+        }
+
+        if (Math.random() < 0.02) {
+            if (obstacles.length === 0 || (canvas.width - obstacles[obstacles.length-1].x > 250)) {
+                createObstacle();
+            }
+        }
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            obstacles[i].x -= obstacles[i].speed;
+            drawObstacle(obstacles[i]);
+
+            if (checkCollision(indy, obstacles[i])) {
+                gameOver();
+            }
+
+            if (obstacles[i].x + obstacles[i].width < 0) {
+                obstacles.splice(i, 1);
+                score += 10;
+                scoreElement.innerText = score;
+                
+                // Augmentar velocitat cada 100 punts
+                if (score > 0 && score % 100 === 0) {
+                    speed += 0.8;
+                }
+            }
+        }
+
+        animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+        score = 0;
+        speed = 6;
+        scoreElement.innerText = "0";
+        obstacles = [];
+        indy.y = canvas.height - 20 - indy.height;
+        indy.velocityY = 0;
+        indy.jumps = 0;
+        indy.maxJumps = 1;
+        gameActive = true;
+        overlay.style.display = 'none';
+        passDisplay.style.display = 'none';
+        gameLoop();
+    }
+
+    function gameOver() {
+        gameActive = false;
+        cancelAnimationFrame(animationId);
+        title.innerText = "HAS MORT!";
+        title.style.color = "#ff5252";
+        document.getElementById('desc').innerText = `Puntuació final: ${score}.`;
+        startBtn.innerText = "Tornar-hi";
+        overlay.style.display = 'flex';
+    }
+
+    const triggerJump = (e) => {
+        if (e.type === 'keydown' && (e.code === 'Space' || e.code === 'ArrowUp')) {
+            if (gameActive) indy.jump();
+            else if (overlay.style.display !== 'none') startGame();
+        } else if (e.type === 'touchstart' || e.type === 'mousedown') {
+            if (gameActive) {
+                // Evitar saltar si cliquem el botó de començar
+                if (e.target.id !== 'start-btn') indy.jump();
+            }
+        }
+    };
+
+    window.addEventListener('keydown', triggerJump);
+    window.addEventListener('mousedown', triggerJump);
+    jumpBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        triggerJump(e);
+    });
+
+    startBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startGame();
+    });
+
+    indy.y = canvas.height - 20 - indy.height;
+    drawFloor();
+    indy.draw();
+
+</script>
+</body>
+</html>
