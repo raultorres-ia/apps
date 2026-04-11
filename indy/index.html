@@ -169,7 +169,8 @@
     <div id="ui-layer">
         <div class="score-board">Punts: <span id="current-score">0</span></div>
         <div id="double-jump-status">DOBLE SALT ACTIVAT!</div>
-        <div id="password-display">CONTRASENYA: <span style="color:white">Indiana</span></div>
+        <!-- Actualitzada la contrasenya visualment -->
+        <div id="password-display">CONTRASENYA: <span style="color:white">indy</span></div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -337,8 +338,8 @@
         indy.update();
         indy.draw();
 
-        // Mostrar contrasenya als 500 punts
-        if (score >= 500) {
+        // MOSTRAR CONTRASENYA ALS 200 PUNTS
+        if (score >= 200) {
             passDisplay.style.display = 'block';
         } else {
             passDisplay.style.display = 'none';
