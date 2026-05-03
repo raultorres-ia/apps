@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Creative portfolio of Raül Torres, AI filmmaker focused on storytelling, education and generative AI.">
+  <title>Raül Torres | Creative Portfolio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header and language controls -->
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Raül Torres home">Raül Torres</a>
+
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-controls="primary-navigation" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="primary-navigation" id="primary-navigation" aria-label="Primary navigation">
+      <a href="#home" data-i18n="nav.home">Home</a>
+      <a href="#about" data-i18n="nav.about">About</a>
+      <a href="#works" data-i18n="nav.works">Works</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+    </nav>
+
+    <button class="language-toggle" id="language-toggle" type="button" aria-label="Switch language to Spanish">
+      <span class="language-code is-active" data-lang-label="en">EN</span>
+      <span class="language-divider">/</span>
+      <span class="language-code" data-lang-label="es">ES</span>
+    </button>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero section-panel" id="home" aria-labelledby="hero-title">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Raül Torres</p>
+        <h1 id="hero-title" data-i18n="hero.title">Creative Portfolio</h1>
+        <p class="hero-subtitle" data-i18n="hero.subtitle">AI Filmmaker | Storytelling | Education &amp; Generative AI</p>
+        <a class="button-link" href="#works" data-i18n="hero.cta">View my work</a>
+      </div>
+    </section>
+
+    <!-- Biography -->
+    <section class="about section-panel" id="about" aria-labelledby="about-title">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="about.eyebrow">About</p>
+        <h2 id="about-title" data-i18n="about.title">A camera, a story, a new language</h2>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-copy">
+          <p data-i18n="about.p1">I am an audiovisual creator working at the intersection of storytelling and artificial intelligence.</p>
+          <p data-i18n="about.p2">I began my journey in 2002, creating guerrilla-style short films with minimal resources and a strong focus on narrative and visual expression. After a period away from filmmaking, I have returned with a renewed perspective—embracing AI as a creative tool that expands possibilities without replacing the human vision behind each story.</p>
+          <p data-i18n="about.p3">My work explores how technology can serve emotion, meaning, and cinematic language. I am particularly interested in creating pieces that connect with audiences on a human level, using innovative techniques to enhance storytelling rather than distract from it.</p>
+          <p data-i18n="about.p4">Projects like POWER OFF reflect this approach: combining visual experimentation with a clear narrative intention and a strong emotional core.</p>
+          <p data-i18n="about.p5">This portfolio brings together my recent work in AI-driven filmmaking, where each project represents a step forward in exploring new forms of audiovisual expression.</p>
+        </div>
+
+        <aside class="about-side" aria-label="About Raül Torres">
+          <figure class="about-profile">
+            <img src="perfil.png" alt="Raül Torres" loading="lazy">
+          </figure>
+
+          <div class="about-note">
+            <span data-i18n="about.noteLabel">Creative focus</span>
+            <p data-i18n="about.note">Cinema, emotional realism and AI-assisted audiovisual exploration.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Featured short film -->
+    <section class="featured-project section-panel" id="works" aria-labelledby="power-title">
+      <div id="power-off" class="section-anchor" aria-hidden="true"></div>
+      <div class="project-layout">
+        <figure class="project-poster">
+          <img src="Portada.png" alt="POWER OFF poster artwork" loading="lazy">
+        </figure>
+
+        <div class="project-content">
+          <h2 id="power-title" data-i18n="project.title">POWER OFF</h2>
+          <div class="project-description">
+            <p data-i18n="project.description1">On one side, a mother and her daughter survive in an environment devastated by war.</p>
+            <p data-i18n="project.description2">On the other, a mother and her daughter live peacefully, unaware of the chaos outside.</p>
+            <p data-i18n="project.description3">Same gestures. Same moments.</p>
+            <p data-i18n="project.description4">Two opposing realities moving in perfect synchrony… until everything breaks.</p>
+          </div>
+
+          <a class="watch-button" href="https://www.youtube.com/watch?v=49HFP6wnp_g" target="_blank" rel="noopener noreferrer">
+            <img src="youtube.png" alt="" aria-hidden="true">
+            <span data-i18n="project.watch">Watch POWER OFF</span>
+          </a>
+
+          <div class="project-details">
+            <section aria-labelledby="awards-title">
+              <h3 id="awards-title" data-i18n="project.awardsTitle">Awards</h3>
+              <ul>
+                <li data-i18n="project.award1">Best Concept Award: LAAIMPA WINNERS APRIL 2026</li>
+              </ul>
+            </section>
+
+            <section aria-labelledby="finalist-title">
+              <h3 id="finalist-title" data-i18n="project.finalistTitle">Finalist</h3>
+              <ul>
+                <li data-i18n="project.finalist1">Finalist AI Movie Awards</li>
+              </ul>
+            </section>
+
+            <section aria-labelledby="selection-title">
+              <h3 id="selection-title" data-i18n="project.selectionTitle">Official Selection</h3>
+              <ul>
+                <li data-i18n="project.selection1">BAIFF - Burano Artificial Intelligence Film Festival</li>
+                <li data-i18n="project.selection2">AI Film Awards in Cannes 2026</li>
+                <li data-i18n="project.selection3">TODO ES PROMPT - Chile</li>
+                <li data-i18n="project.selection4">IA en CORTO - Chile</li>
+              </ul>
+            </section>
+
+            <section aria-labelledby="tech-title">
+              <h3 id="tech-title" data-i18n="project.techTitle">Technologies used</h3>
+              <ul>
+                <li data-i18n="project.tech1">Image and video: Nano Banana Pro, Kling 3.0</li>
+                <li data-i18n="project.tech2">Sound: Suno AI, Eleven Labs</li>
+                <li data-i18n="project.tech3">Editing: Filmora 14</li>
+                <li data-i18n="project.tech4">Concept, screenplay and direction: Raül Torres</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Social links -->
+    <section class="contact section-panel" id="contact" aria-labelledby="contact-title">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="contact.eyebrow">Contact</p>
+        <h2 id="contact-title" data-i18n="contact.title">Follow my work</h2>
+      </div>
+
+      <div class="social-links" aria-label="Social links">
+        <a href="https://linkedin.com/in/raul-torres-ia" target="_blank" rel="noopener noreferrer">
+          <img src="linkedin.png" alt="" aria-hidden="true">
+          <span data-i18n="contact.linkedin">LinkedIn</span>
+        </a>
+        <a href="https://instagram.com/raul_torres_ia" target="_blank" rel="noopener noreferrer">
+          <img src="instagram.png" alt="" aria-hidden="true">
+          <span data-i18n="contact.instagram">Instagram</span>
+        </a>
+        <a href="https://www.youtube.com/@raul_torres_ia" target="_blank" rel="noopener noreferrer">
+          <img src="youtube.png" alt="" aria-hidden="true">
+          <span data-i18n="contact.youtube">YouTube</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p data-i18n="footer.copyright">© 2026 Raül Torres. Creative Portfolio.</p>
+    <p data-i18n="footer.tagline">Cinema with AI, human perspective.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
