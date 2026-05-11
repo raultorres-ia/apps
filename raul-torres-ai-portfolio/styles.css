@@ -466,6 +466,10 @@ h3 {
   margin-top: 0.48rem;
 }
 
+.project-selection {
+  grid-column: 1 / -1;
+}
+
 .project-platforms {
   grid-column: 1 / -1;
 }
