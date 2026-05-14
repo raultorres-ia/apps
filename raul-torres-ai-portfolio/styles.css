@@ -317,6 +317,17 @@ h3 {
   font-size: 1.45rem;
 }
 
+.about-quote {
+  margin: clamp(1.8rem, 4vw, 2.8rem) 0 0;
+  border-left: 3px solid var(--color-gold);
+  padding: 0.25rem 0 0.25rem clamp(1rem, 2vw, 1.5rem);
+  color: var(--color-gold-soft);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.85rem, 4vw, 3.25rem);
+  font-style: italic;
+  line-height: 1.14;
+}
+
 .about-side {
   display: grid;
   gap: 1.3rem;
