@@ -16,7 +16,7 @@ const translations = {
     "about.p3": "My work explores how technology can serve emotion, meaning and cinematic language. I am especially interested in creating pieces that connect with audiences on a human level, using innovative techniques to strengthen storytelling rather than distract the viewer from it.",
     "about.p4": "Projects like POWER OFF reflect this philosophy: combining visual experimentation, technological exploration and a clear narrative intention with a strong emotional core.",
     "about.p5": "This portfolio brings together my recent work in AI-driven filmmaking, where each project represents a new step in the search for contemporary forms of audiovisual expression, always with narrative and emotion as the central axis.",
-    "about.quote": "\"Las herramientas d'IAG caducan en poco tiempo pero el storeytelling perdura para siempre\"",
+    "about.quote": "\"Generative AI tools expire quickly, but storytelling lasts forever\"",
     "about.noteLabel": "Creative focus",
     "about.note": "Cinema, emotional realism and AI-assisted audiovisual exploration.",
     "project.title": "POWER OFF",
