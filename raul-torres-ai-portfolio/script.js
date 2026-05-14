@@ -70,7 +70,7 @@ const translations = {
     "about.p3": "Mi trabajo explora cómo la tecnología puede servir a la emoción, al significado y al lenguaje cinematográfico. Me interesa especialmente crear piezas que conecten con el público a nivel humano, utilizando técnicas innovadoras para potenciar la narración en lugar de distraer al espectador de ella.",
     "about.p4": "Proyectos como POWER OFF reflejan esta filosofía: combinar experimentación visual, exploración tecnológica y una intención narrativa clara con un fuerte núcleo emocional.",
     "about.p5": "Este portfolio reúne mi trabajo reciente en cine impulsado por IA, donde cada proyecto representa un nuevo paso en la búsqueda de formas contemporáneas de expresión audiovisual, siempre con la narrativa y la emoción como eje central.",
-    "about.quote": "\"Las herramientas d'IAG caducan en poco tiempo pero el storeytelling perdura para siempre\"",
+    "about.quote": "\"Las herramientas d'IAG caducan en poco tiempo pero el storytelling perdura para siempre\"",
     "about.noteLabel": "Enfoque creativo",
     "about.note": "Cine, realismo emocional y exploración audiovisual asistida por IA.",
     "project.title": "POWER OFF",
