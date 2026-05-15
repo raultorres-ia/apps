@@ -477,6 +477,22 @@ h3 {
   margin-top: 0.48rem;
 }
 
+.award-interview-link {
+  display: inline-flex;
+  margin-top: 0.9rem;
+  color: var(--color-gold-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.award-interview-link:hover,
+.award-interview-link:focus-visible {
+  color: var(--color-text);
+}
+
 .project-selection {
   grid-column: 1 / -1;
 }
