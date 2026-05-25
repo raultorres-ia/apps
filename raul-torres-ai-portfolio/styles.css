@@ -584,35 +584,6 @@ h3 {
   object-fit: contain;
 }
 
-.contact-email {
-  width: min(100%, var(--max-width));
-  margin: 1.5rem auto 0;
-  color: var(--color-muted);
-  font-size: 0.95rem;
-}
-
-.contact-email span {
-  margin-right: 0.45rem;
-  color: var(--color-gold-soft);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.contact-email a {
-  color: var(--color-text);
-  border-bottom: 1px solid rgba(226, 192, 113, 0.42);
-  padding-bottom: 0.1rem;
-  transition: color 180ms ease, border-color 180ms ease;
-}
-
-.contact-email a:hover,
-.contact-email a:focus-visible {
-  color: var(--color-gold-soft);
-  border-color: rgba(226, 192, 113, 0.82);
-}
-
 .site-footer {
   display: flex;
   justify-content: space-between;
@@ -729,10 +700,6 @@ h3 {
   .social-links a {
     justify-content: center;
     width: 100%;
-  }
-
-  .contact-email {
-    text-align: center;
   }
 
   .site-footer {

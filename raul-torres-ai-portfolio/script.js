@@ -53,7 +53,6 @@ const translations = {
     "contact.linkedin": "LinkedIn",
     "contact.instagram": "Instagram",
     "contact.youtube": "YouTube",
-    "contact.emailLabel": "Email",
     "footer.copyright": "© 2026 Raül Torres. Creative Portfolio.",
     "footer.tagline": "Cinema with AI, human perspective."
   },
@@ -110,7 +109,6 @@ const translations = {
     "contact.linkedin": "LinkedIn",
     "contact.instagram": "Instagram",
     "contact.youtube": "YouTube",
-    "contact.emailLabel": "Correo",
     "footer.copyright": "© 2026 Raül Torres. Portfolio Creativo.",
     "footer.tagline": "Cine con IA, mirada humana."
   }
