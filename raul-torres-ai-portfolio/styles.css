@@ -379,6 +379,10 @@ h3 {
   padding-top: clamp(2.5rem, 5vw, 4rem);
 }
 
+.project-followup {
+  border-top: 1px solid var(--color-line);
+}
+
 .project-layout {
   display: grid;
   grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
