@@ -196,6 +196,7 @@ a {
 .section-heading,
 .about-grid,
 .project-layout,
+.platform-content,
 .contact .section-heading,
 .social-links {
   width: min(100%, var(--max-width));
@@ -542,6 +543,40 @@ h3 {
   color: var(--color-text);
 }
 
+/* Platform */
+.platform-section {
+  border-top: 1px solid var(--color-line);
+  background: linear-gradient(180deg, rgba(12, 13, 15, 0.98), rgba(17, 19, 22, 0.82));
+}
+
+.platform-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: end;
+}
+
+.platform-copy {
+  max-width: 880px;
+  color: var(--color-muted);
+  font-size: clamp(1rem, 1.35vw, 1.12rem);
+}
+
+.platform-copy p {
+  margin: 0 0 1rem;
+}
+
+.platform-copy p:first-child {
+  color: var(--color-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.3rem, 2.2vw, 2rem);
+  line-height: 1.35;
+}
+
+.platform-link {
+  white-space: nowrap;
+}
+
 /* Contact and footer */
 .contact {
   text-align: center;
@@ -641,6 +676,10 @@ h3 {
 
   .about-grid,
   .project-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-content {
     grid-template-columns: 1fr;
   }
 
