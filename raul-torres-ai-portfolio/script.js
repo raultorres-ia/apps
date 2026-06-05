@@ -8,7 +8,7 @@ const translations = {
     "nav.contact": "Contact",
     "hero.eyebrow": "Raül Torres",
     "hero.title": "Creative Portfolio",
-    "hero.subtitle": "AI Filmmaker | Storytelling | Education & Generative AI",
+    "hero.subtitle": "Generative AI Short Films & Storytelling | Dreamina Creative Partner Program | Founding Creator Shoowai | AI Educator",
     "hero.cta": "View my work",
     "about.eyebrow": "About",
     "about.title": "A camera, a story, a new language",
