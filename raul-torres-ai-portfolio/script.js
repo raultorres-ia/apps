@@ -246,7 +246,7 @@ const translations = {
     "partnerships.linkText": "Dreamina Creative Partner",
     "partnerships.p1Rest": "(CPP), en reconocimiento a mi portfolio creativo y mi trabajo en cine con IA. Esta colaboración proporciona acceso a herramientas avanzadas, lanzamientos anticipados y nuevas oportunidades de colaboración creativa.",
     "platform.eyebrow": "Plataforma",
-    "platform.title": "Founding Creator en Shoowai",
+    "platform.title": "Creador fundador en Shoowai",
     "platform.p1": "He sido invitado a unirme a Shoowai como Founding Creator, una plataforma internacional dedicada a creadores y cineastas que trabajan con inteligencia artificial.",
     "platform.p2": "Shoowai está concebida como un espacio curado y profesional donde los creadores pueden mostrar sus proyectos, conectar con otros profesionales, ofrecer servicios creativos y compartir recursos digitales dentro de una comunidad centrada en la calidad, la innovación y las nuevas posibilidades del cine con IA.",
     "platform.cta": "Visitar Shoowai",
