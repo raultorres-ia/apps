@@ -498,6 +498,20 @@ h3 {
   color: var(--color-text);
 }
 
+.award-certificate-link {
+  color: var(--color-gold-soft);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(226, 192, 113, 0.42);
+  text-underline-offset: 0.16em;
+}
+
+.award-certificate-link:hover,
+.award-certificate-link:focus-visible {
+  color: var(--color-text);
+  text-decoration-color: currentColor;
+}
+
 .project-selection {
   grid-column: 1 / -1;
 }
