@@ -560,34 +560,10 @@ h3 {
 .recognition-content {
   width: min(100%, var(--max-width));
   margin-inline: auto;
-  display: grid;
-  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 0.58fr);
-  gap: clamp(1.6rem, 5vw, 4.5rem);
-  align-items: start;
-}
-
-.recognition-meta {
-  border-left: 2px solid var(--color-gold);
-  padding: 0.35rem 0 0.35rem 1.3rem;
-  color: var(--color-muted);
-}
-
-.recognition-meta p {
-  margin: 0;
-}
-
-.recognition-meta p:first-child {
-  color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.25rem, 2vw, 1.75rem);
-  line-height: 1.25;
-}
-
-.recognition-meta p + p {
-  margin-top: 0.8rem;
 }
 
 .recognition-copy {
+  max-width: 880px;
   color: var(--color-muted);
   font-size: clamp(1rem, 1.35vw, 1.12rem);
 }
@@ -751,8 +727,7 @@ h3 {
   }
 
   .about-grid,
-  .project-layout,
-  .recognition-content {
+  .project-layout {
     grid-template-columns: 1fr;
   }
 
