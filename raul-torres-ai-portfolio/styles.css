@@ -666,6 +666,10 @@ h3 {
   align-items: end;
 }
 
+.platform-heading-secondary {
+  margin-top: clamp(4rem, 8vw, 6rem);
+}
+
 .platform-copy {
   max-width: 880px;
   color: var(--color-muted);
@@ -681,6 +685,20 @@ h3 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.3rem, 2.2vw, 2rem);
   line-height: 1.35;
+}
+
+.platform-proof-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(226, 192, 113, 0.42);
+  text-underline-offset: 0.18em;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+
+.platform-proof-link:hover,
+.platform-proof-link:focus-visible {
+  color: var(--color-gold-soft);
+  text-decoration-color: currentColor;
 }
 
 .platform-link {
