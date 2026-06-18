@@ -630,6 +630,15 @@ h3 {
   margin: 0 0 1rem;
 }
 
+.recognition-copy h3 {
+  margin: 1.75rem 0 0.6rem;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .recognition-copy p:last-child {
   margin-bottom: 0;
 }
