@@ -164,7 +164,7 @@ const translations = {
     "partnerships.p1Start": "Selected as an official",
     "partnerships.linkText": "Dreamina Creative Partner",
     "partnerships.p1Rest": "in recognition of my creative portfolio and work in AI filmmaking. This partnership provides access to advanced tools, early releases and new opportunities for creative collaboration.",
-    "partnerships.klingTitle": "Official member of the Kling AI Elite Creators Program.",
+    "partnerships.klingTitle": "Official member of the Kling AI Elite Creators Program",
     "partnerships.klingP1Start": "Selected by",
     "partnerships.klingBrand": "Kling AI",
     "partnerships.klingP1Rest": "in recognition of my creative work in AI filmmaking. As an Elite Creator, I have access to exclusive creator benefits, early access to new features, direct communication with the Kling team, and opportunities to collaborate within a global community of creators.",
