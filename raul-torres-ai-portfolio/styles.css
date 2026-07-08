@@ -527,8 +527,9 @@ h3 {
 }
 
 .award-interview-link {
-  display: inline-flex;
-  margin-top: 0.9rem;
+  display: flex;
+  width: fit-content;
+  margin-top: 0.5rem;
   color: var(--color-gold-soft);
   font-size: 0.82rem;
   font-weight: 700;
