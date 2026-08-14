@@ -93,6 +93,12 @@ const translations = {
     "project.platform1Description": "James Drake TV (JDTV) is a creative platform and YouTube channel focused on the dissemination of art, history, and science through the use of artificial intelligence to create cinematic narratives.",
     "project.platform2Name": "Cinferno",
     "project.platform2Description": "Selected to be part of the showcase of the year's top 100 AI films.",
+    "project.culturalRecognitionTitle": "Cultural & Educational Recognition",
+    "project.culturalRecognitionFestival": "Max Sir International Film Festival — Ukraine",
+    "project.culturalRecognitionCertificate": "Certificate for Significant Cultural Contribution",
+    "project.culturalRecognitionDescription1": "<em>POWER OFF</em> was recognized by the Max Sir International Film Festival for its contribution to cinema and its support of the festival’s educational initiative.",
+    "project.culturalRecognitionDescription2": "As part of this project, <em>POWER OFF</em> will have the opportunity to be screened within cultural and educational programs across Ukraine, bringing cinema to young audiences in cities, towns, and villages and encouraging critical thinking, creativity, and interest in art and culture.",
+    "project.culturalRecognitionLink": "View certificate",
     "project.techTitle": "Technologies used",
     "project.tech1": "Character and Environment Consistency by Nano Banana Pro",
     "project.tech2": "AI Video Generation Model by Kling 3.0",
@@ -302,6 +308,12 @@ const translations = {
     "project.platform1Description": "James Drake TV (JDTV) es una plataforma creativa y canal de YouTube centrado en la difusión del arte, la historia y la ciencia mediante el uso de inteligencia artificial para crear narrativas cinematográficas.",
     "project.platform2Name": "Cinferno",
     "project.platform2Description": "Seleccionado para formar parte del escaparate de las 100 mejores películas de IA del año.",
+    "project.culturalRecognitionTitle": "Reconocimiento cultural y educativo",
+    "project.culturalRecognitionFestival": "Max Sir International Film Festival — Ucrania",
+    "project.culturalRecognitionCertificate": "Certificado por una contribución cultural significativa",
+    "project.culturalRecognitionDescription1": "<em>POWER OFF</em> fue reconocida por el Max Sir International Film Festival por su contribución al cine y su apoyo a la iniciativa educativa del festival.",
+    "project.culturalRecognitionDescription2": "Como parte de este proyecto, <em>POWER OFF</em> tendrá la oportunidad de proyectarse en programas culturales y educativos de toda Ucrania, acercando el cine al público joven de ciudades, pueblos y aldeas, y fomentando el pensamiento crítico, la creatividad y el interés por el arte y la cultura.",
+    "project.culturalRecognitionLink": "Ver certificado",
     "project.techTitle": "Tecnologías utilizadas",
     "project.tech1": "Consistencia de personajes y entornos por Nano Banana Pro",
     "project.tech2": "Modelo de generación de video IA por Kling 3.0",
@@ -436,6 +448,11 @@ function applyLanguage(language) {
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n;
     element.textContent = translations[language][key];
+  });
+
+  document.querySelectorAll("[data-i18n-html]").forEach((element) => {
+    const key = element.dataset.i18nHtml;
+    element.innerHTML = translations[language][key];
   });
 
   languageCodes.forEach((code) => {
