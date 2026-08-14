@@ -581,6 +581,10 @@ h3 {
   grid-column: 1 / -1;
 }
 
+.project-credits {
+  grid-column: 1 / -1;
+}
+
 .platform-name {
   display: block;
   margin-bottom: 0.3rem;
