@@ -314,7 +314,7 @@ const translations = {
     "about.p8": "Para mí, <strong>hacer cine con IA no consiste en pulsar un botón y generar contenido.</strong>",
     "about.p9": "Se trata de imaginar y escribir.<br>Dirigir y tomar decisiones.<br>Experimentar y descubrir.<br>Editar, trabajar el sonido, el ritmo y el silencio.<br>Fallar, iterar y volver a empezar.",
     "about.p10": "Y, sobre todo, <strong>tener algo que decir.</strong>",
-    "about.quote": "\"GenAI tools expire quickly, but storytelling lasts forever\"",
+    "about.quote": "\"Las herramientas de IA generativa caducan rápido, pero las historias perduran para siempre\"",
     "about.noteLabel": "Enfoque creativo",
     "about.note": "Narrativa visual · Emoción humana · Reflexión social · Atmósfera · Narrativa experimental · Cine asistido por IA",
     "project.title": "POWER OFF",
