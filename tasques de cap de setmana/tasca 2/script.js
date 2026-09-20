@@ -2,13 +2,13 @@ const sets={ordinary:[
 {type:'choice',q:'Quina és la descomposició correcta de 507.040?',o:['5 cm + 7 um + 4 d','5 dm + 7 um + 4 c','5 cm + 7 c + 4 u'],a:0,h:'Mira cada posició: cm, dm, um, c, d i u.'},
 {type:'text',q:'Escriu amb xifres: seixanta-tres mil dos-cents quatre',a:['63.204','63204'],h:'Els milers no porten guionet quan els escrivim amb lletres.'},
 {type:'choice',q:'Quin valor té la xifra 3 en 435.765?',o:['3.000','30.000','300.000'],a:1,h:'La xifra 3 ocupa la posició de desenes de miler.'},
-{type:'text',q:'Quantes hores tenen 3 dies?',a:['72'],h:'Multiplica 3 × 24.'},
+{type:'text',q:'Calcula 4.305 + 2.630',a:['6.935','6935'],h:'Suma unitats, desenes, centenes i milers.'},
 {type:'text',q:'Tens 900 € i gastes 658 € i 216 €. Quants euros et queden?',a:['26'],h:'Suma les despeses i resta el resultat a 900.'}],support:[
 {type:'choice',q:'Completa 63.204. Quina opció és correcta?',o:['6 dm + 3 um + 2 c + 4 u','6 cm + 3 dm + 2 c + 4 d','6 um + 3 c + 2 d + 4 u'],a:0,h:'Llegeix les posicions d’esquerra a dreta.'},
 {type:'choice',q:'Com s’escriu 325?',o:['tres cents vint cinc','tres-cents vint-i-cinc','tres-cents-vint-i-cinc'],a:1,h:'Aplica D-U-C: tres-cents i vint-i-cinc.'},
-{type:'choice',q:'Un dia té…',o:['12 hores','24 hores','60 hores'],a:1,h:'Un dia complet té 24 hores.'},
-{type:'text',q:'Una setmana té quants dies?',a:['7','set'],h:'Pensa en els dies de dilluns a diumenge.'},
-{type:'choice',q:'5 dies de classe × 5 hores cada dia són…',o:['10 hores','25 hores','55 hores'],a:1,h:'Compta cinc grups de cinc hores.'}]};
+{type:'choice',q:'Quin nombre és més gran?',o:['36.420','63.024','36.240'],a:1,h:'Compara primer les desenes de miler.'},
+{type:'text',q:'Calcula 245 + 132',a:['377'],h:'Suma primer les unitats, després les desenes i les centenes.'},
+{type:'choice',q:'6 × 4 és…',o:['10','20','24'],a:2,h:'Compta quatre grups de sis.'}]};
 let level='ordinary',i=0,score=0,locked=false;const game=document.querySelector('#game'),feedback=document.querySelector('#feedback'),check=document.querySelector('#check'),next=document.querySelector('#next');document.querySelector('#task-label').textContent=window.TASK_LABEL;document.querySelector('#creator').textContent=`Creada per ${window.CREATOR}`;
 function norm(v){return v.trim().toLocaleLowerCase('ca').replace(/\s+/g,' ')}
 function render(){locked=false;feedback.textContent='';feedback.className='feedback';check.hidden=false;next.hidden=true;const q=sets[level][i];game.innerHTML=`<h2>Repte ${i+1}</h2><p>${q.q}</p>`+(q.type==='choice'?`<div class="options">${q.o.map((x,n)=>`<label class="option"><input type="radio" name="answer" value="${n}"> ${x}</label>`).join('')}</div>`:`<label>La teva resposta<input id="answer" type="text" autocomplete="off"></label>`);update()}
