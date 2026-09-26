@@ -465,12 +465,18 @@ function applyLanguage(language) {
 
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n;
-    element.textContent = translations[language][key];
+    const translatedText = translations[language][key];
+    if (translatedText !== undefined) {
+      element.textContent = translatedText;
+    }
   });
 
   document.querySelectorAll("[data-i18n-html]").forEach((element) => {
     const key = element.dataset.i18nHtml;
-    element.innerHTML = translations[language][key];
+    const translatedHtml = translations[language][key];
+    if (translatedHtml !== undefined) {
+      element.innerHTML = translatedHtml;
+    }
   });
 
   languageCodes.forEach((code) => {
