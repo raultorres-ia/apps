@@ -576,6 +576,10 @@ h3 {
   grid-column: 1 / -1;
 }
 
+.project-nominee {
+  grid-column: 1 / -1;
+}
+
 .project-cultural-recognition {
   grid-column: 1 / -1;
 }
