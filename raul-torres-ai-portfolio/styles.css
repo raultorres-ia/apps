@@ -576,6 +576,10 @@ h3 {
   grid-column: 1 / -1;
 }
 
+.project-honorable-mention {
+  grid-column: 1 / -1;
+}
+
 .project-nomination {
   grid-column: 1 / -1;
 }
