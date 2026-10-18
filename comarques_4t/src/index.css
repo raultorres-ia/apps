@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+    background-color: #fffbeb;
+    background-image:
+      radial-gradient(#fde68a 1.5px, transparent 1.5px),
+      radial-gradient(#bae6fd 1.5px, #fffbeb 1.5px);
+    background-size: 48px 48px;
+    background-position: 0 0, 24px 24px;
+  }
+
+  h1, h2, h3, h4, button {
+    font-family: 'Fredoka', system-ui, sans-serif;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-float {
+  animation: floatSlow 3.2s ease-in-out infinite;
+}
+
+/* Estil de targeta i botó de conte / joc infantil amb efecte 3D */
+.kid-card {
+  border-radius: 1.5rem;
+  border-width: 3px;
+  box-shadow: 0 6px 0 0 rgba(15, 23, 42, 0.12);
+}
+
+.kid-btn {
+  border-radius: 1rem;
+  border-width: 3px;
+  box-shadow: 0 4px 0 0 rgba(15, 23, 42, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease;
+}
+
+.kid-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 0 rgba(15, 23, 42, 0.22);
+}
+
+.kid-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 0 rgba(15, 23, 42, 0.18);
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  body {
+    background: #ffffff !important;
+    background-image: none !important;
+  }
+}
