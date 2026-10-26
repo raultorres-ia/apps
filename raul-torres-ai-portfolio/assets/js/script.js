@@ -265,7 +265,7 @@ const translations = {
   es: {
     "neverSleepAgain.title": "NEVER SLEEP AGAIN",
     "neverSleepAgain.meta.type": "Narrativa",
-    "neverSleepAgain.meta.duration": "30 s por episodio",
+    "neverSleepAgain.meta.duration": "30s per episode",
     "neverSleepAgain.meta.genre": "Terror / Thriller psicológico",
     "neverSleepAgain.meta.year": "2026",
     "neverSleepAgain.watch": "VER EP01",
