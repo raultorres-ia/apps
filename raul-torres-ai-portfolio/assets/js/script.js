@@ -1,6 +1,12 @@
 // Language copy lives here so the static HTML stays simple to edit.
 const translations = {
   en: {
+    "neverSleepAgain.title": "NEVER SLEEP AGAIN",
+    "neverSleepAgain.meta.type": "Narrative",
+    "neverSleepAgain.meta.duration": "30s per episode",
+    "neverSleepAgain.meta.genre": "Horror / Psychological Thriller",
+    "neverSleepAgain.meta.year": "2026",
+    "neverSleepAgain.watch": "WATCH VIDEO EP01",
     "meta.title": "Film details",
     "meta.filmType": "Film type",
     "meta.duration": "Duration",
@@ -249,6 +255,12 @@ const translations = {
     "footer.tagline": "Cinema with AI, human perspective."
   },
   es: {
+    "neverSleepAgain.title": "NEVER SLEEP AGAIN",
+    "neverSleepAgain.meta.type": "Narrativa",
+    "neverSleepAgain.meta.duration": "30 s por episodio",
+    "neverSleepAgain.meta.genre": "Terror / Thriller psicológico",
+    "neverSleepAgain.meta.year": "2026",
+    "neverSleepAgain.watch": "VER VÍDEO EP01",
     "meta.title": "Datos de la pieza",
     "meta.filmType": "Tipo",
     "meta.duration": "Duración",
