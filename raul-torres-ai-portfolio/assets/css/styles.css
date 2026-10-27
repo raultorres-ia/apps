@@ -419,6 +419,12 @@ h3 {
   margin: 0 0 1rem;
 }
 
+.episode-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .watch-button {
   display: inline-flex;
   align-items: center;
