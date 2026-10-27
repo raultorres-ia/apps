@@ -329,6 +329,10 @@ h3 {
   line-height: 1.14;
 }
 
+.about-quote + .watch-button {
+  margin-top: 2rem;
+}
+
 .about-side {
   display: grid;
   gap: 1.3rem;
