@@ -24,14 +24,14 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 36px; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
   font-size: 19px;
   line-height: 1.55;
-  padding-block: calc(var(--hud, 92px) + 4px) 0;
+  padding-block: 56px 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   overflow-x: hidden;
@@ -55,7 +55,7 @@ html[data-lang="es"] span[lang="en"] { display: none; }
 /* REC bar */
 .hud {
   position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding-top: calc(10px + env(safe-area-inset-top, 0px));
   padding-bottom: 10px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -75,14 +75,6 @@ html[data-lang="es"] span[lang="en"] { display: none; }
 }
 .lang button[aria-pressed="true"] { color: var(--fg); background: var(--blood); }
 .lang button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-
-/* section nav (inside the REC bar) */
-.nav { order: 3; flex: 0 0 100%; display: flex; flex-wrap: wrap; gap: 2px 20px; font-size: 20px; letter-spacing: .1em; text-transform: uppercase; }
-.nav a { color: var(--mute); text-decoration: none; padding: 6px 0 3px; border-bottom: 2px solid transparent; }
-.nav a:hover { color: var(--fg); }
-.nav a[aria-current="true"] { color: var(--fg); border-bottom-color: var(--blood); }
-.nav a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
-.nav .sep { color: var(--line); }
 
 /* hero */
 .hero { padding-block: clamp(28px, 6vw, 72px) 0; display: grid; gap: clamp(28px, 5vw, 64px); grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center; }
@@ -126,16 +118,14 @@ h2 { margin: 8px 0 0; font-family: var(--font-display); font-weight: 700; text-t
 .kicker { font-family: var(--font-display); font-weight: 500; font-size: .72rem; letter-spacing: .3em; color: var(--mute); text-transform: uppercase; }
 h3 { margin: 0; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 1.5rem; line-height: 1.1; letter-spacing: .06em; }
 .body p { margin: 8px 0 0; color: #cfc8c4; font-size: 1.05rem; text-wrap: pretty; }
-.watch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin-top: 16px; font-family: var(--font-osd); font-size: 21px; letter-spacing: .08em; text-transform: uppercase; }
-.watch .wl { color: var(--mute); }
-.watch a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--blood); padding-bottom: 1px; }
-.watch a:hover { color: var(--blood-soft); }
+.watch { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+.watch .wl { margin-right: 6px; font-family: var(--font-osd); font-size: 21px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.watch a { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--line); background: #0d0a0a; transition: border-color .15s; }
+.watch a img { display: block; width: 26px; height: 26px; object-fit: contain; }
+.watch a:hover { border-color: var(--blood-soft); }
 .watch a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
-.watch.soon { color: var(--blood-soft); }
+.watch.soon { font-family: var(--font-osd); font-size: 21px; letter-spacing: .08em; text-transform: uppercase; color: var(--blood-soft); }
 .date { margin-top: auto; padding-top: 14px; font-family: var(--font-osd); font-size: 20px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
-.ep .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 53%; opacity: .78; }
-.ep .frame::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,4,4,.55), transparent 38%, rgba(4,4,4,.72)); }
-.ep .num { z-index: 2; }
 .ep.finale { grid-column: 1 / -1; border-color: var(--blood); }
 .ep.finale .frame { aspect-ratio: 21 / 9; }
 .ep.finale .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 57%; opacity: .85; }
@@ -159,30 +149,17 @@ h3 { margin: 0; font-family: var(--font-display); font-weight: 700; text-transfo
 .mo { margin-top: 36px; border: 1px solid var(--line); background: var(--bg-raised); }
 .tape { height: 22px; background: repeating-linear-gradient(-45deg, var(--blood) 0 18px, #0a0a0a 18px 36px); }
 .mo-in { padding: clamp(22px, 4vw, 40px); }
+.nosignal { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(1.5rem, 4.5vw, 2.4rem); line-height: 1.1; letter-spacing: .06em; margin: 0; }
+.nosignal em { font-style: normal; color: var(--blood-soft); }
 .mo-in p { max-width: 54ch; margin: 12px 0 0; color: #cfc8c4; text-wrap: pretty; }
+.mo-in .nosignal { margin: 0; }
 .files { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
 .files li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding: 12px 0; border-top: 1px solid var(--line); font-family: var(--font-osd); font-size: 21px; letter-spacing: .06em; text-transform: uppercase; }
 .files li .t { color: var(--fg); min-width: 0; overflow-wrap: anywhere; }
-.files a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--blood); padding-bottom: 1px; }
-.files a:hover { color: var(--blood-soft); }
-.files a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
-.mo-ep { margin-top: clamp(36px, 6vw, 64px); padding-top: clamp(28px, 5vw, 44px); border-top: 1px solid var(--line); scroll-margin-top: 12px; }
-.mo-ep .code { font-family: var(--font-osd); font-size: 21px; letter-spacing: .1em; color: var(--blood-soft); text-transform: uppercase; }
-.mo-ep h3 { margin-top: 6px; font-size: clamp(1.4rem, 3.6vw, 2.1rem); text-wrap: balance; }
-.mo-ep h4 { margin: 34px 0 0; font-family: var(--font-display); font-weight: 500; font-size: .8rem; letter-spacing: .3em; color: var(--blood-soft); text-transform: uppercase; }
-.mo-ep h4 + p { margin-top: 10px; }
-.mo-figs { margin-top: 24px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); align-items: start; }
-.mo-fig { margin: 0; min-width: 0; }
-.mo-fig img { display: block; width: 100%; height: auto; background: #000; border: 1px solid var(--line); }
-.mo-fig figcaption { margin-top: 8px; font-family: var(--font-osd); font-size: 19px; line-height: 1.2; letter-spacing: .06em; color: var(--mute); text-transform: uppercase; }
-.mo-fig.wide { margin-top: 24px; }
-.mo-fig.wide img { max-width: 800px; }
-.steps { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 0; counter-reset: st; max-width: 62ch; }
-.steps li { counter-increment: st; display: grid; grid-template-columns: 3.2ch minmax(0, 1fr); gap: 0 14px; padding: 14px 0; border-top: 1px solid var(--line); color: #cfc8c4; text-wrap: pretty; }
-.steps li::before { content: counter(st, decimal-leading-zero); font-family: var(--font-osd); font-size: 24px; line-height: 1.1; letter-spacing: .06em; color: var(--blood-soft); }
-.steps b { display: block; font-family: var(--font-display); font-weight: 700; font-size: .95rem; letter-spacing: .14em; text-transform: uppercase; color: var(--fg); }
-.mo-in .note { max-width: 54ch; margin: 24px 0 0; color: var(--fg); padding-left: 16px; border-left: 2px solid var(--blood); font-style: italic; color: var(--fg); text-wrap: pretty; }
-.note b { display: block; margin-bottom: 4px; font-family: var(--font-osd); font-style: normal; font-weight: 400; font-size: 20px; letter-spacing: .1em; color: var(--blood-soft); text-transform: uppercase; }
+.files li .s { color: var(--mute); }
+.load { margin-top: 24px; height: 6px; background: var(--line); overflow: hidden; }
+.load i { display: block; height: 100%; width: 34%; background: var(--blood); animation: load 3.2s ease-in-out infinite alternate; }
+@keyframes load { from { transform: translateX(-10%); } to { transform: translateX(190%); } }
 
 /* footer */
 footer { margin-top: clamp(56px, 8vw, 104px); padding-block: 28px 40px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 1rem; color: var(--mute); }
@@ -195,12 +172,11 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 }
 @media (max-width: 520px) {
   .hud { font-size: 20px; }
-  .nav { font-size: 17px; gap: 2px 14px; letter-spacing: .05em; }
   .hud .hide-s { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .rec i { animation: none; }
+  .rec i, .load i { animation: none; }
 }
 </style>
 </head>
@@ -219,15 +195,6 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
       <button type="button" data-set="es" aria-pressed="false">ES</button>
     </div>
   </div>
-  <nav class="nav" aria-label="Secciones / Sections">
-    <a href="#top"><span lang="es">Inicio</span><span lang="en">Home</span></a>
-    <a href="#capitulos"><span lang="es">Capítulos</span><span lang="en">Episodes</span></a>
-    <a href="#herramientas"><span lang="es">Herramientas</span><span lang="en">Tools</span></a>
-    <a href="#making-of">Making of</a>
-    <a href="#making-of-01" class="hide-s">MO_01</a>
-    <a href="#making-of-02" class="hide-s">MO_02</a>
-    <a href="#making-of-03" class="hide-s">MO_03</a>
-  </nav>
 </div>
 
 <div class="wrap">
@@ -243,7 +210,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
         <li><span lang="es"><b>7</b> episodios</span><span lang="en"><b>7</b> episodes</span></li>
         <li><span lang="es">Episodios de <b>29 a 42 s</b> · final de <b>2:08</b></span><span lang="en">Episodes of <b>29–42 s</b> · <b>2:08</b> finale</span></li>
         <li><span lang="es">Del <b>25</b> al <b>31</b> de octubre</span><span lang="en">October <b>25</b> to <b>31</b></span></li>
-        <li><span lang="es">En <b>Instagram</b>, <b>LinkedIn</b>, <b>TikTok</b> y <b>X</b></span><span lang="en">On <b>Instagram</b>, <b>LinkedIn</b>, <b>TikTok</b> and <b>X</b></span></li>
+        <li><span lang="es">En <b>YouTube</b>, <b>Instagram</b>, <b>LinkedIn</b>, <b>TikTok</b> y <b>X</b></span><span lang="en">On <b>YouTube</b>, <b>Instagram</b>, <b>LinkedIn</b>, <b>TikTok</b> and <b>X</b></span></li>
       </ul>
     </div>
     <figure class="poster">
@@ -262,7 +229,6 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
     <div class="roll">
       <article class="ep">
         <div class="frame">
-          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:42</span></div>
           <div class="num">01</div>
         </div>
@@ -273,14 +239,13 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <span lang="es">Ella se despierta, mira el móvil… y grita.</span>
             <span lang="en">She wakes up, looks at her phone… and screams.</span>
           </p>
-          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/p/De7gR3_BrwW/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520207641034465281/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7700696852772982038" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2114446638894989545" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/p/De7gR3_BrwW/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><img src="icons/instagram.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520207641034465281/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><img src="icons/linkedin.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.tiktok.com/@raul_torres_ia/video/7700696852772982038" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><img src="icons/tiktok.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://x.com/raul_torres_ia/status/2114446638894989545" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><img src="icons/x.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.youtube.com/watch?v=5JDviNgOLOY" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><img src="icons/youtube.png" width="26" height="26" alt="" loading="lazy"></a></div>
           <div class="date"><span lang="es">Domingo 25 oct</span><span lang="en">Sunday, Oct 25</span></div>
         </div>
       </article>
 
       <article class="ep">
         <div class="frame">
-          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:32</span></div>
           <div class="num">02</div>
         </div>
@@ -291,14 +256,13 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <span lang="es">Ella duerme… pero alguien recorre la casa.</span>
             <span lang="en">She sleeps… but someone is walking through the house.</span>
           </p>
-          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/De-Kkf_hL0T/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520581046359232512/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701080526517570838" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115167608659931463" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/De-Kkf_hL0T/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><img src="icons/instagram.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520581046359232512/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><img src="icons/linkedin.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701080526517570838" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><img src="icons/tiktok.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://x.com/raul_torres_ia/status/2115167608659931463" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><img src="icons/x.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.youtube.com/watch?v=n7Ob08mSIP8" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><img src="icons/youtube.png" width="26" height="26" alt="" loading="lazy"></a></div>
           <div class="date"><span lang="es">Lunes 26 oct</span><span lang="en">Monday, Oct 26</span></div>
         </div>
       </article>
 
       <article class="ep">
         <div class="frame">
-          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:29</span></div>
           <div class="num">03</div>
         </div>
@@ -309,14 +273,13 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <span lang="es">Ella duerme… y la cámara se acerca a la cama.</span>
             <span lang="en">She sleeps… and the camera moves closer to the bed.</span>
           </p>
-          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfAmhPmBNoK/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520923264865488896/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701425797453860099" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115167942933447142" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfAmhPmBNoK/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><img src="icons/instagram.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520923264865488896/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><img src="icons/linkedin.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701425797453860099" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><img src="icons/tiktok.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://x.com/raul_torres_ia/status/2115167942933447142" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><img src="icons/x.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.youtube.com/watch?v=n7Ob08mSIP8" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><img src="icons/youtube.png" width="26" height="26" alt="" loading="lazy"></a></div>
           <div class="date"><span lang="es">Martes 27 oct</span><span lang="en">Tuesday, Oct 27</span></div>
         </div>
       </article>
 
       <article class="ep">
         <div class="frame">
-          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:31</span></div>
           <div class="num">04</div>
         </div>
@@ -327,14 +290,13 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <span lang="es">Ella duerme… pero se oye una respiración que no es la suya.</span>
             <span lang="en">She sleeps… but you can hear a breath that is not hers.</span>
           </p>
-          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfDSy9DBvUf/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7521307361873973249/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701819517470575894" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115695499391242283" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfDSy9DBvUf/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><img src="icons/instagram.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7521484406029512704/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><img src="icons/linkedin.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701819517470575894" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><img src="icons/tiktok.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://x.com/raul_torres_ia/status/2115695499391242283" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><img src="icons/x.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.youtube.com/watch?v=n7Ob08mSIP8" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><img src="icons/youtube.png" width="26" height="26" alt="" loading="lazy"></a></div>
           <div class="date"><span lang="es">Miércoles 28 oct</span><span lang="en">Wednesday, Oct 28</span></div>
         </div>
       </article>
 
       <article class="ep">
         <div class="frame">
-          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:36</span></div>
           <div class="num">05</div>
         </div>
@@ -345,14 +307,13 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <span lang="es">Ella duerme… y el espejo sobre la cama lo ve todo.</span>
             <span lang="en">She sleeps… and the mirror above her bed sees everything.</span>
           </p>
-          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfF2-J6hUcN/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7521668183632580609/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7702188523142515990" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115903762053407114" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfF2-J6hUcN/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><img src="icons/instagram.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7521668183632580609/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><img src="icons/linkedin.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.tiktok.com/@raul_torres_ia/video/7702188523142515990" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><img src="icons/tiktok.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://x.com/raul_torres_ia/status/2115903762053407114" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><img src="icons/x.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.youtube.com/watch?v=n7Ob08mSIP8" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><img src="icons/youtube.png" width="26" height="26" alt="" loading="lazy"></a></div>
           <div class="date"><span lang="es">Jueves 29 oct</span><span lang="en">Thursday, Oct 29</span></div>
         </div>
       </article>
 
       <article class="ep">
         <div class="frame">
-          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:36</span></div>
           <div class="num">06</div>
         </div>
@@ -363,7 +324,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <span lang="es">Ella duerme… pero alguien ya está dentro.</span>
             <span lang="en">She sleeps… but someone is already inside.</span>
           </p>
-          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfIh2fGh60k/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7522044001458253824/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7702573292753849622" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2116279226085081490" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfIh2fGh60k/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><img src="icons/instagram.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7522044001458253824/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><img src="icons/linkedin.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.tiktok.com/@raul_torres_ia/video/7702573292753849622" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><img src="icons/tiktok.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://x.com/raul_torres_ia/status/2116279226085081490" target="_blank" rel="noopener noreferrer" aria-label="X" title="X"><img src="icons/x.png" width="26" height="26" alt="" loading="lazy"></a><a href="https://www.youtube.com/watch?v=n7Ob08mSIP8" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><img src="icons/youtube.png" width="26" height="26" alt="" loading="lazy"></a></div>
           <div class="date"><span lang="es">Viernes 30 oct</span><span lang="en">Friday, Oct 30</span></div>
         </div>
       </article>
@@ -433,106 +394,22 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
   </section>
 
   <section id="making-of">
-    <div class="label"><span lang="es">Detrás del monitor</span><span lang="en">Behind the monitor</span></div>
+    <div class="label"><span lang="es">Detrás de cámara</span><span lang="en">Behind the camera</span></div>
     <h2>Making of</h2>
     <div class="mo">
       <div class="tape" aria-hidden="true"></div>
       <div class="mo-in">
+        <p class="nosignal"><span lang="es">Sin señal. <em>En construcción.</em></span><span lang="en">No signal. <em>Under construction.</em></span></p>
         <p>
-          <span lang="es">Cómo se hizo: la casa en 3D, el trabajo de color y el paso de la referencia al plano y las capas de móvil. Tres cintas, ya disponibles.</span>
-          <span lang="en">How it was made: the 3D house, the color work and the step from reference to shot and the phone layers. Three tapes, now available.</span>
+          <span lang="es">Estamos montando el cómo se hizo: la casa en 3D, el paso de la referencia al plano y el trabajo de color. Se publicará aquí cuando termine la serie.</span>
+          <span lang="en">We are putting together how it was made: the 3D house, the step from reference to shot, and the color work. It will be published here once the series ends.</span>
         </p>
         <ul class="files">
-          <li><span class="t"><a href="#making-of-01"><span lang="es">MAKING_OF_01 · La casa en Blender y la noche en el etalonaje</span><span lang="en">MAKING_OF_01 · The house in Blender and building the night in the grade</span></a></span></li>
-          <li><span class="t"><a href="#making-of-02"><span lang="es">MAKING_OF_02 · De la referencia al plano</span><span lang="en">MAKING_OF_02 · From reference to shot</span></a></span></li>
-          <li><span class="t"><a href="#making-of-03"><span lang="es">MAKING_OF_03 · El móvil en Fusion</span><span lang="en">MAKING_OF_03 · The phone in Fusion</span></a></span></li>
+          <li><span class="t"><span lang="es">MAKING_OF_01 · La casa en Blender</span><span lang="en">MAKING_OF_01 · The house in Blender</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
+          <li><span class="t"><span lang="es">MAKING_OF_02 · De la referencia al plano</span><span lang="en">MAKING_OF_02 · From reference to shot</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
+          <li><span class="t"><span lang="es">MAKING_OF_03 · La noche en el etalonaje</span><span lang="en">MAKING_OF_03 · Building the night in the grade</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
         </ul>
-
-        <article class="mo-ep" id="making-of-01">
-          <div class="code">MAKING_OF_01</div>
-          <h3><span lang="es">La casa en Blender y la noche en el etalonaje</span><span lang="en">The house in Blender and building the night in the grade</span></h3>
-
-          <h4><span lang="es">La casa</span><span lang="en">The house</span></h4>
-          <p>
-            <span lang="es">Antes de que existiera un solo plano, existía una casa. Cada estancia de la serie se construyó en Blender con volúmenes simples y colores planos, sin texturas: un dormitorio, un baño, una habitación vacía, un pasillo, un salón-comedor, una cocina y una entrada, amuebladas hasta las sillas de la mesa y el cuenco de la consola del pasillo.</span>
-            <span lang="en">Before there was a single shot, there was a house. Every room of the series was built in Blender with simple volumes and flat colors, no textures: a bedroom, a bathroom, an empty room, a hallway, a living-dining room, a kitchen and an entrance, furnished down to the chairs around the table and the bowl on the hallway console.</span>
-          </p>
-          <p>
-            <span lang="es">Por eso la casa nunca cambia. Cada episodio parte de una cámara colocada dentro de este mismo espacio, así que el pasillo de un capítulo es el mismo pasillo del siguiente.</span>
-            <span lang="en">That is why the house never changes. Every episode starts from a camera placed inside this same space, so the hallway in one episode is the same hallway in the next.</span>
-          </p>
-
-          <div class="mo-figs">
-            <figure class="mo-fig">
-              <img src="making-of-01-plano.png" width="1515" height="1142" loading="lazy" alt="Plano de la casa visto desde arriba, sin techo: dormitorio, baño y habitación vacía arriba; pasillo en el centro; salón-comedor, cocina y entrada abajo. / Top-down plan of the house with the roof removed: bedroom, bathroom and empty room on top; hallway in the middle; living-dining room, kitchen and entrance below.">
-              <figcaption><span lang="es">Toda la casa vista desde arriba</span><span lang="en">The whole house from above</span></figcaption>
-            </figure>
-            <figure class="mo-fig">
-              <img src="making-of-01-recorrido.gif" width="512" height="288" loading="lazy" alt="Recorrido por el blockout de la casa en Blender: dormitorio, pasillo, cocina y salón con colores planos. / Walkthrough of the Blender blockout of the house: bedroom, hallway, kitchen and living room in flat colors.">
-              <figcaption><span lang="es">Recorrido por el blockout · a doble velocidad</span><span lang="en">Walkthrough of the blockout · sped up 2×</span></figcaption>
-            </figure>
-          </div>
-
-          <p>
-            <span lang="es">Hasta la luz se coloca aquí: el azul frío de la calle en las ventanas, las rayas de la farola entre las persianas, el brillo de un móvil. Son solo lámparas en Blender, pero les dicen a todos los pasos siguientes de dónde viene la noche.</span>
-            <span lang="en">Even the light is placed here: the cold blue of the street at the windows, streetlamp stripes through the blinds, the glow of a phone. They are only lamps in Blender, but they tell every later step where the night comes from.</span>
-          </p>
-
-          <h4><span lang="es">La noche en el etalonaje</span><span lang="en">The night in the grade</span></h4>
-          <p>
-            <span lang="es">El blockout no es el aspecto final, y el vídeo generado tampoco. La noche se construye al final, en DaVinci Resolve Studio. Este barrido recorre las cuatro fases de un mismo plano: la vista de Blender, el render de referencia, la generación con Seedance 2.5 y el resultado etalonado. En el último fotograma casi todo se ha ido a negro. Solo sobreviven la luz del techo, los marcos de las puertas y la ventana cálida.</span>
-            <span lang="en">The blockout is not the final look, and neither is the generated video. The night is built last, in DaVinci Resolve Studio. This sweep goes through the four stages of a single shot: the Blender view, the reference render, the Seedance 2.5 generation and the graded result. In the final frame almost everything has gone to black. Only the ceiling light, the door frames and the warm window survive.</span>
-          </p>
-          <figure class="mo-fig wide">
-            <img src="making-of-01-etalonaje.gif" width="800" height="450" loading="lazy" alt="Un mismo plano del pasillo en cuatro fases: vista de Blender, render gris de referencia, vídeo generado con Seedance y resultado etalonado casi negro. / One hallway shot in four stages: Blender view, grey reference render, Seedance video and a nearly black graded result.">
-            <figcaption><span lang="es">Blender → referencia → Seedance 2.5 → DaVinci Resolve</span><span lang="en">Blender → reference → Seedance 2.5 → DaVinci Resolve</span></figcaption>
-          </figure>
-          <p>
-            <span lang="es">El aspecto que buscábamos: negros profundos y aplastados, paredes de un verde azulado frío, luz cálida solo donde hay una fuente real —la ventana, los reflejos del suelo— y el acabado blando y granulado de una grabación de móvil por la noche.</span>
-            <span lang="en">The look we were after: deep crushed blacks, cold blue-green walls, warm light only where there is a real source — the window, the reflections on the floor — and the soft, grainy finish of a phone recording at night.</span>
-          </p>
-        </article>
-
-        <article class="mo-ep" id="making-of-02">
-          <div class="code">MAKING_OF_02</div>
-          <h3><span lang="es">De la referencia al plano</span><span lang="en">From reference to shot</span></h3>
-          <p>
-            <span lang="es">Todos los planos de la serie siguen el mismo camino corto, de una cámara en Blender a un clip en la línea de tiempo.</span>
-            <span lang="en">Every shot of the series follows the same short path, from a camera in Blender to a clip on the timeline.</span>
-          </p>
-          <ol class="steps">
-            <li><span><b><span lang="es">Cámara</span><span lang="en">Camera</span></b><span lang="es">Se coloca una cámara dentro de la casa en Blender y se ensaya el movimiento: dónde empieza, dónde acaba y a qué ritmo avanza.</span><span lang="en">A camera is placed inside the Blender house and the move is rehearsed: where it starts, where it ends and how fast it travels.</span></span></li>
-            <li><span><b><span lang="es">Referencia</span><span lang="en">Reference</span></b><span lang="es">El movimiento se renderiza como un clip corto de referencia en gris. Lleva la distribución del espacio, el encuadre y el movimiento de cámara. No lleva aspecto.</span><span lang="en">The move is rendered as a short grey reference clip. It carries the layout of the space, the framing and the camera move. It carries no look.</span></span></li>
-            <li><span><b><span lang="es">Instrucciones</span><span lang="en">Prompt</span></b><span lang="es">Seedance 2.5, en Dreamina, recibe el clip de referencia, las imágenes de la escena y unas instrucciones escritas en inglés. Piden el pulso de un móvil en la mano y los sonidos reales de la habitación (pitido de grabación, clics, pasos, crujidos, roce de tela). Música, nunca.</span><span lang="en">Seedance 2.5, in Dreamina, receives the reference clip, the images of the scene and a written prompt in English. It asks for the shake of a hand-held phone and the real sounds of the room (recording beep, clicks, footsteps, creaks, cloth rustle). Never music.</span></span></li>
-            <li><span><b><span lang="es">Revisión</span><span lang="en">Review</span></b><span lang="es">Cada resultado se compara con el plano. Cuando algo falla, se refuerzan las referencias y se vuelve a generar.</span><span lang="en">Every result is checked against the plan. When something breaks, the references are tightened and the shot is generated again.</span></span></li>
-            <li><span><b><span lang="es">Montaje y color</span><span lang="en">Edit and grade</span></b><span lang="es">Los planos que sobreviven pasan a DaVinci Resolve Studio, donde se unen y se etalonan (ver MAKING_OF_01).</span><span lang="en">The shots that survive go to DaVinci Resolve Studio, where they are joined and graded (see MAKING_OF_01).</span></span></li>
-          </ol>
-        </article>
-
-        <article class="mo-ep" id="making-of-03">
-          <div class="code">MAKING_OF_03</div>
-          <h3><span lang="es">El móvil en Fusion</span><span lang="en">The phone in Fusion</span></h3>
-          <p>
-            <span lang="es">Cada episodio quiere parecer lo que es dentro de la historia: una grabación hecha con un móvil. Esa sensación no sale de la imagen generada. Se construye encima, con Fusion, la página de composición que viene dentro de DaVinci Resolve Studio.</span>
-            <span lang="en">Every episode wants to look like what it is inside the story: a recording made on a phone. That feeling does not come from the generated image. It is built on top, in Fusion, the compositing page inside DaVinci Resolve Studio.</span>
-          </p>
-          <ol class="steps">
-            <li><span><b><span lang="es">Una composición por clip</span><span lang="en">One composition per clip</span></b><span lang="es">Cada plano entra en su propia composición de Fusion. El vídeo generado llega tal cual y nada queda incrustado en él: todo lo que viene después es una capa encima.</span><span lang="en">Every shot goes into its own Fusion composition. The generated video comes in untouched and nothing is baked into it: everything that follows is a layer on top.</span></span></li>
-            <li><span><b><span lang="es">El reproductor del móvil</span><span lang="en">The phone’s player</span></b><span lang="es">La interfaz de un móvil reproduciendo un vídeo se construye desde cero: fondos de color recortados con máscaras de rectángulo y elipse para el botón de pausa, la barra de progreso y el cursor; nodos de texto para el nombre del archivo (VID_0001, VID_0002, VID_0003…) y los tiempos; y fusiones animadas para que el cursor avance al ritmo del vídeo.</span><span lang="en">The interface of a phone playing a video back is built from scratch: color backgrounds cut with rectangle and ellipse masks for the pause button, the progress bar and the playhead; text nodes for the file name (VID_0001, VID_0002, VID_0003…) and the times; and animated merges so the playhead moves with the video.</span></span></li>
-            <li><span><b><span lang="es">La mirada del móvil</span><span lang="en">The phone’s eye</span></b><span lang="es">Una cadena de pequeños ajustes da a la imagen el acabado blando y sobreprocesado de una cámara de móvil por la noche: una LUT nocturna, un levantamiento de las sombras, una reducción de ruido suave, un poco de nitidez y una viñeta.</span><span lang="en">A chain of small adjustments gives the image the soft, over-processed finish of a phone camera at night: a night LUT, lifted shadows, light noise reduction, a touch of sharpening and a vignette.</span></span></li>
-            <li><span><b><span lang="es">Arreglos dentro del plano</span><span lang="en">Fixes inside the shot</span></b><span lang="es">Fusion también resuelve problemas. Igualar el color de un episodio con el anterior, aclarar una cara o, en Reflection, usar máscaras sobre la cabeza y el cuerpo del reflejo y una corrección de día a noche.</span><span lang="en">Fusion also solves problems. Matching the color of one episode to the one before, lifting a face or, in Reflection, using masks on the head and body of the reflection and a day-for-night correction.</span></span></li>
-          </ol>
-          <p>
-            <span lang="es">Como cada capa es un elemento independiente, se puede ajustar cualquier detalle del móvil sin volver a generar el plano.</span>
-            <span lang="en">Because every layer is an independent element, any detail of the phone can be adjusted without generating the shot again.</span>
-          </p>
-        </article>
-
-        <p class="note">
-          <b><span lang="es">Nota de dirección</span><span lang="en">Director’s note</span></b>
-          <span lang="es">Esta serie se ha inspirado en el cine de terror de los 90, en películas como Pesadilla en Elm Street y Scream, del gran Wes Craven. Este es mi homenaje.</span>
-          <span lang="en">This series was inspired by 90s horror cinema, by films like A Nightmare on Elm Street and Scream, by the great Wes Craven. This is my homage.</span>
-        </p>
+        <div class="load" aria-hidden="true"><i></i></div>
       </div>
     </div>
   </section>
@@ -568,32 +445,6 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
       setLang(l);
     });
   }
-
-  var hud = document.querySelector(".hud");
-  function sizeHud() { root.style.setProperty("--hud", hud.offsetHeight + "px"); }
-  sizeHud();
-  window.addEventListener("resize", sizeHud);
-  window.addEventListener("load", sizeHud);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeHud);
-
-  var links = document.querySelectorAll(".nav a");
-  var targets = [];
-  for (var k = 0; k < links.length; k++) {
-    var t = document.getElementById(links[k].getAttribute("href").slice(1));
-    if (t) targets.push({ el: t, a: links[k] });
-  }
-  function mark() {
-    var y = window.scrollY + 130, cur = null;
-    for (var j = 0; j < targets.length; j++) {
-      if (targets[j].el.getBoundingClientRect().top + window.scrollY <= y) cur = targets[j].a;
-    }
-    if (!cur) cur = links[0];
-    for (var m = 0; m < links.length; m++) links[m].removeAttribute("aria-current");
-    if (cur) cur.setAttribute("aria-current", "true");
-  }
-  window.addEventListener("scroll", mark, { passive: true });
-  window.addEventListener("resize", mark);
-  mark();
 
   var el = document.getElementById("tc");
   var t0 = Date.now();
