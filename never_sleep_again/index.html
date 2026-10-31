@@ -133,6 +133,9 @@ h3 { margin: 0; font-family: var(--font-display); font-weight: 700; text-transfo
 .watch a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
 .watch.soon { color: var(--blood-soft); }
 .date { margin-top: auto; padding-top: 14px; font-family: var(--font-osd); font-size: 20px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+.ep .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 53%; opacity: .78; }
+.ep .frame::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,4,4,.55), transparent 38%, rgba(4,4,4,.72)); }
+.ep .num { z-index: 2; }
 .ep.finale { grid-column: 1 / -1; border-color: var(--blood); }
 .ep.finale .frame { aspect-ratio: 21 / 9; }
 .ep.finale .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 57%; opacity: .85; }
@@ -259,6 +262,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
     <div class="roll">
       <article class="ep">
         <div class="frame">
+          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:42</span></div>
           <div class="num">01</div>
         </div>
@@ -276,6 +280,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 
       <article class="ep">
         <div class="frame">
+          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:32</span></div>
           <div class="num">02</div>
         </div>
@@ -293,6 +298,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 
       <article class="ep">
         <div class="frame">
+          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:29</span></div>
           <div class="num">03</div>
         </div>
@@ -310,6 +316,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 
       <article class="ep">
         <div class="frame">
+          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:31</span></div>
           <div class="num">04</div>
         </div>
@@ -327,6 +334,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 
       <article class="ep">
         <div class="frame">
+          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:36</span></div>
           <div class="num">05</div>
         </div>
@@ -344,6 +352,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 
       <article class="ep">
         <div class="frame">
+          <img src="cover.jpg" width="1000" height="1500" alt="" loading="lazy">
           <div class="osd top"><span class="r">● REC</span><span>0:36</span></div>
           <div class="num">06</div>
         </div>
