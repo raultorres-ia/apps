@@ -156,9 +156,27 @@ h3 { margin: 0; font-family: var(--font-display); font-weight: 700; text-transfo
 .files li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding: 12px 0; border-top: 1px solid var(--line); font-family: var(--font-osd); font-size: 21px; letter-spacing: .06em; text-transform: uppercase; }
 .files li .t { color: var(--fg); min-width: 0; overflow-wrap: anywhere; }
 .files li .s { color: var(--mute); }
-.load { margin-top: 24px; height: 6px; background: var(--line); overflow: hidden; }
-.load i { display: block; height: 100%; width: 34%; background: var(--blood); animation: load 3.2s ease-in-out infinite alternate; }
-@keyframes load { from { transform: translateX(-10%); } to { transform: translateX(190%); } }
+.files a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--blood); padding-bottom: 1px; }
+.files a:hover { color: var(--blood-soft); }
+.files a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+.files li .s.ok { color: var(--blood-soft); }
+.mo-ep { margin-top: clamp(36px, 6vw, 64px); padding-top: clamp(28px, 5vw, 44px); border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+.mo-ep .code { font-family: var(--font-osd); font-size: 21px; letter-spacing: .1em; color: var(--blood-soft); text-transform: uppercase; }
+.mo-ep h3 { margin-top: 6px; font-size: clamp(1.4rem, 3.6vw, 2.1rem); text-wrap: balance; }
+.mo-ep h4 { margin: 34px 0 0; font-family: var(--font-display); font-weight: 500; font-size: .8rem; letter-spacing: .3em; color: var(--blood-soft); text-transform: uppercase; }
+.mo-ep h4 + p { margin-top: 10px; }
+.mo-figs { margin-top: 24px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); align-items: start; }
+.mo-fig { margin: 0; min-width: 0; }
+.mo-fig img { display: block; width: 100%; height: auto; background: #000; border: 1px solid var(--line); }
+.mo-fig figcaption { margin-top: 8px; font-family: var(--font-osd); font-size: 19px; line-height: 1.2; letter-spacing: .06em; color: var(--mute); text-transform: uppercase; }
+.mo-fig.wide { margin-top: 24px; }
+.mo-fig.wide img { max-width: 800px; }
+.steps { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 0; counter-reset: st; max-width: 62ch; }
+.steps li { counter-increment: st; display: grid; grid-template-columns: 3.2ch minmax(0, 1fr); gap: 0 14px; padding: 14px 0; border-top: 1px solid var(--line); color: #cfc8c4; text-wrap: pretty; }
+.steps li::before { content: counter(st, decimal-leading-zero); font-family: var(--font-osd); font-size: 24px; line-height: 1.1; letter-spacing: .06em; color: var(--blood-soft); }
+.steps b { display: block; font-family: var(--font-display); font-weight: 700; font-size: .95rem; letter-spacing: .14em; text-transform: uppercase; color: var(--fg); }
+.mo-in .note { max-width: 54ch; margin: 24px 0 0; color: var(--fg); padding-left: 16px; border-left: 2px solid var(--blood); font-style: italic; color: var(--fg); text-wrap: pretty; }
+.note b { display: block; margin-bottom: 4px; font-family: var(--font-osd); font-style: normal; font-weight: 400; font-size: 20px; letter-spacing: .1em; color: var(--blood-soft); text-transform: uppercase; }
 
 /* footer */
 footer { margin-top: clamp(56px, 8vw, 104px); padding-block: 28px 40px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 1rem; color: var(--mute); }
@@ -175,7 +193,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .rec i, .load i { animation: none; }
+  .rec i { animation: none; }
 }
 </style>
 </head>
@@ -398,17 +416,81 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
     <div class="mo">
       <div class="tape" aria-hidden="true"></div>
       <div class="mo-in">
-        <p class="nosignal"><span lang="es">Sin señal. <em>En construcción.</em></span><span lang="en">No signal. <em>Under construction.</em></span></p>
+        <p class="nosignal"><span lang="es">Señal recuperada. <em>Play.</em></span><span lang="en">Signal found. <em>Play.</em></span></p>
         <p>
-          <span lang="es">Estamos montando el cómo se hizo: la casa en 3D, el paso de la referencia al plano y el trabajo de color. Se publicará aquí cuando termine la serie.</span>
-          <span lang="en">We are putting together how it was made: the 3D house, the step from reference to shot, and the color work. It will be published here once the series ends.</span>
+          <span lang="es">Cómo se hizo: la casa en 3D, el trabajo de color y el paso de la referencia al plano. Dos cintas, ya disponibles.</span>
+          <span lang="en">How it was made: the 3D house, the color work and the step from reference to shot. Two tapes, now available.</span>
         </p>
         <ul class="files">
-          <li><span class="t"><span lang="es">MAKING_OF_01 · La casa en Blender</span><span lang="en">MAKING_OF_01 · The house in Blender</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
-          <li><span class="t"><span lang="es">MAKING_OF_02 · De la referencia al plano</span><span lang="en">MAKING_OF_02 · From reference to shot</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
-          <li><span class="t"><span lang="es">MAKING_OF_03 · La noche en el etalonaje</span><span lang="en">MAKING_OF_03 · Building the night in the grade</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
+          <li><span class="t"><a href="#making-of-01"><span lang="es">MAKING_OF_01 · La casa en Blender y la noche en el etalonaje</span><span lang="en">MAKING_OF_01 · The house in Blender and building the night in the grade</span></a></span><span class="s ok"><span lang="es">Disponible</span><span lang="en">Available</span></span></li>
+          <li><span class="t"><a href="#making-of-02"><span lang="es">MAKING_OF_02 · De la referencia al plano</span><span lang="en">MAKING_OF_02 · From reference to shot</span></a></span><span class="s ok"><span lang="es">Disponible</span><span lang="en">Available</span></span></li>
         </ul>
-        <div class="load" aria-hidden="true"><i></i></div>
+
+        <article class="mo-ep" id="making-of-01">
+          <div class="code">MAKING_OF_01</div>
+          <h3><span lang="es">La casa en Blender y la noche en el etalonaje</span><span lang="en">The house in Blender and building the night in the grade</span></h3>
+
+          <h4><span lang="es">La casa</span><span lang="en">The house</span></h4>
+          <p>
+            <span lang="es">Antes de que existiera un solo plano, existía una casa. Cada estancia de la serie se construyó en Blender con volúmenes simples y colores planos, sin texturas: un dormitorio, un baño, una habitación vacía, un pasillo, un salón-comedor, una cocina y una entrada, amuebladas hasta las sillas de la mesa y el cuenco de la consola del pasillo.</span>
+            <span lang="en">Before there was a single shot, there was a house. Every room of the series was built in Blender with simple volumes and flat colors, no textures: a bedroom, a bathroom, an empty room, a hallway, a living-dining room, a kitchen and an entrance, furnished down to the chairs around the table and the bowl on the hallway console.</span>
+          </p>
+          <p>
+            <span lang="es">Por eso la casa nunca cambia. Cada episodio parte de una cámara colocada dentro de este mismo espacio, así que el pasillo de un capítulo es el mismo pasillo del siguiente.</span>
+            <span lang="en">That is why the house never changes. Every episode starts from a camera placed inside this same space, so the hallway in one episode is the same hallway in the next.</span>
+          </p>
+
+          <div class="mo-figs">
+            <figure class="mo-fig">
+              <img src="making-of-01-plano.png" width="1515" height="1142" loading="lazy" alt="Plano de la casa visto desde arriba, sin techo: dormitorio, baño y habitación vacía arriba; pasillo en el centro; salón-comedor, cocina y entrada abajo. / Top-down plan of the house with the roof removed: bedroom, bathroom and empty room on top; hallway in the middle; living-dining room, kitchen and entrance below.">
+              <figcaption><span lang="es">Toda la casa vista desde arriba</span><span lang="en">The whole house from above</span></figcaption>
+            </figure>
+            <figure class="mo-fig">
+              <img src="making-of-01-recorrido.gif" width="512" height="288" loading="lazy" alt="Recorrido por el blockout de la casa en Blender: dormitorio, pasillo, cocina y salón con colores planos. / Walkthrough of the Blender blockout of the house: bedroom, hallway, kitchen and living room in flat colors.">
+              <figcaption><span lang="es">Recorrido por el blockout · a doble velocidad</span><span lang="en">Walkthrough of the blockout · sped up 2×</span></figcaption>
+            </figure>
+          </div>
+
+          <p>
+            <span lang="es">Hasta la luz se coloca aquí: el azul frío de la calle en las ventanas, las rayas de la farola entre las persianas, el brillo de un móvil. Son solo lámparas en Blender, pero les dicen a todos los pasos siguientes de dónde viene la noche.</span>
+            <span lang="en">Even the light is placed here: the cold blue of the street at the windows, streetlamp stripes through the blinds, the glow of a phone. They are only lamps in Blender, but they tell every later step where the night comes from.</span>
+          </p>
+
+          <h4><span lang="es">La noche en el etalonaje</span><span lang="en">The night in the grade</span></h4>
+          <p>
+            <span lang="es">El blockout no es el aspecto final, y el vídeo generado tampoco. La noche se construye al final, en DaVinci Resolve Studio. Este barrido recorre las cuatro fases de un mismo plano: la vista de Blender, el render de referencia, la generación con Seedance 2.5 y el resultado etalonado. En el último fotograma casi todo se ha ido a negro. Solo sobreviven la luz del techo, los marcos de las puertas y la ventana cálida.</span>
+            <span lang="en">The blockout is not the final look, and neither is the generated video. The night is built last, in DaVinci Resolve Studio. This sweep goes through the four stages of a single shot: the Blender view, the reference render, the Seedance 2.5 generation and the graded result. In the final frame almost everything has gone to black. Only the ceiling light, the door frames and the warm window survive.</span>
+          </p>
+          <figure class="mo-fig wide">
+            <img src="making-of-01-etalonaje.gif" width="800" height="450" loading="lazy" alt="Un mismo plano del pasillo en cuatro fases: vista de Blender, render gris de referencia, vídeo generado con Seedance y resultado etalonado casi negro. / One hallway shot in four stages: Blender view, grey reference render, Seedance video and a nearly black graded result.">
+            <figcaption><span lang="es">Blender → referencia → Seedance 2.5 → DaVinci Resolve</span><span lang="en">Blender → reference → Seedance 2.5 → DaVinci Resolve</span></figcaption>
+          </figure>
+          <p>
+            <span lang="es">El aspecto que buscábamos: negros profundos y aplastados, paredes de un verde azulado frío, luz cálida solo donde hay una fuente real —la ventana, los reflejos del suelo— y el acabado blando y granulado de una grabación de móvil por la noche. Un guiño al terror de los años 90 de Wes Craven.</span>
+            <span lang="en">The look we were after: deep crushed blacks, cold blue-green walls, warm light only where there is a real source — the window, the reflections on the floor — and the soft, grainy finish of a phone recording at night. A nod to the 90s horror of Wes Craven.</span>
+          </p>
+        </article>
+
+        <article class="mo-ep" id="making-of-02">
+          <div class="code">MAKING_OF_02</div>
+          <h3><span lang="es">De la referencia al plano</span><span lang="en">From reference to shot</span></h3>
+          <p>
+            <span lang="es">Todos los planos de la serie siguen el mismo camino corto, de una cámara en Blender a un clip en la línea de tiempo.</span>
+            <span lang="en">Every shot of the series follows the same short path, from a camera in Blender to a clip on the timeline.</span>
+          </p>
+          <ol class="steps">
+            <li><span><b><span lang="es">Cámara</span><span lang="en">Camera</span></b><span lang="es">Se coloca una cámara dentro de la casa en Blender y se ensaya el movimiento: dónde empieza, dónde acaba y a qué ritmo avanza.</span><span lang="en">A camera is placed inside the Blender house and the move is rehearsed: where it starts, where it ends and how fast it travels.</span></span></li>
+            <li><span><b><span lang="es">Referencia</span><span lang="en">Reference</span></b><span lang="es">El movimiento se renderiza como un clip corto de referencia en gris. Lleva la distribución del espacio, el encuadre y el movimiento de cámara. No lleva aspecto.</span><span lang="en">The move is rendered as a short grey reference clip. It carries the layout of the space, the framing and the camera move. It carries no look.</span></span></li>
+            <li><span><b><span lang="es">Instrucciones</span><span lang="en">Prompt</span></b><span lang="es">Seedance 2.5, en Dreamina, recibe el clip de referencia, las imágenes de la escena y unas instrucciones escritas en inglés. Piden el pulso de un móvil en la mano y los sonidos reales de la habitación (pitido de grabación, clics, pasos, crujidos, roce de tela). Música, nunca.</span><span lang="en">Seedance 2.5, in Dreamina, receives the reference clip, the images of the scene and a written prompt in English. It asks for the shake of a hand-held phone and the real sounds of the room (recording beep, clicks, footsteps, creaks, cloth rustle). Never music.</span></span></li>
+            <li><span><b><span lang="es">Revisión</span><span lang="en">Review</span></b><span lang="es">Cada resultado se compara con el plano. Cuando algo falla, se refuerzan las referencias y se vuelve a generar.</span><span lang="en">Every result is checked against the plan. When something breaks, the references are tightened and the shot is generated again.</span></span></li>
+            <li><span><b><span lang="es">Montaje y color</span><span lang="en">Edit and grade</span></b><span lang="es">Los planos que sobreviven pasan a DaVinci Resolve Studio, donde se unen y se etalonan (ver MAKING_OF_01).</span><span lang="en">The shots that survive go to DaVinci Resolve Studio, where they are joined and graded (see MAKING_OF_01).</span></span></li>
+          </ol>
+          <p class="note">
+            <b><span lang="es">Nota de dirección</span><span lang="en">Director’s note</span></b>
+            <span lang="es">En el episodio 2 a ella se le veían los brazos y las manos fuera del edredón. Desde entonces, las referencias de la escena la muestran ya tapada, dormida bajo el edredón.</span>
+            <span lang="en">In episode 2 her arms and hands showed up outside the duvet. From then on, the scene references show her already tucked in, asleep under it.</span>
+          </p>
+        </article>
       </div>
     </div>
   </section>
