@@ -24,14 +24,14 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 36px; }
 body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-body);
   font-size: 19px;
   line-height: 1.55;
-  padding-block: 56px 0;
+  padding-block: calc(var(--hud, 92px) + 4px) 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   overflow-x: hidden;
@@ -55,7 +55,7 @@ html[data-lang="es"] span[lang="en"] { display: none; }
 /* REC bar */
 .hud {
   position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
   padding-top: calc(10px + env(safe-area-inset-top, 0px));
   padding-bottom: 10px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -75,6 +75,14 @@ html[data-lang="es"] span[lang="en"] { display: none; }
 }
 .lang button[aria-pressed="true"] { color: var(--fg); background: var(--blood); }
 .lang button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+/* section nav (inside the REC bar) */
+.nav { order: 3; flex: 0 0 100%; display: flex; flex-wrap: wrap; gap: 2px 20px; font-size: 20px; letter-spacing: .1em; text-transform: uppercase; }
+.nav a { color: var(--mute); text-decoration: none; padding: 6px 0 3px; border-bottom: 2px solid transparent; }
+.nav a:hover { color: var(--fg); }
+.nav a[aria-current="true"] { color: var(--fg); border-bottom-color: var(--blood); }
+.nav a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.nav .sep { color: var(--line); }
 
 /* hero */
 .hero { padding-block: clamp(28px, 6vw, 72px) 0; display: grid; gap: clamp(28px, 5vw, 64px); grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center; }
@@ -160,7 +168,7 @@ h3 { margin: 0; font-family: var(--font-display); font-weight: 700; text-transfo
 .files a:hover { color: var(--blood-soft); }
 .files a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
 .files li .s.ok { color: var(--blood-soft); }
-.mo-ep { margin-top: clamp(36px, 6vw, 64px); padding-top: clamp(28px, 5vw, 44px); border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+.mo-ep { margin-top: clamp(36px, 6vw, 64px); padding-top: clamp(28px, 5vw, 44px); border-top: 1px solid var(--line); scroll-margin-top: 12px; }
 .mo-ep .code { font-family: var(--font-osd); font-size: 21px; letter-spacing: .1em; color: var(--blood-soft); text-transform: uppercase; }
 .mo-ep h3 { margin-top: 6px; font-size: clamp(1.4rem, 3.6vw, 2.1rem); text-wrap: balance; }
 .mo-ep h4 { margin: 34px 0 0; font-family: var(--font-display); font-weight: 500; font-size: .8rem; letter-spacing: .3em; color: var(--blood-soft); text-transform: uppercase; }
@@ -189,6 +197,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
 }
 @media (max-width: 520px) {
   .hud { font-size: 20px; }
+  .nav { font-size: 17px; gap: 2px 14px; letter-spacing: .05em; }
   .hud .hide-s { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -212,6 +221,14 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
       <button type="button" data-set="es" aria-pressed="false">ES</button>
     </div>
   </div>
+  <nav class="nav" aria-label="Secciones / Sections">
+    <a href="#capitulos"><span lang="es">Capítulos</span><span lang="en">Episodes</span></a>
+    <a href="#herramientas"><span lang="es">Herramientas</span><span lang="en">Tools</span></a>
+    <a href="#making-of">Making of</a>
+    <a href="#making-of-01" class="hide-s">MO_01</a>
+    <a href="#making-of-02" class="hide-s">MO_02</a>
+    <a href="#making-of-03" class="hide-s">MO_03</a>
+  </nav>
 </div>
 
 <div class="wrap">
@@ -500,11 +517,10 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
             <li><span><b><span lang="es">El reproductor del móvil</span><span lang="en">The phone’s player</span></b><span lang="es">La interfaz de un móvil reproduciendo un vídeo se construye desde cero: fondos de color recortados con máscaras de rectángulo y elipse para el botón de pausa, la barra de progreso y el cursor; nodos de texto para el nombre del archivo (VID_0001, VID_0002, VID_0003…) y los tiempos; y fusiones animadas para que el cursor avance al ritmo del vídeo.</span><span lang="en">The interface of a phone playing a video back is built from scratch: color backgrounds cut with rectangle and ellipse masks for the pause button, the progress bar and the playhead; text nodes for the file name (VID_0001, VID_0002, VID_0003…) and the times; and animated merges so the playhead moves with the video.</span></span></li>
             <li><span><b><span lang="es">La mirada del móvil</span><span lang="en">The phone’s eye</span></b><span lang="es">Una cadena de pequeños ajustes da a la imagen el acabado blando y sobreprocesado de una cámara de móvil por la noche: una LUT nocturna, un levantamiento de las sombras, una reducción de ruido suave, un poco de nitidez y una viñeta.</span><span lang="en">A chain of small adjustments gives the image the soft, over-processed finish of a phone camera at night: a night LUT, lifted shadows, light noise reduction, a touch of sharpening and a vignette.</span></span></li>
             <li><span><b><span lang="es">Arreglos dentro del plano</span><span lang="en">Fixes inside the shot</span></b><span lang="es">Fusion también resuelve problemas. Igualar el color de un episodio con el anterior, aclarar una cara o, en Reflection, usar máscaras sobre la cabeza y el cuerpo del reflejo y una corrección de día a noche.</span><span lang="en">Fusion also solves problems. Matching the color of one episode to the one before, lifting a face or, in Reflection, using masks on the head and body of the reflection and a day-for-night correction.</span></span></li>
-            <li><span><b><span lang="es">Los mensajes del final</span><span lang="en">The messages at the end</span></b><span lang="es">Las tarjetas con las que se cierran los episodios son composiciones de Fusion independientes en la línea de tiempo: un fondo oscuro, textos que entran y salen con fusiones animadas, un brillo suave y grano de película por encima. También la tarjeta de créditos, con su propio brillo.</span><span lang="en">The cards that close the episodes are independent Fusion compositions on the timeline: a dark background, text that fades in and out with animated merges, a soft glow and film grain on top. The credit card too, with a glow of its own.</span></span></li>
           </ol>
           <p>
-            <span lang="es">Como cada capa es un elemento independiente, se puede cambiar un mensaje o ajustar un detalle del móvil sin volver a generar el plano.</span>
-            <span lang="en">Because every layer is an independent element, a message can be changed or a phone detail adjusted without generating the shot again.</span>
+            <span lang="es">Como cada capa es un elemento independiente, se puede ajustar cualquier detalle del móvil sin volver a generar el plano.</span>
+            <span lang="en">Because every layer is an independent element, any detail of the phone can be adjusted without generating the shot again.</span>
           </p>
         </article>
 
@@ -548,6 +564,31 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
       setLang(l);
     });
   }
+
+  var hud = document.querySelector(".hud");
+  function sizeHud() { root.style.setProperty("--hud", hud.offsetHeight + "px"); }
+  sizeHud();
+  window.addEventListener("resize", sizeHud);
+  window.addEventListener("load", sizeHud);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeHud);
+
+  var links = document.querySelectorAll(".nav a");
+  var targets = [];
+  for (var k = 0; k < links.length; k++) {
+    var t = document.getElementById(links[k].getAttribute("href").slice(1));
+    if (t) targets.push({ el: t, a: links[k] });
+  }
+  function mark() {
+    var y = window.scrollY + 130, cur = null;
+    for (var j = 0; j < targets.length; j++) {
+      if (targets[j].el.getBoundingClientRect().top + window.scrollY <= y) cur = targets[j].a;
+    }
+    for (var m = 0; m < links.length; m++) links[m].removeAttribute("aria-current");
+    if (cur) cur.setAttribute("aria-current", "true");
+  }
+  window.addEventListener("scroll", mark, { passive: true });
+  window.addEventListener("resize", mark);
+  mark();
 
   var el = document.getElementById("tc");
   var t0 = Date.now();
