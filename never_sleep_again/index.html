@@ -222,6 +222,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
     </div>
   </div>
   <nav class="nav" aria-label="Secciones / Sections">
+    <a href="#top"><span lang="es">Inicio</span><span lang="en">Home</span></a>
     <a href="#capitulos"><span lang="es">Capítulos</span><span lang="en">Episodes</span></a>
     <a href="#herramientas"><span lang="es">Herramientas</span><span lang="en">Tools</span></a>
     <a href="#making-of">Making of</a>
@@ -583,6 +584,7 @@ footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1e
     for (var j = 0; j < targets.length; j++) {
       if (targets[j].el.getBoundingClientRect().top + window.scrollY <= y) cur = targets[j].a;
     }
+    if (!cur) cur = links[0];
     for (var m = 0; m < links.length; m++) links[m].removeAttribute("aria-current");
     if (cur) cur.setAttribute("aria-current", "true");
   }
