@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Never Sleep Again</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=VT323&display=swap">
+<style>
+/* Layout concept: the poster is the page. Colors and type come from the cover (black, blood red, white spaced serif caps).
+   The page keeps a phone-recording REC bar on top; chapters are files in the camera roll; the empty making-of is a "no signal" tape. */
+:root {
+  --bg: #040404;
+  --bg-raised: #0b0809;
+  --fg: #ece8e4;
+  --mute: #9a8f8d;
+  --line: #231a1b;
+  --blood: #d3131c;
+  --blood-soft: #ff3b3f;
+  --font-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --font-body: "EB Garamond", Georgia, "Times New Roman", serif;
+  --font-osd: "VT323", "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.55;
+  padding-block: 56px 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+}
+.wrap { max-width: 1120px; margin-inline: auto; }
+
+/* language switch: one language visible at a time */
+span[lang="es"] { display: none; }
+html[data-lang="es"] span[lang="es"] { display: inline; }
+html[data-lang="es"] span[lang="en"] { display: none; }
+
+/* camera effects */
+.fx { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+.fx-vignette { background: radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(0,0,0,.6) 100%); }
+.fx-scan { background: repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 3px); }
+.fx-grain {
+  opacity: .09; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* REC bar */
+.hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  padding-bottom: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(var(--bg) 55%, transparent);
+  font-family: var(--font-osd); font-size: 22px; letter-spacing: .06em; line-height: 1;
+}
+.hud-l, .hud-r { display: flex; align-items: center; gap: 14px; }
+.rec { display: inline-flex; align-items: center; gap: 8px; color: var(--blood-soft); }
+.rec i { width: 11px; height: 11px; border-radius: 50%; background: var(--blood-soft); display: block; animation: blink 1.2s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.hud .tc { color: var(--fg); font-variant-numeric: tabular-nums; }
+.hud .dim { color: var(--mute); }
+.lang { display: inline-flex; border: 1px solid var(--line); }
+.lang button {
+  font: inherit; letter-spacing: .1em; color: var(--mute); background: transparent; border: 0; padding: 4px 10px 3px; cursor: pointer;
+}
+.lang button[aria-pressed="true"] { color: var(--fg); background: var(--blood); }
+.lang button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+/* hero */
+.hero { padding-block: clamp(28px, 6vw, 72px) 0; display: grid; gap: clamp(28px, 5vw, 64px); grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center; }
+.eyebrow { font-family: var(--font-display); font-weight: 500; font-size: .8rem; letter-spacing: .32em; color: var(--mute); text-transform: uppercase; }
+h1 {
+  margin: 18px 0 0; font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+  font-size: clamp(2.8rem, 8vw, 6.4rem); line-height: .95; letter-spacing: .04em; color: var(--blood);
+  text-shadow: 0 0 28px rgba(211,19,28,.55); text-wrap: balance;
+}
+.lede { max-width: 38ch; margin: 24px 0 0; font-size: clamp(1.2rem, 2.4vw, 1.45rem); font-style: italic; color: var(--fg); text-wrap: pretty; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 28px 0 0; padding: 0; list-style: none; font-family: var(--font-osd); font-size: 22px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+.facts b { color: var(--fg); font-weight: 400; }
+.poster { margin: 0; justify-self: center; width: 100%; max-width: 440px; }
+.poster img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 3; object-fit: cover; box-shadow: 0 0 80px rgba(211,19,28,.28); }
+
+/* sections */
+section { padding-block: clamp(56px, 8vw, 104px) 0; }
+.label { font-family: var(--font-display); font-weight: 500; font-size: .8rem; letter-spacing: .32em; color: var(--blood-soft); text-transform: uppercase; }
+h2 { margin: 8px 0 0; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: clamp(2rem, 5.5vw, 3.4rem); line-height: 1.05; letter-spacing: .06em; text-wrap: balance; }
+.intro { max-width: 56ch; margin: 16px 0 0; color: var(--mute); text-wrap: pretty; }
+
+/* chapters */
+.roll { margin-top: 36px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.ep { display: flex; flex-direction: column; min-width: 0; background: var(--bg-raised); border: 1px solid var(--line); }
+.frame {
+  position: relative; aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; border-bottom: 1px solid var(--line);
+  --lx: 30%; --ly: 40%;
+  background:
+    radial-gradient(circle at var(--lx) var(--ly), rgba(211,19,28,.16), transparent 48%),
+    linear-gradient(180deg, #0a0707, #020202);
+}
+.frame .num {
+  position: absolute; right: 14px; bottom: -10px; font-family: var(--font-display); font-weight: 900; font-size: clamp(4.4rem, 11vw, 6.6rem); line-height: 1;
+  color: transparent; -webkit-text-stroke: 1.5px rgba(236,232,228,.32);
+}
+.osd { position: absolute; left: 12px; right: 12px; z-index: 2; display: flex; justify-content: space-between; font-family: var(--font-osd); font-size: 18px; letter-spacing: .08em; line-height: 1; color: var(--fg); }
+.osd.top { top: 10px; }
+.osd.bottom { bottom: 10px; color: var(--mute); }
+.osd .r { color: var(--blood-soft); }
+.body { padding: 18px 18px 22px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.kicker { font-family: var(--font-display); font-weight: 500; font-size: .72rem; letter-spacing: .3em; color: var(--mute); text-transform: uppercase; }
+h3 { margin: 0; font-family: var(--font-display); font-weight: 700; text-transform: uppercase; font-size: 1.5rem; line-height: 1.1; letter-spacing: .06em; }
+.body p { margin: 8px 0 0; color: #cfc8c4; font-size: 1.05rem; text-wrap: pretty; }
+.watch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin-top: 16px; font-family: var(--font-osd); font-size: 21px; letter-spacing: .08em; text-transform: uppercase; }
+.watch .wl { color: var(--mute); }
+.watch a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--blood); padding-bottom: 1px; }
+.watch a:hover { color: var(--blood-soft); }
+.watch a:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+.watch.soon { color: var(--blood-soft); }
+.date { margin-top: auto; padding-top: 14px; font-family: var(--font-osd); font-size: 20px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+.ep.finale { grid-column: 1 / -1; border-color: var(--blood); }
+.ep.finale .frame { aspect-ratio: 21 / 9; }
+.ep.finale .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 57%; opacity: .85; }
+.ep.finale .frame::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,4,4,.85), transparent 60%); }
+.ep.finale .num { z-index: 2; }
+.ep.finale .date { color: var(--blood-soft); }
+.ep:nth-child(2) .frame { --lx: 65%; --ly: 55%; }
+.ep:nth-child(3) .frame { --lx: 20%; --ly: 70%; }
+.ep:nth-child(4) .frame { --lx: 75%; --ly: 30%; }
+.ep:nth-child(5) .frame { --lx: 50%; --ly: 15%; }
+.ep:nth-child(6) .frame { --lx: 35%; --ly: 60%; }
+
+/* tools */
+.tools { margin-top: 36px; display: grid; gap: 0 48px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.tool { min-width: 0; padding: 22px 0 26px; border-top: 1px solid var(--line); }
+.tool .role { font-family: var(--font-display); font-weight: 500; font-size: .72rem; letter-spacing: .3em; color: var(--blood-soft); text-transform: uppercase; }
+.tool h3 { margin-top: 6px; font-size: 1.4rem; }
+.tool p { margin: 8px 0 0; color: #cfc8c4; max-width: 44ch; font-size: 1.05rem; text-wrap: pretty; }
+
+/* making of */
+.mo { margin-top: 36px; border: 1px solid var(--line); background: var(--bg-raised); }
+.tape { height: 22px; background: repeating-linear-gradient(-45deg, var(--blood) 0 18px, #0a0a0a 18px 36px); }
+.mo-in { padding: clamp(22px, 4vw, 40px); }
+.nosignal { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(1.5rem, 4.5vw, 2.4rem); line-height: 1.1; letter-spacing: .06em; margin: 0; }
+.nosignal em { font-style: normal; color: var(--blood-soft); }
+.mo-in p { max-width: 54ch; margin: 12px 0 0; color: #cfc8c4; text-wrap: pretty; }
+.mo-in .nosignal { margin: 0; }
+.files { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.files li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding: 12px 0; border-top: 1px solid var(--line); font-family: var(--font-osd); font-size: 21px; letter-spacing: .06em; text-transform: uppercase; }
+.files li .t { color: var(--fg); min-width: 0; overflow-wrap: anywhere; }
+.files li .s { color: var(--mute); }
+.load { margin-top: 24px; height: 6px; background: var(--line); overflow: hidden; }
+.load i { display: block; height: 100%; width: 34%; background: var(--blood); animation: load 3.2s ease-in-out infinite alternate; }
+@keyframes load { from { transform: translateX(-10%); } to { transform: translateX(190%); } }
+
+/* footer */
+footer { margin-top: clamp(56px, 8vw, 104px); padding-block: 28px 40px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 1rem; color: var(--mute); }
+footer b { color: var(--fg); font-weight: 500; }
+footer .end { font-family: var(--font-osd); font-size: 22px; letter-spacing: .1em; text-transform: uppercase; }
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .poster { order: -1; max-width: 360px; }
+}
+@media (max-width: 520px) {
+  .hud { font-size: 20px; }
+  .hud .hide-s { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rec i, .load i { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="fx fx-vignette" aria-hidden="true"></div>
+<div class="fx fx-scan" aria-hidden="true"></div>
+<div class="fx fx-grain" aria-hidden="true"></div>
+
+<div class="hud">
+  <div class="hud-l" aria-hidden="true"><span class="rec"><i></i>REC</span><span class="tc" id="tc">00:00:00</span></div>
+  <div class="hud-r">
+    <span class="dim hide-s" aria-hidden="true">16:9</span>
+    <div class="lang" role="group" aria-label="Idioma / Language">
+      <button type="button" data-set="en" aria-pressed="true">EN</button>
+      <button type="button" data-set="es" aria-pressed="false">ES</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow"><span lang="es">Una serie episódica de Raül Torres</span><span lang="en">An episodic series by Raül Torres</span></div>
+      <h1>Never Sleep Again</h1>
+      <p class="lede">
+        <span lang="es">Una chica duerme. Alguien recorre su casa con el móvil en la mano y lo graba todo. Ella no se entera hasta que ve los vídeos.</span>
+        <span lang="en">A girl sleeps. Someone walks through her house with a phone in hand, recording everything. She finds out only when she watches the videos.</span>
+      </p>
+      <ul class="facts">
+        <li><span lang="es"><b>7</b> episodios</span><span lang="en"><b>7</b> episodes</span></li>
+        <li><span lang="es">Episodios de <b>29 a 42 s</b> · final de <b>2:08</b></span><span lang="en">Episodes of <b>29–42 s</b> · <b>2:08</b> finale</span></li>
+        <li><span lang="es">Del <b>25</b> al <b>31</b> de octubre</span><span lang="en">October <b>25</b> to <b>31</b></span></li>
+        <li><span lang="es">En <b>Instagram</b>, <b>LinkedIn</b>, <b>TikTok</b> y <b>X</b></span><span lang="en">On <b>Instagram</b>, <b>LinkedIn</b>, <b>TikTok</b> and <b>X</b></span></li>
+      </ul>
+    </div>
+    <figure class="poster">
+      <img src="cover.jpg" width="1000" height="1500" alt="Cartel de Never Sleep Again: una chica aterrorizada se tapa la boca mientras mira el móvil en la oscuridad. / Never Sleep Again poster: a terrified girl covers her mouth while looking at her phone in the dark.">
+    </figure>
+  </header>
+
+  <section id="capitulos">
+    <div class="label"><span lang="es">Camera roll</span><span lang="en">Camera roll</span></div>
+    <h2><span lang="es">Los capítulos</span><span lang="en">The episodes</span></h2>
+    <p class="intro">
+      <span lang="es">Una serie de siete episodios, seis de unos 30 segundos y un final de 2:08 que llega la noche de Halloween.</span>
+      <span lang="en">A seven-episode series: six episodes of roughly 30 seconds and a 2:08 finale on Halloween night.</span>
+    </p>
+
+    <div class="roll">
+      <article class="ep">
+        <div class="frame">
+          <div class="osd top"><span class="r">● REC</span><span>0:42</span></div>
+          <div class="num">01</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 01</span><span lang="en">Episode 01</span></div>
+          <h3>Awake</h3>
+          <p>
+            <span lang="es">Ella se despierta, mira el móvil… y grita.</span>
+            <span lang="en">She wakes up, looks at her phone… and screams.</span>
+          </p>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/p/De7gR3_BrwW/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520207641034465281/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7700696852772982038" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2114446638894989545" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="date"><span lang="es">Domingo 25 oct</span><span lang="en">Sunday, Oct 25</span></div>
+        </div>
+      </article>
+
+      <article class="ep">
+        <div class="frame">
+          <div class="osd top"><span class="r">● REC</span><span>0:32</span></div>
+          <div class="num">02</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 02</span><span lang="en">Episode 02</span></div>
+          <h3>Murmur</h3>
+          <p>
+            <span lang="es">Ella duerme… pero alguien recorre la casa.</span>
+            <span lang="en">She sleeps… but someone is walking through the house.</span>
+          </p>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/De-Kkf_hL0T/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520581046359232512/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701080526517570838" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115167608659931463" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="date"><span lang="es">Lunes 26 oct</span><span lang="en">Monday, Oct 26</span></div>
+        </div>
+      </article>
+
+      <article class="ep">
+        <div class="frame">
+          <div class="osd top"><span class="r">● REC</span><span>0:29</span></div>
+          <div class="num">03</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 03</span><span lang="en">Episode 03</span></div>
+          <h3>Unlock</h3>
+          <p>
+            <span lang="es">Ella duerme… y la cámara se acerca a la cama.</span>
+            <span lang="en">She sleeps… and the camera moves closer to the bed.</span>
+          </p>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfAmhPmBNoK/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7520923264865488896/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701425797453860099" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115167942933447142" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="date"><span lang="es">Martes 27 oct</span><span lang="en">Tuesday, Oct 27</span></div>
+        </div>
+      </article>
+
+      <article class="ep">
+        <div class="frame">
+          <div class="osd top"><span class="r">● REC</span><span>0:31</span></div>
+          <div class="num">04</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 04</span><span lang="en">Episode 04</span></div>
+          <h3>Breath</h3>
+          <p>
+            <span lang="es">Ella duerme… pero se oye una respiración que no es la suya.</span>
+            <span lang="en">She sleeps… but you can hear a breath that is not hers.</span>
+          </p>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfDSy9DBvUf/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7521484406029512704/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7701819517470575894" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115695499391242283" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="date"><span lang="es">Miércoles 28 oct</span><span lang="en">Wednesday, Oct 28</span></div>
+        </div>
+      </article>
+
+      <article class="ep">
+        <div class="frame">
+          <div class="osd top"><span class="r">● REC</span><span>0:36</span></div>
+          <div class="num">05</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 05</span><span lang="en">Episode 05</span></div>
+          <h3>Reflection</h3>
+          <p>
+            <span lang="es">Ella duerme… y el espejo sobre la cama lo ve todo.</span>
+            <span lang="en">She sleeps… and the mirror above her bed sees everything.</span>
+          </p>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfF2-J6hUcN/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7521668183632580609/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7702188523142515990" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2115903762053407114" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="date"><span lang="es">Jueves 29 oct</span><span lang="en">Thursday, Oct 29</span></div>
+        </div>
+      </article>
+
+      <article class="ep">
+        <div class="frame">
+          <div class="osd top"><span class="r">● REC</span><span>0:36</span></div>
+          <div class="num">06</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 06</span><span lang="en">Episode 06</span></div>
+          <h3>Already Inside</h3>
+          <p>
+            <span lang="es">Ella duerme… pero alguien ya está dentro.</span>
+            <span lang="en">She sleeps… but someone is already inside.</span>
+          </p>
+          <div class="watch"><span class="wl"><span lang="en">Watch on</span><span lang="es">Ver en</span></span><a href="https://www.instagram.com/reel/DfIh2fGh60k/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.linkedin.com/feed/update/urn:li:activity:7522044001458253824/" target="_blank" rel="noopener noreferrer">LinkedIn</a><a href="https://www.tiktok.com/@raul_torres_ia/video/7702573292753849622" target="_blank" rel="noopener noreferrer">TikTok</a><a href="https://x.com/raul_torres_ia/status/2116279226085081490" target="_blank" rel="noopener noreferrer">X</a></div>
+          <div class="date"><span lang="es">Viernes 30 oct</span><span lang="en">Friday, Oct 30</span></div>
+        </div>
+      </article>
+
+      <article class="ep finale">
+        <div class="frame">
+          <img src="prime-time.jpg" alt="" loading="lazy">
+          <div class="osd top"><span class="r">● REC</span><span>2:08</span></div>
+          <div class="num">07</div>
+        </div>
+        <div class="body">
+          <div class="kicker"><span lang="es">Episodio 07 · Capítulo final</span><span lang="en">Episode 07 · Final episode</span></div>
+          <h3>Prime Time</h3>
+          <p>
+            <span lang="es">En la noche de Halloween descubriremos por fin la verdad. El gran final. ¡No te lo pierdas!</span>
+            <span lang="en">On Halloween night, we finally discover the truth. The grand finale. Don’t miss it!</span>
+          </p>
+          <div class="watch soon"><span lang="en">Halloween Night · Coming soon</span><span lang="es">Noche de Halloween · Próximamente</span></div>
+          <div class="date"><span lang="es">Sábado 31 oct · Noche de Halloween</span><span lang="en">Saturday, Oct 31 · Halloween Night</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="herramientas">
+    <div class="label"><span lang="es">Equipo</span><span lang="en">Toolkit</span></div>
+    <h2><span lang="es">Las herramientas</span><span lang="en">The tools</span></h2>
+    <p class="intro">
+      <span lang="es">La serie está hecha con inteligencia artificial y con 3D, bajo una dirección humana que decide cada plano. Esto es lo que hay detrás.</span>
+      <span lang="en">The series is made with artificial intelligence and 3D, under human direction that decides every shot. This is what sits behind it.</span>
+    </p>
+
+    <div class="tools">
+      <div class="tool">
+        <div class="role"><span lang="es">Escenario</span><span lang="en">Set</span></div>
+        <h3>Blender</h3>
+        <p>
+          <span lang="es">La casa está recreada entera en 3D. Cada plano nace de una cámara colocada dentro de ese espacio, así la casa es siempre la misma.</span>
+          <span lang="en">The whole house is rebuilt in 3D. Every shot starts from a camera placed inside that space, so the house is always the same house.</span>
+        </p>
+      </div>
+      <div class="tool">
+        <div class="role"><span lang="es">Imagen en movimiento</span><span lang="en">Moving image</span></div>
+        <h3>Seedance 2.5 · Dreamina</h3>
+        <p>
+          <span lang="es">Genera los vídeos a partir de las referencias de cada escena. Aquí se le da vida a la luz, a los movimientos de cámara y al pulso del móvil.</span>
+          <span lang="en">Generates the videos from each scene's references. This is where the light, the camera moves and the shake of the phone come to life.</span>
+        </p>
+      </div>
+      <div class="tool">
+        <div class="role"><span lang="es">Montaje y color</span><span lang="en">Edit and color</span></div>
+        <h3>DaVinci Resolve Studio</h3>
+        <p>
+          <span lang="es">Une los planos y construye la noche: etalonaje oscuro, negros potenciados y un acabado frío y sucio de grabación nocturna.</span>
+          <span lang="en">Joins the shots and builds the night: a dark grade, deep crushed blacks and the cold, grainy look of a nighttime recording.</span>
+        </p>
+      </div>
+      <div class="tool">
+        <div class="role"><span lang="es">Apoyo creativo</span><span lang="en">Creative support</span></div>
+        <h3>Claude</h3>
+        <p>
+          <span lang="es">Conectado a Blender y a Dreamina, ayuda a preparar las referencias y a escribir las instrucciones de cada plano.</span>
+          <span lang="en">Connected to Blender and Dreamina, it helps prepare the references and write the instructions for each shot.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="making-of">
+    <div class="label"><span lang="es">Detrás de cámara</span><span lang="en">Behind the camera</span></div>
+    <h2>Making of</h2>
+    <div class="mo">
+      <div class="tape" aria-hidden="true"></div>
+      <div class="mo-in">
+        <p class="nosignal"><span lang="es">Sin señal. <em>En construcción.</em></span><span lang="en">No signal. <em>Under construction.</em></span></p>
+        <p>
+          <span lang="es">Estamos montando el cómo se hizo: la casa en 3D, el paso de la referencia al plano y el trabajo de color. Se publicará aquí cuando termine la serie.</span>
+          <span lang="en">We are putting together how it was made: the 3D house, the step from reference to shot, and the color work. It will be published here once the series ends.</span>
+        </p>
+        <ul class="files">
+          <li><span class="t"><span lang="es">MAKING_OF_01 · La casa en Blender</span><span lang="en">MAKING_OF_01 · The house in Blender</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
+          <li><span class="t"><span lang="es">MAKING_OF_02 · De la referencia al plano</span><span lang="en">MAKING_OF_02 · From reference to shot</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
+          <li><span class="t"><span lang="es">MAKING_OF_03 · La noche en el etalonaje</span><span lang="en">MAKING_OF_03 · Building the night in the grade</span></span><span class="s"><span lang="es">Próximamente</span><span lang="en">Coming soon</span></span></li>
+        </ul>
+        <div class="load" aria-hidden="true"><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <b>Never Sleep Again</b> ·
+      <span lang="es">Webserie creada por Raül Torres con herramientas de inteligencia artificial bajo dirección humana.</span>
+      <span lang="en">Web series created by Raül Torres with artificial intelligence tools under human direction.</span>
+    </div>
+    <div>
+      <span lang="es">Agradecimiento especial a Dreamina AI y a su Partner Program por hacer posible explorar y crear esta serie impulsada por IA.</span>
+      <span lang="en">Special thanks to Dreamina AI and its Partner Program for making it possible to explore and create this kind of AI-driven series.</span>
+    </div>
+    <div class="end">End of recording</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll(".lang button");
+  function setLang(l) {
+    root.setAttribute("data-lang", l);
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute("aria-pressed", buttons[i].getAttribute("data-set") === l ? "true" : "false");
+    }
+  }
+  setLang("en");
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener("click", function () {
+      var l = this.getAttribute("data-set");
+      setLang(l);
+    });
+  }
+
+  var el = document.getElementById("tc");
+  var t0 = Date.now();
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function tick() {
+    var s = Math.floor((Date.now() - t0) / 1000);
+    el.textContent = pad(Math.floor(s / 3600)) + ":" + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60);
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+
+</body>
+</html>
