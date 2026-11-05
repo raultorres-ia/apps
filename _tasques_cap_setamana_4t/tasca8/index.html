@@ -36,6 +36,10 @@ main{max-width:1120px;margin:auto;padding:20px clamp(14px,4vw,48px) 42px}
 details{margin-top:18px;border:1px solid var(--line);border-radius:18px;background:#fffdf9;padding:12px 16px}summary{font-weight:850;color:#422c72;cursor:pointer}details ul{padding-left:20px;margin:.7em 0 0}details li+li{margin-top:.3em}.footer{margin-top:20px;color:#594875;font-size:.85rem}
 @media(max-width:700px){.route{grid-template-columns:repeat(3,1fr)}.hero{grid-template-columns:1fr .55fr;min-height:0}}
 @media(max-width:460px){.hero{grid-template-columns:1fr;padding:22px;gap:6px}.hero svg{height:125px;width:100%;margin-top:5px}.route{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.credits{margin-top:15px;padding:15px 0 0;border-top:1px solid var(--line);color:#594875;font-size:.9rem;overflow-wrap:anywhere}
+.credits h2{margin:0;font-size:1rem;color:#392168}
+.credits p{margin:.45em 0}
+.credits a{color:#52339e}
 </style>
 </head>
 <body><main id="pericot-fires-euros">
@@ -82,7 +86,16 @@ details{margin-top:18px;border:1px solid var(--line);border-radius:18px;backgrou
     <li>Per calcular el canvi, resta el preu total dels diners amb què pagues.</li>
   </ul>
 </details>
-<footer class="footer"><span>Tasca 9 · Escola Pericot</span><span>Preus inventats per jugar i practicar</span></footer>
+<footer>
+  <div class="footer"><span>Tasca 9 · Escola Pericot</span><span>Preus inventats per jugar i practicar</span></div>
+  <section class="credits" aria-labelledby="credits-title">
+    <h2 id="credits-title">Els euros a les Fires</h2>
+    <p>© 2026 Raül Torres</p>
+    <p>El codi d'aquesta aplicació està disponible sota la llicència AGPL v3. Consulteu el text complet a <a href="https://www.gnu.org/licenses/agpl-3.0.html">https://www.gnu.org/licenses/agpl-3.0.html</a>.</p>
+    <p>Els continguts educatius (textos, exercicis, vídeos i imatges) tenen la llicència CC BY-SA 4.0. Consulteu el text complet a <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca">https://creativecommons.org/licenses/by-sa/4.0/deed.ca</a>.</p>
+    <p>Els materials de tercers inclosos conserven la seva pròpia llicència, indicada al costat de cadascun.</p>
+  </section>
+</footer>
 </main>
 <script>
 (() => {
