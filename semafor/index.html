@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ca">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Semàfor de soroll</title>
+<style>
+* { box-sizing: border-box }
+:root { font-family: 'Trebuchet MS', system-ui, sans-serif; color: #202a42; background: #f8f5ed }
+body { margin: 0; padding: clamp(16px, 4vw, 54px) }
+main { max-width: 1050px; margin: auto }
+h1 { font-size: clamp(2.25rem, 6vw, 4.3rem); letter-spacing: -.06em; margin: 0 0 22px; line-height: 1 }
+h2 { font-size: 1.2rem; margin: 0 0 16px }
+p { margin: 0 }
+.layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 20px }
+.stage { --accent: #ccd8fa; min-height: 460px; display: grid; align-items: center; grid-template-columns: auto 1fr; gap: clamp(16px, 4vw, 45px); border-radius: 30px; background: #202a42; color: white; padding: clamp(18px, 4vw, 46px) }
+.stage[data-state="green"] { --accent: #8cf0b3 }
+.stage[data-state="amber"] { --accent: #ffda78 }
+.stage[data-state="red"] { --accent: #ff9b99 }
+.signal { display: grid; gap: 14px; background: #151e31; border: 2px solid #45516d; border-radius: 100px; padding: 14px }
+.lamp { width: clamp(50px, 9vw, 98px); aspect-ratio: 1; border-radius: 50%; background: #333e56; border: 3px solid #48546e }
+[data-state="red"] .red, [data-state="amber"] .amber, [data-state="green"] .green { background: var(--accent); border-color: white; box-shadow: 0 0 26px var(--accent) }
+.readout { min-width: 0 }
+#status { color: var(--accent); font-weight: 900; font-size: clamp(1.65rem, 4.8vw, 3.5rem); line-height: 1.05; margin-bottom: 18px }
+meter { display: block; width: 100%; height: 24px; accent-color: var(--accent); margin: 4px 0 28px }
+meter::-webkit-meter-optimum-value { background: var(--accent); border-radius: 20px }
+meter::-moz-meter-bar { background: var(--accent); border-radius: 20px }
+.count { font-weight: 900; color: #ffb4bf; font-size: clamp(1.25rem, 3.5vw, 2.25rem); margin-bottom: 6px }
+.hearts { display: flex; flex-wrap: wrap; gap: 3px 8px; line-height: 1; font-size: 1.45rem; color: #ffb4bf }
+.lost { color: #8893ad }
+aside { background: #fff; border: 1px solid #e4dfd3; border-radius: 30px; padding: clamp(20px, 3vw, 34px); display: grid; align-content: start; gap: 18px }
+label { font-weight: bold }
+input[type="range"] { width: 100%; accent-color: #4056b6; margin: 10px 0 }
+.hint { font-size: .9rem; color: #505a70; line-height: 1.45 }
+.stepper { display: flex; align-items: center; gap: 14px; margin-top: 8px }
+#target { min-width: 2ch; text-align: center; font-size: 1.35rem; font-weight: bold }
+button { border: 0; border-radius: 12px; padding: 12px 16px; min-height: 44px; font: inherit; font-weight: bold; cursor: pointer; background: #eff1fa; color: #25345b }
+button:disabled { opacity: .5; cursor: default }
+button:focus-visible, input:focus-visible { outline: 3px solid #4056b6; outline-offset: 3px }
+#toggle { background: #32469c; color: #fff; width: 100% }
+#reset { width: 100%; margin-top: 8px }
+#fullscreen { width: 100% }
+#message:empty { display: none }
+.stage:fullscreen { width: 100%; height: 100%; min-height: 0; overflow: auto; border-radius: 0; grid-template-columns: auto minmax(0, max-content); justify-content: center; gap: clamp(18px, 7vw, 110px) }
+.stage:fullscreen .lamp { width: clamp(38px, min(23vw, 22vh), 200px) }
+.stage:fullscreen .count { font-size: clamp(1.3rem, 5vw, 4.5rem) }
+.stage:fullscreen .hearts { max-width: 12em; font-size: clamp(1.3rem, 4.5vw, 3.5rem) }
+.stage:fullscreen #status,
+.stage:fullscreen label[for="noise"],
+.stage:fullscreen #noise { display: none }
+@media (max-width: 720px) { .layout { grid-template-columns: 1fr } .stage { min-height: 0 } }
+</style>
+<main>
+  <h1>Semàfor de soroll</h1>
+  <div class="layout">
+    <section class="stage" id="stage" aria-label="Semàfor">
+      <div class="signal" aria-hidden="true">
+        <div class="lamp red"></div>
+        <div class="lamp amber"></div>
+        <div class="lamp green"></div>
+      </div>
+      <div class="readout">
+        <p id="status" role="status">Semàfor aturat</p>
+        <label for="noise">Nivell de soroll</label>
+        <meter id="noise" min="0" max="100" value="0"></meter>
+        <p class="count" id="count" aria-live="polite"></p>
+        <div class="hearts" id="hearts" aria-hidden="true"></div>
+      </div>
+    </section>
+    <aside aria-label="Comandaments">
+      <div>
+        <h2>Comandaments</h2>
+        <button id="toggle" type="button">Activa el micròfon</button>
+      </div>
+      <div>
+        <label for="sensitivity">Sensibilitat · <output id="sensitivityValue" for="sensitivity">50</output>%</label>
+        <input id="sensitivity" type="range" min="0" max="100" value="50" aria-describedby="sensitivityHint">
+        <p class="hint" id="sensitivityHint">Amb més sensibilitat, el semàfor es posa vermell amb menys soroll.</p>
+      </div>
+      <div>
+        <strong id="targetLabel">Vides inicials</strong>
+        <div class="stepper" role="group" aria-labelledby="targetLabel">
+          <button id="less" type="button" aria-label="Treu una vida inicial">−</button>
+          <output id="target" aria-live="polite"></output>
+          <button id="more" type="button" aria-label="Afegeix una vida inicial">+</button>
+        </div>
+      </div>
+      <div>
+        <p class="hint">Cada vegada que s’encén el vermell, sona un avís i la classe perd una vida.</p>
+        <button id="reset" type="button">Reinicia les vides</button>
+      </div>
+      <div>
+        <button id="fullscreen" type="button">Pantalla completa</button>
+        <p id="fullscreenMessage" class="hint" role="status"></p>
+      </div>
+      <p id="message" class="hint" role="status"></p>
+    </aside>
+  </div>
+</main>
+<script>
+'use strict';
+const get = id => document.getElementById(id);
+const stage = get('stage');
+const statusText = get('status');
+const meter = get('noise');
+const sensitivity = get('sensitivity');
+const toggle = get('toggle');
+const message = get('message');
+const fullscreen = get('fullscreen');
+const fullscreenMessage = get('fullscreenMessage');
+const labels = { idle: 'Semàfor aturat', green: 'Tot bé!', amber: 'Abaixem la veu', red: 'Massa soroll!' };
+let target = 5;
+let lives = target;
+let state = 'idle';
+let session;
+let starting = false;
+
+function renderLives() {
+  get('count').textContent = lives === 1 ? '1 vida restant' : lives + ' vides restants';
+  get('target').value = target;
+  get('less').disabled = target === 1;
+  get('more').disabled = target === 20;
+  get('hearts').replaceChildren(...Array.from({ length: target }, (_, index) => {
+    const heart = document.createElement('span');
+    heart.textContent = index < lives ? '♥' : '♡';
+    heart.classList.toggle('lost', index >= lives);
+    return heart;
+  }));
+}
+
+function updateTarget(change) {
+  target += change;
+  lives = Math.min(target, Math.max(0, lives + change));
+  renderLives();
+}
+
+function beep(context) {
+  const tone = context.createOscillator();
+  const volume = context.createGain();
+  const now = context.currentTime;
+  tone.frequency.value = 740;
+  volume.gain.setValueAtTime(0, now);
+  volume.gain.linearRampToValueAtTime(.17, now + .025);
+  volume.gain.exponentialRampToValueAtTime(.001, now + .28);
+  tone.connect(volume).connect(context.destination);
+  tone.start(now);
+  tone.stop(now + .29);
+}
+
+function showState(next) {
+  if (next === state) return;
+  state = next;
+  stage.dataset.state = next;
+  statusText.textContent = labels[next];
+  if (next === 'red') {
+    lives = Math.max(0, lives - 1);
+    renderLives();
+    beep(session.context);
+  }
+}
+
+function sample(active, time) {
+  active.frame = requestAnimationFrame(next => sample(active, next));
+  if (time - active.lastSample < 45) return;
+  active.lastSample = time;
+  active.analyser.getFloatTimeDomainData(active.samples);
+  let squares = 0;
+  for (const value of active.samples) squares += value * value;
+  const rms = Math.sqrt(squares / active.samples.length);
+  active.level = .55 * active.level + .45 * rms;
+  const limit = .18 * Math.pow(.075, Number(sensitivity.value) / 100);
+  const ratio = active.level / limit;
+  meter.value = Math.min(100, ratio * 80);
+  if (ratio >= 1) {
+    if (active.loudSince === null) active.loudSince = time;
+  } else {
+    active.loudSince = null;
+  }
+  if (state === 'red' && ratio >= .80) return;
+  if (active.loudSince !== null && time - active.loudSince >= 180) {
+    showState('red');
+  } else {
+    showState(ratio >= .62 ? 'amber' : 'green');
+  }
+}
+
+function stop() {
+  if (!session) return;
+  cancelAnimationFrame(session.frame);
+  session.stream.getTracks().forEach(track => track.stop());
+  session.context.close().catch(() => {});
+  session = null;
+  meter.value = 0;
+  showState('idle');
+  toggle.textContent = 'Activa el micròfon';
+}
+
+async function start() {
+  if (session) {
+    stop();
+    return;
+  }
+  if (starting) return;
+  if (!navigator.mediaDevices?.getUserMedia || !window.AudioContext) {
+    message.textContent = 'Obre l’app en un navegador compatible que permeti accedir al micròfon.';
+    return;
+  }
+  starting = true;
+  toggle.disabled = true;
+  message.textContent = 'Esperant permís per fer servir el micròfon…';
+  let context;
+  let stream;
+  try {
+    context = new AudioContext();
+    await context.resume();
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { autoGainControl: false, noiseSuppression: false, echoCancellation: true }
+    });
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 2048;
+    context.createMediaStreamSource(stream).connect(analyser);
+    session = { context, stream, analyser, samples: new Float32Array(analyser.fftSize),
+      level: 0, lastSample: 0, loudSince: null, frame: 0 };
+    const active = session;
+    stream.getAudioTracks()[0].addEventListener('ended', () => {
+      if (session !== active) return;
+      stop();
+      message.textContent = 'El micròfon s’ha desconnectat.';
+    });
+    active.frame = requestAnimationFrame(time => sample(active, time));
+    showState('green');
+    toggle.textContent = 'Atura el micròfon';
+    message.textContent = '';
+  } catch (error) {
+    stream?.getTracks().forEach(track => track.stop());
+    if (context) context.close().catch(() => {});
+    message.textContent = error.name === 'NotAllowedError'
+      ? 'Permet l’accés al micròfon des del navegador i torna-ho a provar.'
+      : 'No s’ha pogut obrir el micròfon. Comprova que estigui connectat.';
+  } finally {
+    starting = false;
+    toggle.disabled = false;
+  }
+}
+
+get('less').addEventListener('click', () => updateTarget(-1));
+get('more').addEventListener('click', () => updateTarget(1));
+get('reset').addEventListener('click', () => {
+  lives = target;
+  renderLives();
+});
+sensitivity.addEventListener('input', () => { get('sensitivityValue').value = sensitivity.value; });
+toggle.addEventListener('click', start);
+fullscreen.addEventListener('click', async () => {
+  fullscreenMessage.textContent = '';
+  try {
+    await stage.requestFullscreen();
+  } catch {
+    fullscreenMessage.textContent = 'No s’ha pogut activar la pantalla completa. Prova d’obrir l’app en una pestanya pròpia.';
+  }
+});
+window.addEventListener('pagehide', stop);
+renderLives();
+</script>
+</html>
