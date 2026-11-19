@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L'Aventura de les Coordenades · 4t de Primària</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Decorative Floating Background Elements -->
+  <div class="bg-decor" aria-hidden="true">
+    <span class="float-icon i1">🧭</span>
+    <span class="float-icon i2">🗺️</span>
+    <span class="float-icon i3">⭐</span>
+    <span class="float-icon i4">⛵</span>
+    <span class="float-icon i5">🚀</span>
+  </div>
+
+  <!-- Top Header & Scoreboard -->
+  <header class="app-header">
+    <div class="brand-block">
+      <div class="avatar-picker" title="Clica per canviar d'explorador/a" id="avatarBtn" role="button" tabindex="0">
+        <span id="currentAvatar">🏴‍☠️</span>
+      </div>
+      <div>
+        <h1>L'Aventura de les Coordenades</h1>
+        <p class="subtitle">Matemàtiques · 4t de Primària · Espai i Forma</p>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-pill stars-pill" title="Punts acumulats">
+        <span class="stat-emoji">⭐</span>
+        <div>
+          <span class="stat-label">Punts</span>
+          <strong id="scoreValue">0</strong>
+        </div>
+      </div>
+
+      <div class="stat-pill streak-pill" title="Encerts seguits">
+        <span class="stat-emoji">🔥</span>
+        <div>
+          <span class="stat-label">Ratxa</span>
+          <strong id="streakValue">0</strong>
+        </div>
+      </div>
+
+      <div class="stat-pill level-pill" title="Ranc d'explorador">
+        <span class="stat-emoji" id="rankEmoji">🥉</span>
+        <div>
+          <span class="stat-label">Rang</span>
+          <strong id="rankName">Grumet</strong>
+        </div>
+      </div>
+
+      <button id="soundToggle" class="icon-btn" title="Activa o desactiva els efectes de so" aria-label="So">
+        🔊
+      </button>
+    </div>
+  </header>
+
+  <!-- Mnemonic Tip Banner -->
+  <section class="tip-banner" aria-label="Truc per recordar">
+    <div class="tip-icon">💡</div>
+    <div class="tip-text">
+      <strong>El truc de l'explorador/a:</strong> En un punt <code>(X, Y)</code>, sempre ens movem
+      <span class="badge-x">1r en HORITZONTAL ➡️ (X)</span> i després
+      <span class="badge-y">2n en VERTICAL ⬆️ (Y)</span>.
+      <em>«Primer caminem per terra i després ens enfilem a l'arbre!»</em>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="mode-nav" aria-label="Modes de joc">
+    <button class="mode-tab active" data-mode="explora">
+      <span class="tab-icon">🔍</span>
+      <span>1. Explora</span>
+    </button>
+    <button class="mode-tab" data-mode="tresor">
+      <span class="tab-icon">🏴‍☠️</span>
+      <span>2. Caça del Tresor</span>
+    </button>
+    <button class="mode-tab" data-mode="dibuix">
+      <span class="tab-icon">🎨</span>
+      <span>3. Dibuix Secret</span>
+    </button>
+    <button class="mode-tab" data-mode="robot">
+      <span class="tab-icon">🤖</span>
+      <span>4. Robot Explorador</span>
+    </button>
+    <button class="mode-tab" data-mode="flota">
+      <span class="tab-icon">🚢</span>
+      <span>5. Radar d'Illes</span>
+    </button>
+  </nav>
+
+  <!-- Main Interactive Workspace -->
+  <main class="workspace">
+
+    <!-- ==================== MODE 1: EXPLORA LA QUADRÍCULA ==================== -->
+    <section id="mode-explora" class="mode-panel active">
+      <div class="panel-layout">
+        <div class="canvas-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">🗺️ Mapa Interactiu d'Entrenament</span>
+            <div class="segmented-control">
+              <button class="seg-btn active" id="expTypePoints">Punts (X, Y)</button>
+              <button class="seg-btn" id="expTypeCells">Caselles (A-H, 1-8)</button>
+            </div>
+          </div>
+          <div class="svg-container" id="exploreGridContainer"></div>
+        </div>
+
+        <div class="side-card">
+          <h2>🔍 Com funcionen les coordenades?</h2>
+          <p class="side-desc" id="exploreIntroText">
+            Clica qualsevol punt d'intersecció de la quadrícula i observa com s'hi arriba pas a pas!
+          </p>
+
+          <div class="coord-readout-box">
+            <div class="coord-big" id="exploreCoordDisplay">(3, 4)</div>
+            <div class="coord-steps">
+              <div class="step-row step-x">
+                <span class="step-tag">Pas 1 ➡️</span>
+                <span id="exploreStepX">Avança <strong>3</strong> passos a la dreta per l'eix horitzontal (X).</span>
+              </div>
+              <div class="step-row step-y">
+                <span class="step-tag">Pas 2 ⬆️</span>
+                <span id="exploreStepY">Puja <strong>4</strong> passos amunt per l'eix vertical (Y).</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="fun-fact-card">
+            <h3>🌟 Sabies que...?</h3>
+            <p id="exploreFunFact">
+              El punt <strong>(0, 0)</strong> de baix a l'esquerra s'anomena <strong>origen de coordenades</strong>. És el punt de sortida de tots els camins!
+            </p>
+            <div class="quick-try-buttons">
+              <span>Prova d'anar a:</span>
+              <button class="mini-btn" data-goto="0,0">(0, 0) Origen</button>
+              <button class="mini-btn" data-goto="5,0">(5, 0) Sobre l'eix X</button>
+              <button class="mini-btn" data-goto="0,6">(0, 6) Sobre l'eix Y</button>
+              <button class="mini-btn" data-goto="7,7">(7, 7) Cantonada</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODE 2: CAÇA DEL TRESOR ==================== -->
+    <section id="mode-tresor" class="mode-panel">
+      <div class="panel-layout">
+        <div class="canvas-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">🏴‍☠️ Mapa de l'Arxipèlag</span>
+            <div class="segmented-control">
+              <button class="seg-btn active" id="trTypePoints">Punts (X, Y)</button>
+              <button class="seg-btn" id="trTypeCells">Caselles (Lletra, Número)</button>
+            </div>
+          </div>
+          <div class="svg-container" id="treasureGridContainer"></div>
+        </div>
+
+        <div class="side-card">
+          <div class="challenge-badge" id="treasureModeBadge">Missió: Marca al mapa</div>
+          <h2 id="treasurePromptTitle">Troba el tresor amagat!</h2>
+          <div class="mission-box" id="treasureMissionBox">
+            <!-- Dynamically populated prompt -->
+          </div>
+
+          <!-- Input area when in "Write coordinates" submode -->
+          <div id="treasureInputArea" class="coord-input-area hidden">
+            <div class="coord-form">
+              <span class="paren">(</span>
+              <div class="input-group x-group">
+                <label for="trInputX" id="trLabelX">Horitzontal (X) ➡️</label>
+                <select id="trInputX"></select>
+              </div>
+              <span class="comma">,</span>
+              <div class="input-group y-group">
+                <label for="trInputY" id="trLabelY">Vertical (Y) ⬆️</label>
+                <select id="trInputY"></select>
+              </div>
+              <span class="paren">)</span>
+            </div>
+            <button id="trCheckBtn" class="primary-btn">✅ Comprova la coordenada</button>
+          </div>
+
+          <div id="treasureFeedback" class="feedback-box" aria-live="polite">
+            Llegeix la missió i actua sobre el mapa!
+          </div>
+
+          <div class="action-row">
+            <button id="trHintBtn" class="secondary-btn">💡 Pista visual</button>
+            <button id="trNextBtn" class="primary-btn">➡️ Nova missió</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODE 3: DIBUIX SECRET ==================== -->
+    <section id="mode-dibuix" class="mode-panel">
+      <div class="panel-layout">
+        <div class="canvas-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">🎨 Quadrícula de Dibuix Cartesià</span>
+            <div class="drawing-selector">
+              <label for="drawingSelect">Figura:</label>
+              <select id="drawingSelect">
+                <option value="star">⭐ Estrella Màgica</option>
+                <option value="rocket">🚀 Coet Espacial</option>
+                <option value="boat">⛵ Vaixell Pirata</option>
+                <option value="crown">👑 Corona Reial</option>
+                <option value="heart">❤️ Cor Geomètric</option>
+              </select>
+            </div>
+          </div>
+          <div class="svg-container" id="drawGridContainer"></div>
+        </div>
+
+        <div class="side-card">
+          <h2>🎨 Uneix els Punts en Ordre</h2>
+          <p class="side-desc">
+            Clica a la quadrícula el punt que et demanem a cada pas per descobrir la figura secreta!
+          </p>
+
+          <div class="target-point-banner" id="drawTargetBanner">
+            <span class="target-label">Següent punt a clicar:</span>
+            <strong class="target-coord" id="drawNextCoord">(4, 8)</strong>
+          </div>
+
+          <div class="points-checklist" id="drawPointsList"></div>
+
+          <div id="drawFeedback" class="feedback-box" aria-live="polite">
+            Comença clicant el primer punt de la llista!
+          </div>
+
+          <div class="action-row">
+            <button id="drawResetBtn" class="secondary-btn">🔄 Reinicia figura</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODE 4: ROBOT EXPLORADOR ==================== -->
+    <section id="mode-robot" class="mode-panel">
+      <div class="panel-layout">
+        <div class="canvas-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">🤖 Ruta del Robot per la Quadrícula</span>
+            <span class="robot-pos-pill">Posició actual: <strong id="robotCurrentPos">(1, 1)</strong></span>
+          </div>
+          <div class="svg-container" id="robotGridContainer"></div>
+        </div>
+
+        <div class="side-card">
+          <h2>🤖 Programa el Desplaçament</h2>
+          <p class="side-desc" id="robotMissionDesc">
+            Porta el robot 🤖 fins a la bateria 🔋 recollint l'estrella ⭐ i esquivant els volcans 🌋!
+          </p>
+
+          <div class="goal-cards">
+            <div class="goal-chip">
+              <span>🤖 Sortida:</span>
+              <strong id="robotStartCoord">(1, 1)</strong>
+            </div>
+            <div class="goal-chip">
+              <span>⭐ Estrella:</span>
+              <strong id="robotStarCoord">(4, 3)</strong>
+            </div>
+            <div class="goal-chip">
+              <span>🔋 Meta:</span>
+              <strong id="robotGoalCoord">(7, 6)</strong>
+            </div>
+          </div>
+
+          <div class="dpad-container">
+            <button class="dpad-btn up" data-dir="up" title="Puja 1 unitat (Y + 1)">⬆️ Amunt (+1 Y)</button>
+            <div class="dpad-mid">
+              <button class="dpad-btn left" data-dir="left" title="Esquerra 1 unitat (X - 1)">⬅️ Esquerra (-1 X)</button>
+              <button class="dpad-btn right" data-dir="right" title="Dreta 1 unitat (X + 1)">➡️ Dreta (+1 X)</button>
+            </div>
+            <button class="dpad-btn down" data-dir="down" title="Baixa 1 unitat (Y - 1)">⬇️ Avall (-1 Y)</button>
+          </div>
+
+          <div class="route-log-box">
+            <span class="log-title">Camí recorregut:</span>
+            <div id="robotRouteLog" class="route-log-items"></div>
+          </div>
+
+          <div id="robotFeedback" class="feedback-box" aria-live="polite">
+            Fes servir els botons de direcció o les fletxes del teclat!
+          </div>
+
+          <div class="action-row">
+            <button id="robotResetBtn" class="secondary-btn">↩️ Torna a l'inici</button>
+            <button id="robotNewLevelBtn" class="primary-btn">🗺️ Nou laberint</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MODE 5: RADAR D'ILLES ==================== -->
+    <section id="mode-flota" class="mode-panel">
+      <div class="panel-layout">
+        <div class="canvas-card">
+          <div class="card-toolbar">
+            <span class="toolbar-title">🚢 Radar de Rescat Marítim (Caselles A-G, 1-7)</span>
+            <span class="robot-pos-pill">Vaixells trobats: <strong id="fleetFoundCount">0 / 5</strong></span>
+          </div>
+          <div class="svg-container" id="fleetGridContainer"></div>
+        </div>
+
+        <div class="side-card">
+          <h2>🚢 Rescata la Flota Perduda</h2>
+          <p class="side-desc">
+            La boira ha amagat <strong>5 tresors i embarcacions</strong> a les caselles del mapa! Pots clicar directament una casella o escriure'n la coordenada al radar.
+          </p>
+
+          <div class="radar-launcher">
+            <label for="radarColSelect">Envia sonda a la casella:</label>
+            <div class="radar-selects">
+              <select id="radarColSelect" aria-label="Columna (Lletra)">
+                <option value="0">Columna A</option>
+                <option value="1">Columna B</option>
+                <option value="2">Columna C</option>
+                <option value="3">Columna D</option>
+                <option value="4">Columna E</option>
+                <option value="5">Columna F</option>
+                <option value="6">Columna G</option>
+              </select>
+              <select id="radarRowSelect" aria-label="Fila (Número)">
+                <option value="0">Fila 1</option>
+                <option value="1">Fila 2</option>
+                <option value="2">Fila 3</option>
+                <option value="3">Fila 4</option>
+                <option value="4">Fila 5</option>
+                <option value="5">Fila 6</option>
+                <option value="6">Fila 7</option>
+              </select>
+              <button id="radarFireBtn" class="primary-btn">📡 Sondeja!</button>
+            </div>
+          </div>
+
+          <div class="radar-legend">
+            <div class="legend-item"><span class="legend-dot found">⛵</span> Objectiu rescatat!</div>
+            <div class="legend-item"><span class="legend-dot hot">🔥</span> Aigua calenta (a 1 casella de distància!)</div>
+            <div class="legend-item"><span class="legend-dot cold">🌊</span> Aigua freda (lluny)</div>
+          </div>
+
+          <div id="fleetFeedback" class="feedback-box" aria-live="polite">
+            Tria una casella com ara <strong>(D, 4)</strong> per començar el rescat!
+          </div>
+
+          <div class="action-row">
+            <button id="fleetNewGameBtn" class="primary-btn">🔄 Nova partida de rescat</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Confetti Canvas for Celebrations -->
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+  <!-- Required License & Copyright Footer -->
+  <footer class="app-footer">
+    <p class="copyright-line"><strong>© 2026 Raül Torres</strong></p>
+    <p>
+      El codi d'aquesta aplicació està disponible sota la llicència AGPL v3. Consulteu el text complet a
+      <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">https://www.gnu.org/licenses/agpl-3.0.html</a>.
+    </p>
+    <p>
+      Els continguts educatius (textos, exercicis, vídeos i imatges) tenen la llicència CC BY-SA 4.0. Consulteu el text complet a
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" target="_blank" rel="noopener noreferrer">https://creativecommons.org/licenses/by-sa/4.0/deed.ca</a>.
+    </p>
+    <p>
+      Els materials de tercers inclosos conserven la seva pròpia llicència, indicada al costat de cadascun.
+    </p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
