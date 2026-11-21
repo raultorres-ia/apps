@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BUZZ · Making Off</title>
+<meta name="description" content="How the short film BUZZ was made: Blender blockouts, a handheld VR camera, AI video, sound and colour.">
+<style>
+:root{
+  --bg:#0e0c0a; --bg2:#16130f; --line:#2b251d; --ink:#ece3d3; --dim:#a39883;
+  --sand:#d9c19a; --ochre:#c9853a; --hud:#a8e6bd; --red:#e2473b;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+img,video{display:block;width:100%;height:auto}
+a{color:var(--sand)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.narrow{max-width:720px}
+
+/* top bar */
+.top{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:#0e0c0ad9;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid #2b251d99}
+.brand{font-family:var(--mono);font-size:13px;letter-spacing:.28em;color:var(--ink);text-decoration:none}
+.brand span{color:var(--dim)}
+.lang{display:flex;border:1px solid #5a4f3f;border-radius:999px;overflow:hidden;background:#0e0c0acc}
+.lang button{font:600 12px var(--mono);letter-spacing:.12em;color:var(--dim);background:none;border:0;padding:8px 14px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--sand);color:#1a1510}
+.lang button:focus-visible,.steps button:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
+
+/* hero */
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden}
+.hero .stack{position:absolute;inset:0}
+.hero .stack .layer{position:absolute;inset:0}
+.hero .stack img{width:100%;height:100%;object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0e0c0a66 0%,#0e0c0a00 30%,#0e0c0a00 45%,#0e0c0af2 92%)}
+.hero .txt{position:relative;z-index:2;padding:0 20px 56px;width:100%;max-width:1040px;margin:0 auto}
+.kicker{font:600 12px var(--mono);letter-spacing:.3em;color:var(--hud);text-transform:uppercase;margin:0 0 10px}
+h1{font-weight:300;font-size:clamp(64px,17vw,190px);letter-spacing:.14em;line-height:.9;margin:0 0 14px -4px}
+.hero p.lead{font-size:clamp(17px,2.3vw,22px);max-width:36em;margin:0 0 18px;color:var(--ink)}
+.stage{display:inline-flex;align-items:center;gap:10px;font:12px var(--mono);letter-spacing:.14em;color:var(--sand);border:1px solid #6b5d48;padding:7px 12px;border-radius:4px;background:#0e0c0a99;text-transform:uppercase}
+.stage i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+
+.watch{display:inline-block;font:600 13px var(--mono);letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#1a1510;background:var(--sand);padding:13px 20px;border-radius:4px;margin:0 12px 12px 0;vertical-align:middle}
+.watch:hover{background:var(--ink)}
+.watch[aria-disabled="true"]{cursor:default}
+.soon{font:11.5px var(--mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+.filmrow{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:40px;align-items:start}
+.poster{margin:0}
+.poster img{border-radius:6px;border:1px solid var(--line);box-shadow:0 20px 60px #000a}
+@media (max-width:760px){.filmrow{grid-template-columns:1fr;gap:24px}.poster{max-width:300px}}
+/* sections */
+section{padding:88px 0 24px}
+.num{font:600 12px var(--mono);letter-spacing:.3em;color:var(--ochre);margin:0 0 8px}
+h2{font-weight:300;font-size:clamp(30px,5vw,48px);line-height:1.12;margin:0 0 20px;letter-spacing:.01em}
+h3{font:600 13px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--sand);margin:34px 0 8px}
+p{margin:0 0 16px}
+.dim{color:var(--dim)}
+.pull{font-size:clamp(20px,3vw,27px);line-height:1.4;font-weight:300;color:var(--sand);border-left:2px solid var(--ochre);padding-left:18px;margin:28px 0}
+figure{margin:28px 0}
+figcaption{font:12.5px/1.5 var(--mono);color:var(--dim);margin-top:10px;letter-spacing:.02em}
+.frame{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#000;aspect-ratio:16/9}
+.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid2 figure,.grid3 figure{margin:0}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin:34px 0 8px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.pipe a{display:block;padding:16px 12px 14px;text-decoration:none;color:var(--ink);border-right:1px solid var(--line);background:var(--bg2)}
+.pipe a:last-child{border-right:0}
+.pipe a:hover{background:#1e1a14}
+.pipe b{display:block;font:600 11px var(--mono);letter-spacing:.2em;color:var(--ochre);margin-bottom:6px}
+.pipe span{display:block;font-size:15px;line-height:1.3}
+.pipe small{display:block;font:11px var(--mono);color:var(--dim);margin-top:6px}
+
+/* compare slider */
+.cmp{--p:50%;position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#000;aspect-ratio:16/9;touch-action:pan-y;user-select:none}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.cmp .before{clip-path:inset(0 calc(100% - var(--p)) 0 0)}
+.cmp .bar{position:absolute;top:0;bottom:0;left:var(--p);width:2px;margin-left:-1px;background:var(--ink);pointer-events:none}
+.cmp .bar::after{content:"◂ ▸";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font:12px var(--mono);white-space:nowrap;color:#1a1510;background:var(--ink);border-radius:999px;padding:6px 9px}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize}
+.tag{position:absolute;bottom:10px;font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);background:#0e0c0acc;padding:5px 8px;border-radius:3px;pointer-events:none}
+.tag.l{left:10px}.tag.r{right:10px}
+
+/* layer stack */
+.layers{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#000;aspect-ratio:16/9}
+.layer{position:absolute;inset:0;clip-path:inset(0 100% 0 0);transition:clip-path 1.5s cubic-bezier(.6,0,.2,1)}
+.layer.on{clip-path:inset(0 0 0 0)}
+.layer img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.layer::after{content:"";position:absolute;top:0;bottom:0;right:0;width:2px;background:var(--hud);opacity:0;transition:opacity .3s}
+.layer.wiping::after{opacity:.9}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.steps button{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);background:var(--bg2);border:1px solid var(--line);border-radius:4px;padding:9px 12px;cursor:pointer}
+.steps button b{color:var(--ochre);margin-right:6px}
+.steps button[aria-pressed="true"]{color:#1a1510;background:var(--sand);border-color:var(--sand)}
+.steps button[aria-pressed="true"] b{color:#7a4a14}
+.steps .play{margin-left:auto;color:var(--hud)}
+
+/* drone HUD drawn in the page */
+.gopro img{filter:saturate(.62) contrast(1.12) brightness(.96)}
+.gopro{box-shadow:inset 0 0 120px 30px #000c}
+.hud{position:absolute;inset:0;font:clamp(8px,1.5vw,13px) var(--mono);color:var(--hud);letter-spacing:.12em;text-shadow:0 0 6px #000}
+.hud i{position:absolute;width:5%;aspect-ratio:1;border:2px solid var(--hud);opacity:.9}
+.hud .c1{top:5%;left:3.5%;border-right:0;border-bottom:0}.hud .c2{top:5%;right:3.5%;border-left:0;border-bottom:0}
+.hud .c3{bottom:6%;left:3.5%;border-right:0;border-top:0}.hud .c4{bottom:6%;right:3.5%;border-left:0;border-top:0}
+.hud .ret{position:absolute;left:50%;top:50%;width:9%;aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid var(--hud);border-radius:50%}
+.hud .ret::before,.hud .ret::after{content:"";position:absolute;background:var(--hud)}
+.hud .ret::before{left:50%;top:-30%;bottom:-30%;width:1px}.hud .ret::after{top:50%;left:-30%;right:-30%;height:1px}
+.hud span{position:absolute}
+.hud .tl{top:7.5%;left:10%}.hud .tr{top:7.5%;right:10%;color:#fff}.hud .tr::before{content:"● ";color:var(--red);animation:blink 1.2s steps(2) infinite}
+.hud .ml{top:44%;left:5%;line-height:1.8}.hud .mr{top:44%;right:5%;text-align:right;line-height:1.8}
+
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}
+.card{border:1px solid var(--line);border-radius:6px;background:var(--bg2);padding:18px}
+.card b{display:block;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--sand);margin-bottom:6px}
+.card p{margin:0;font-size:15px;color:var(--dim);line-height:1.5}
+.dist{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}
+.dist div{border:1px solid var(--line);border-radius:6px;padding:14px;background:var(--bg2)}
+.dist svg{width:100%;height:34px;display:block;margin-bottom:8px}
+.dist b{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sand);display:block}
+.dist small{color:var(--dim);font-size:13.5px;line-height:1.4;display:block;margin-top:2px}
+ol.learn{list-style:none;padding:0;margin:24px 0;counter-reset:l}
+ol.learn li{counter-increment:l;position:relative;padding:16px 0 16px 58px;border-top:1px solid var(--line)}
+ol.learn li::before{content:"0" counter(l);position:absolute;left:0;top:17px;font:600 13px var(--mono);letter-spacing:.2em;color:var(--ochre)}
+ol.learn b{color:var(--ink);font-weight:600}
+ol.learn span{color:var(--dim)}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:28px 0}
+.facts div{padding:18px 14px;background:var(--bg2)}
+.facts b{display:block;font-weight:300;font-size:34px;line-height:1;color:var(--sand);margin-bottom:6px}
+.facts span{font:11.5px/1.4 var(--mono);letter-spacing:.1em;color:var(--dim);text-transform:uppercase;display:block}
+.tools{display:grid;grid-template-columns:auto 1fr;gap:10px 22px;margin:22px 0;font-size:15.5px}
+.tools dt{font:600 11.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ochre);padding-top:4px}
+.tools dd{margin:0}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:36px 0 60px;color:var(--dim);font-size:14px}
+footer .pf{margin:18px 0 0}
+footer .pf a{display:inline-block;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:#1a1510;background:var(--sand);padding:11px 16px;border-radius:4px}
+footer .pf a:hover{background:var(--ink)}
+footer .pf a{margin:0 8px 8px 0}
+footer .pf a.ct{background:transparent;color:var(--sand);box-shadow:inset 0 0 0 1px var(--sand)}
+footer .pf a.ct:hover{background:var(--sand);color:#1a1510}
+footer b{font:300 26px var(--sans);letter-spacing:.3em;color:var(--ink);display:block;margin-bottom:6px}
+
+@media (max-width:760px){
+  body{font-size:16px}
+  section{padding-top:64px}
+  .grid2,.cards{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .pipe{grid-template-columns:repeat(2,1fr)}
+  .pipe a{border-bottom:1px solid var(--line)}
+  .pipe a:nth-child(2n){border-right:0}
+  .dist,.facts{grid-template-columns:repeat(2,1fr)}
+  .tools{grid-template-columns:1fr;gap:2px 0}
+  .tools dd{margin-bottom:12px}
+  .steps .play{margin-left:0}
+  .tag{font-size:9.5px;letter-spacing:.1em}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .layer{transition:none}
+  .stage i,.hud .tr::before{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#top">BUZZ <span data-i18n="brand">· MAKING OFF</span></a>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="stack" data-layers data-auto="hero">
+    <div class="layer on"><img src="img/run_a.jpg" alt=""></div>
+    <div class="layer"><img src="img/run_b.jpg" alt=""></div>
+    <div class="layer"><img src="img/run_c.jpg" alt=""></div>
+  </div>
+  <div class="txt">
+    <p class="kicker" data-i18n="hero.k">Making Off · A film by Raül Torres</p>
+    <h1>BUZZ</h1>
+    <p class="lead" data-i18n="hero.lead">A mother and her eight-year-old son cross the desert and take shelter in an abandoned factory. This is how the film was made: a 3D blockout, a handheld camera in virtual reality, and AI that develops what was shot.</p>
+    <a class="watch" data-watch href="#film"><span data-i18n="watch">▶ Watch the short film</span></a>
+    <span class="stage"><i></i><span id="heroStage" data-i18n="st.0">Layer 1 · Blender blockout</span></span>
+  </div>
+</div>
+
+<main>
+
+<section id="film"><div class="wrap">
+  <p class="num">01</p>
+  <h2 data-i18n="s1.h">The film</h2>
+  <div class="filmrow">
+  <figure class="poster"><img src="img/poster.jpg" alt="Poster of BUZZ: a boy and his mother above a desert at sunset; below, the two walk across the dunes. Text: Shot entirely in VR" width="900" height="1350"></figure>
+  <div>
+    <p data-i18n="s1.p1"><em>Buzz</em> is a war-horror short of about four and a half minutes. A mother and her eight-year-old son cross the desert on foot and take shelter in an abandoned factory. Nobody speaks: the sound carries the fear, and the tensest moments are the silent ones.</p>
+    <p data-i18n="s1.p2">It was made in fourteen days, from 8 to 21 November 2026, by one director working with a virtual production chain and a team of AI assistants. This page explains the process and leaves the story alone, so you can watch the film without knowing how it ends.</p>
+    <p class="pull" data-i18n="s1.pull">The AI does not stage the film. Where each character stands, how long a shot lasts and how the camera moves are decided by hand. The AI develops that footage, the way a lab develops a negative.</p>
+      <p><a class="watch" data-watch href="#film"><span data-i18n="watch">▶ Watch the short film</span></a> <small class="soon" data-soon data-i18n="soon">Link coming soon</small></p>
+  </div>
+  </div>
+  <nav class="pipe" aria-label="Pipeline">
+    <a href="#script"><b>02</b><span data-i18n="pp.1">Script</span><small data-i18n="pp.1s">8 scenes</small></a>
+    <a href="#blockout"><b>03</b><span data-i18n="pp.2">Blockout</span><small>Blender</small></a>
+    <a href="#vr"><b>04</b><span data-i18n="pp.3">VR shoot</span><small>OnSetVR · Quest 3</small></a>
+    <a href="#ai"><b>05</b><span data-i18n="pp.4">AI video</span><small>Seedance 2.5</small></a>
+    <a href="#sound"><b>06</b><span data-i18n="pp.5">Sound</span><small>ElevenLabs</small></a>
+    <a href="#finish"><b>07</b><span data-i18n="pp.6">Edit &amp; colour</span><small>DaVinci Resolve</small></a>
+  </nav>
+</div></section>
+
+<section id="script"><div class="wrap narrow">
+  <p class="num">02</p>
+  <h2 data-i18n="s2.h">A script built for continuity</h2>
+  <p data-i18n="s2.p1">The treatment splits the film into eight scenes, one per shooting file, and into 30-second blocks. Its most useful page is a plain table: how each scene ends. Where the two characters are, which hand holds what, where each object was left. AI video forgets everything between one clip and the next; that table is the memory.</p>
+  <p data-i18n="s2.p2">The script stayed alive during the shoot. When a blockout or a generated shot exposed a problem, the text changed first, and the change then travelled in a fixed order to the blockouts, the prompts, the sound plan and the edit. Only the director changes the script.</p>
+</div></section>
+
+<section id="blockout"><div class="wrap">
+  <p class="num">03</p>
+  <h2 data-i18n="s3.h">The blockout: a factory, two cylinders and a red drone</h2>
+  <div class="narrow">
+    <p data-i18n="s3.p1">The whole location exists in Blender: a brick factory with its chimney and silos, a fenced yard, a boulder, dunes. The cast is as simple as it can be. The mother is a blue cylinder, the boy a yellow one, the backpack a green box and the drone a red quadcopter. A dark visor shows where each figure is looking.</p>
+    <p data-i18n="s3.p2">Only what has a position is modelled. Gestures, dust and small props are left to the prompt. The figures are animated in real time at 24 fps, with believable speeds (nobody runs faster than 5 m/s), and each scene starts exactly where the previous one ends. Everything is measured before shooting: feet on the ground, continuity at the cuts, nothing passing through anything.</p>
+  </div>
+  <div class="grid3">
+    <figure><div class="frame"><img src="img/set_exterior.jpg" alt="Blender view of the factory in the desert" loading="lazy"></div><figcaption data-i18n="s3.c1">The set: factory, yard and desert.</figcaption></figure>
+    <figure><div class="frame"><img src="img/set_cast.jpg" alt="Blender line-up: blue cylinder, yellow cylinder, red drone, green box" loading="lazy"></div><figcaption data-i18n="s3.c2">The cast: mother, son, drone, backpack.</figcaption></figure>
+    <figure><div class="frame"><img src="img/set_interior.jpg" alt="Blender view inside the factory" loading="lazy"></div><figcaption data-i18n="s3.c3">Inside the factory, from the main door.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="vr"><div class="wrap">
+  <p class="num">04</p>
+  <h2 data-i18n="s4.h">Shooting inside the blockout</h2>
+  <div class="narrow">
+    <p data-i18n="s4.p1">The director puts on a Quest 3 headset and walks into the blockout with OnSetVR, his own VR shooting add-on for Blender. The controller becomes a camera: he picks a lens, crouches, follows the run, waits for the characters to come to him. Each take is a blockout video of 4 to 30 seconds with real handheld camera movement.</p>
+    <p data-i18n="s4.p2">Before every session there is a short guide: what happens on camera, at which second, and where to stand. The scene plays in real time, so a take is shot the way it would be on a set.</p>
+  </div>
+  <figure>
+    <div class="frame"><video src="media/vr_quadrants.mp4" poster="img/vr_poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Four views of the same moment: the room, the headset, the blockout and the final shot"></video></div>
+    <figcaption data-i18n="s4.c">The same instant four times: the room, what the headset shows, the recorded blockout take and the final shot.</figcaption>
+  </figure>
+</div></section>
+
+<section id="ai"><div class="wrap">
+  <p class="num">05</p>
+  <h2 data-i18n="s5.h">From blockout to final shot</h2>
+  <div class="narrow">
+    <p data-i18n="s5.p1">Each blockout take goes to Seedance 2.5 as the motion reference. With it travel the reference sheets for the characters and places, and a prompt that translates the colours of the blockout (blue is the mother, yellow is the boy) and describes light, gestures and dust. The position of the sun is calculated from the actual take, so the shadows fall where they should.</p>
+    <p data-i18n="s5.p2">Drag the bar on each image. Left is what was shot in VR; right is the same frame of the generated clip.</p>
+  </div>
+
+  <div class="grid2">
+    <figure><div class="cmp"><img src="img/walk_b.jpg" alt="Final shot: mother and son walk past a boulder towards a factory" loading="lazy"><img class="before" src="img/walk_a.jpg" alt="Blockout of the same frame" loading="lazy"><span class="bar"></span><span class="tag l" data-i18n="t.block">Blockout</span><span class="tag r" data-i18n="t.final">Final shot</span><input type="range" min="0" max="100" value="50" aria-label="Compare blockout and final shot"></div><figcaption data-i18n="s5.c1">Scene 1. The walk to the boulder.</figcaption></figure>
+    <figure><div class="cmp"><img src="img/window_b.jpg" alt="Final shot: two figures cross a yard, seen through a round window" loading="lazy"><img class="before" src="img/window_a.jpg" alt="Blockout of the same frame" loading="lazy"><span class="bar"></span><span class="tag l" data-i18n="t.block">Blockout</span><span class="tag r" data-i18n="t.final">Final shot</span><input type="range" min="0" max="100" value="50" aria-label="Compare blockout and final shot"></div><figcaption data-i18n="s5.c2">Scene 2. The yard, from the round window.</figcaption></figure>
+    <figure><div class="cmp"><img src="img/hide_b.jpg" alt="Final shot: the two run through the factory" loading="lazy"><img class="before" src="img/hide_a.jpg" alt="Blockout of the same frame" loading="lazy"><span class="bar"></span><span class="tag l" data-i18n="t.block">Blockout</span><span class="tag r" data-i18n="t.final">Final shot</span><input type="range" min="0" max="100" value="50" aria-label="Compare blockout and final shot"></div><figcaption data-i18n="s5.c3">Scene 3. Crossing the factory floor.</figcaption></figure>
+    <figure><div class="cmp"><img src="img/drone_b.jpg" alt="Final shot: a small drone flies under the factory roof" loading="lazy"><img class="before" src="img/drone_a.jpg" alt="Blockout of the same frame, with a red drone" loading="lazy"><span class="bar"></span><span class="tag l" data-i18n="t.block">Blockout</span><span class="tag r" data-i18n="t.final">Final shot</span><input type="range" min="0" max="100" value="50" aria-label="Compare blockout and final shot"></div><figcaption data-i18n="s5.c4">Scene 3. The drone inside. In the blockout it is red only so it can be found; in the film it is matte grey.</figcaption></figure>
+  </div>
+
+  <h3 data-i18n="s5.h3a">One shot, layer by layer</h3>
+  <p class="narrow" data-i18n="s5.p3">A shot starts as two cylinders in a grey yard. The framing, the lamp post, the wall at the back and the place of each figure are already there. The people, the concrete, the sand and the long shadows arrive in the second layer. The third is the frame as it appears in the finished film: graded, and with its film grain.</p>
+  <figure>
+    <div class="layers" data-layers data-auto="view">
+      <div class="layer on"><img src="img/yard_a.jpg" alt="Blockout: a blue and a yellow cylinder cross the grey yard towards the camera" loading="lazy"></div>
+      <div class="layer"><img src="img/yard_b.jpg" alt="Generated shot: a mother and her son run across the factory yard towards the camera" loading="lazy"></div>
+      <div class="layer"><img src="img/yard_c.jpg" alt="The same shot in the finished film, graded and with film grain" loading="lazy"></div>
+    </div>
+    <div class="steps">
+      <button type="button" aria-pressed="true"><b>1</b><span data-i18n="l.1">Blockout</span></button>
+      <button type="button" aria-pressed="false"><b>2</b><span data-i18n="l.2">Seedance 2.5</span></button>
+      <button type="button" aria-pressed="false"><b>3</b><span data-i18n="l.3">Final grade + grain</span></button>
+      <button type="button" class="play" data-play><span data-i18n="l.play">▶ Play layers</span></button>
+    </div>
+  </figure>
+
+  <h3 data-i18n="s5.h3b">What went wrong, and what it taught</h3>
+  <div class="cards">
+    <div class="card"><b data-i18n="k1.h">No generated first frame</b><p data-i18n="k1.p">Generating a still to start each clip kept breaking continuity: another framing, another light. The fix was to stop, and use frames of the film already edited as the reference for every new clip.</p></div>
+    <div class="card"><b data-i18n="k2.h">Cost first, two tries</b><p data-i18n="k2.p">Every generation shows its cost and waits for the director's yes. Two attempts per shot at most; if the second fails, the prompt or the blockout is fixed before spending more.</p></div>
+    <div class="card"><b data-i18n="k3.h">Fix only what fails</b><p data-i18n="k3.p">When one stretch of a long clip is wrong, only that stretch is regenerated. If the problem is pace, a free speed test in the edit comes before any new generation.</p></div>
+  </div>
+</div></section>
+
+<section id="sound"><div class="wrap">
+  <p class="num">06</p>
+  <h2 data-i18n="s6.h">Sound: the drone is always there</h2>
+  <div class="narrow">
+    <p data-i18n="s6.p1">The characters never speak, so the soundtrack carries the fear. The drone is heard even when it is not in the shot. It is one buzz, made with ElevenLabs, tuned to the same note and placed at four distances depending on where the drone is in the story.</p>
+  </div>
+  <div class="dist">
+    <div><svg viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M0 17 q5-3 10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0" fill="none" stroke="#a8e6bd" stroke-width="1.5" opacity=".55"/></svg><b data-i18n="d1.h">Far</b><small data-i18n="d1.p">Out of sight, high up. Barely there, never gone.</small></div>
+    <div><svg viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M0 17 q5-8 10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0" fill="none" stroke="#a8e6bd" stroke-width="1.5" opacity=".7"/></svg><b data-i18n="d2.h">Mid</b><small data-i18n="d2.p">Close, but off-screen: behind a wall, behind her back.</small></div>
+    <div><svg viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M0 17 q5-15 10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0" fill="none" stroke="#a8e6bd" stroke-width="1.5" opacity=".9"/></svg><b data-i18n="d3.h">Near</b><small data-i18n="d3.p">In the shot. Loud, with the echo of the factory.</small></div>
+    <div><svg viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><path d="M0 17 q2.5-13 5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0 t5 0" fill="none" stroke="#fff" stroke-width="1.3" opacity=".9"/></svg><b data-i18n="d4.h">On board</b><small data-i18n="d4.p">The drone's own point of view.</small></div>
+  </div>
+  <div class="narrow">
+    <p data-i18n="s6.p2">Around it: one ambience for the inside of the factory and another for the open desert, footsteps matched to the picture and to the surface underfoot, and breathing. And silences, placed where they weigh the most.</p>
+  </div>
+</div></section>
+
+<section id="finish"><div class="wrap">
+  <p class="num">07</p>
+  <h2 data-i18n="s7.h">Edit, colour and finishing</h2>
+  <div class="narrow">
+    <p data-i18n="s7.p1">The film was edited in DaVinci Resolve while it was still being shot. The director's timeline became the context for every new clip: before a prompt was written, the frames on either side of the gap were pulled from the edit, and the new shot had to match their light and place.</p>
+    <p data-i18n="s7.p2">The grade takes <em>Dune</em> as its reference: slightly lifted blacks, soft contrast and low saturation that still respects ochre and skin. It was always done on a duplicate timeline, keeping each earlier version, so the director's cut was never at risk.</p>
+  </div>
+  <figure>
+    <div class="cmp"><img src="img/run_c.jpg" alt="The shot in the finished film: mother and son run towards the factory, the backpack left by the boulder" loading="lazy"><img class="before" src="img/run_b.jpg" alt="The same shot as generated, before the grade" loading="lazy"><span class="bar"></span><span class="tag l" data-i18n="t.gen">As generated</span><span class="tag r" data-i18n="t.look">Finished film</span><input type="range" min="0" max="100" value="50" aria-label="Compare the generated shot and the finished film"></div>
+    <figcaption data-i18n="s7.c1">The same frame as it was generated and as it appears in the finished film, with the grade and the film grain, both done in DaVinci Resolve.</figcaption>
+  </figure>
+
+  <h3 data-i18n="s7.h3">The drone's eye</h3>
+  <p class="narrow" data-i18n="s7.p3">The drone's point of view is built in layers too. A camera attached to the drone in Blender gives the flight path; Seedance turns it into an aerial shot; the edit adds an action-camera treatment (fisheye, colour fringing, shake, sensor noise) and a cold interface on top.</p>
+  <figure>
+    <div class="layers" data-layers data-auto="view">
+      <div class="layer on"><img src="img/pov_a.jpg" alt="Blockout seen from the drone: two tiny figures on flat sand" loading="lazy"></div>
+      <div class="layer"><img src="img/pov_b.jpg" alt="Generated aerial shot: two tiny figures run across the dunes" loading="lazy"></div>
+      <div class="layer gopro"><img src="img/pov_b.jpg" alt="The same shot with a camera treatment and an interface overlay" loading="lazy">
+        <div class="hud" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><div class="ret"></div>
+          <span class="tl">UAV · EO · ZOOM 12X</span><span class="tr">REC</span>
+          <span class="ml">ALT 087 M<br>SPD 41 KM/H</span><span class="mr">HDG 112<br>RNG 131 M</span></div>
+      </div>
+    </div>
+    <div class="steps">
+      <button type="button" aria-pressed="true"><b>1</b><span data-i18n="l.1">Blockout</span></button>
+      <button type="button" aria-pressed="false"><b>2</b><span data-i18n="l.2">Seedance 2.5</span></button>
+      <button type="button" aria-pressed="false"><b>3</b><span data-i18n="l.4">Camera look + interface</span></button>
+      <button type="button" class="play" data-play><span data-i18n="l.play">▶ Play layers</span></button>
+    </div>
+    <figcaption data-i18n="s7.c2">The interface on this page is a redrawn illustration; the one in the film carries the story's own text.</figcaption>
+  </figure>
+  <div class="narrow">
+    <p data-i18n="s7.p4">The clips were generated at 720p. The grade and the film grain were done in DaVinci Resolve, and the finished film was then upscaled to 1080p.</p>
+  </div>
+</div></section>
+
+<section id="team"><div class="wrap">
+  <p class="num">08</p>
+  <h2 data-i18n="s8.h">A crew of AI sessions</h2>
+  <div class="narrow">
+    <p data-i18n="s8.p1">One person directed, but the work was split like a small crew. Twelve conversations with Claude, each one responsible for a single department and coordinated by an “assistant director” session: script, blockouts, VR, image, video, sound, music, editing, production accounts, social media and method.</p>
+    <p data-i18n="s8.p2">What kept it safe was a handful of short rules:</p>
+  </div>
+  <div class="cards">
+    <div class="card"><b data-i18n="r1.h">Each to its own</b><p data-i18n="r1.p">A session only touches its own files. Anything in another department is requested, not edited.</p></div>
+    <div class="card"><b data-i18n="r2.h">Copy before touching</b><p data-i18n="r2.p">A dated backup before every change, and a note on how to undo it.</p></div>
+    <div class="card"><b data-i18n="r3.h">One shared log</b><p data-i18n="r3.p">Every session adds its entry at the end of a common record. Nobody rewrites what is already there.</p></div>
+    <div class="card"><b data-i18n="r4.h">No spend without a yes</b><p data-i18n="r4.p">The cost comes first, and the yes is the director's, given to the session that will generate.</p></div>
+    <div class="card"><b data-i18n="r5.h">Say when things disagree</b><p data-i18n="r5.p">If documents, files and prompts do not match, the session reports it and does not choose on its own.</p></div>
+    <div class="card"><b data-i18n="r6.h">The director decides</b><p data-i18n="r6.p">Technical work is delegated. Creative decisions and the script are not.</p></div>
+  </div>
+</div></section>
+
+<section id="learned"><div class="wrap">
+  <p class="num">09</p>
+  <h2 data-i18n="s9.h">What we learned</h2>
+  <ol class="learn narrow">
+    <li><b data-i18n="q1.h">The blockout rules.</b> <span data-i18n="q1.p">Whatever is not in the blockout, the AI will invent. Position, timing and camera are decided before generating.</span></li>
+    <li><b data-i18n="q2.h">The film is its own best reference.</b> <span data-i18n="q2.p">Frames from the approved edit keep light, costume and objects consistent better than any new image.</span></li>
+    <li><b data-i18n="q3.h">Know the cost before you press the button.</b> <span data-i18n="q3.p">Trim the reference video to the exact stretch, and stop at two attempts.</span></li>
+    <li><b data-i18n="q4.h">Repair in the cheapest place.</b> <span data-i18n="q4.p">Pace is fixed in the edit and a slightly wrong light in the grade. Regenerate only what cannot be repaired.</span></li>
+    <li><b data-i18n="q5.h">Save after every take.</b> <span data-i18n="q5.p">Several VR takes survived only in autosave files. A take that is not saved does not exist.</span></li>
+    <li><b data-i18n="q6.h">One current document for each thing.</b> <span data-i18n="q6.p">What is retired is set aside, never deleted, and everyone works from the same shot list.</span></li>
+  </ol>
+
+  <h3 data-i18n="s9.h3n">The shoot in numbers</h3>
+  <div class="facts">
+    <div><b>14</b><span data-i18n="f1">days of production</span></div>
+    <div><b>8</b><span data-i18n="f2">scenes, one Blender file each</span></div>
+    <div><b>130+</b><span data-i18n="f5">handheld takes shot in VR, all scenes</span></div>
+    <div><b>27</b><span data-i18n="f6">clips generated with AI</span></div>
+    <div><b>42</b><span data-i18n="f7">shots in the final cut</span></div>
+    <div><b>2</b><span data-i18n="f8">attempts per shot, at most</span></div>
+    <div><b>12</b><span data-i18n="f3">AI sessions, one director</span></div>
+    <div><b>0</b><span data-i18n="f4">lines of dialogue</span></div>
+  </div>
+
+  <h3 data-i18n="s9.h3">Tools</h3>
+  <dl class="tools">
+    <dt data-i18n="tl.1">Virtual production</dt><dd>Blender · Meta Quest 3 · OnSetVR</dd>
+    <dt data-i18n="tl.2">AI video</dt><dd>Seedance 2.5</dd>
+    <dt data-i18n="tl.3">AI image</dt><dd>GPT 2.6 · Seedream 5.5 · Nano Banana 2.1 · Ideogram 4.5</dd>
+    <dt data-i18n="tl.4">Sound</dt><dd>ElevenLabs</dd>
+    <dt data-i18n="tl.5">Generation platform</dt><dd>Magnific</dd>
+    <dt data-i18n="tl.6">Edit, colour &amp; grain</dt><dd>DaVinci Resolve</dd>
+    <dt data-i18n="tl.8">Production assistant</dt><dd>Claude · Anthropic</dd>
+  </dl>
+</div></section>
+
+</main>
+
+<footer><div class="wrap">
+  <b>BUZZ</b>
+  <span data-i18n="foot">A film by Raül Torres · 2026. All images on this page are frames from the production.</span>
+  <p class="pf"><a href="https://raultorres-ia.github.io/apps/raul-torres-ai-portfolio/" target="_blank" rel="noopener"><span data-i18n="pf">More work: Raül Torres · Creative Portfolio</span> ↗</a> <a class="ct" href="https://raultorres-ia.github.io/apps/raul-torres-ai-portfolio/#contact" target="_blank" rel="noopener"><span data-i18n="ct">Contact</span> ↗</a></p>
+</div></footer>
+
+<script>
+(function(){
+"use strict";
+var ES={
+"brand":"· CÓMO SE HIZO",
+"watch":"▶ Ver cortometraje","soon":"Enlace próximamente",
+"hero.k":"Cómo se hizo · Una película de Raül Torres",
+"hero.lead":"Una madre y su hijo de ocho años cruzan el desierto y se refugian en una fábrica abandonada. Así se hizo el corto: una maqueta en 3D, una cámara en mano dentro de la realidad virtual y una IA que revela lo que se ha rodado.",
+"st.0":"Capa 1 · Maqueta de Blender","st.1":"Capa 2 · Seedance 2.5","st.2":"Capa 3 · Corto terminado",
+"s1.h":"El corto",
+"s1.p1":"<em>Buzz</em> es un cortometraje de terror bélico de unos cuatro minutos y medio. Una madre y su hijo de ocho años cruzan el desierto a pie y se refugian en una fábrica abandonada. Nadie habla: el miedo lo lleva el sonido, y los momentos más tensos son los de silencio.",
+"s1.p2":"Se hizo en catorce días, del 8 al 21 de noviembre de 2026, con un solo director, una cadena de producción virtual y un equipo de asistentes de IA. Esta página explica el proceso y deja la historia en paz, para que puedas ver el corto sin saber cómo acaba.",
+"s1.pull":"La IA no pone en escena la película. Dónde está cada personaje, cuánto dura un plano y cómo se mueve la cámara se decide a mano. La IA revela ese material, como un laboratorio revela un negativo.",
+"pp.1":"Guion","pp.1s":"8 escenas","pp.2":"Maqueta","pp.3":"Rodaje en VR","pp.4":"Vídeo con IA","pp.5":"Sonido","pp.6":"Montaje y color",
+"s2.h":"Un guion pensado para la continuidad",
+"s2.p1":"El tratamiento divide el corto en ocho escenas, una por archivo de rodaje, y en bloques de 30 segundos. Su página más útil es una tabla sencilla: cómo acaba cada escena. Dónde están los dos personajes, qué lleva cada mano, dónde se quedó cada objeto. El vídeo con IA lo olvida todo entre un clip y el siguiente; esa tabla es la memoria.",
+"s2.p2":"El guion siguió vivo durante el rodaje. Cuando una maqueta o un plano generado destapaban un problema, primero cambiaba el texto, y el cambio bajaba en un orden fijo a las maquetas, los prompts, el plan de sonido y el montaje. El guion solo lo cambia el director.",
+"s3.h":"La maqueta: una fábrica, dos cilindros y un dron rojo",
+"s3.p1":"Todo el lugar existe en Blender: una fábrica de ladrillo con su chimenea y sus silos, un patio vallado, una roca, dunas. El reparto es lo más simple posible. La madre es un cilindro azul, el niño uno amarillo, la mochila una caja verde y el dron un cuadricóptero rojo. Un visor oscuro marca hacia dónde mira cada figura.",
+"s3.p2":"Solo se modela lo que tiene posición. Los gestos, el polvo y el atrezo pequeño se dejan para el prompt. Las figuras se animan en tiempo real a 24 fps, con velocidades creíbles (nadie corre a más de 5 m/s), y cada escena empieza exactamente donde acaba la anterior. Antes de rodar se mide todo: pies en el suelo, continuidad en los cortes, que nada atraviese nada.",
+"s3.c1":"El decorado: fábrica, patio y desierto.","s3.c2":"El reparto: madre, hijo, dron y mochila.","s3.c3":"El interior de la fábrica, desde el portón.",
+"s4.h":"Rodar dentro de la maqueta",
+"s4.p1":"El director se pone unas Quest 3 y entra en la maqueta con OnSetVR, su propio complemento de rodaje en VR para Blender. El mando se convierte en una cámara: elige la lente, se agacha, sigue la carrera, espera a que los personajes lleguen hasta él. Cada toma es un vídeo de maqueta de 4 a 30 segundos con un movimiento de cámara en mano de verdad.",
+"s4.p2":"Antes de cada sesión hay una guía breve: qué pasa en cámara, en qué segundo y dónde ponerse. La escena corre en tiempo real, así que una toma se rueda como se rodaría en un plató.",
+"s4.c":"El mismo instante cuatro veces: la habitación, lo que se ve en las gafas, la toma de maqueta grabada y el plano final. (Rótulos en inglés.)",
+"s5.h":"De la maqueta al plano final",
+"s5.p1":"Cada toma de maqueta va a Seedance 2.5 como referencia de movimiento. Con ella viajan las fichas de referencia de los personajes y los lugares, y un prompt que traduce los colores de la maqueta (el azul es la madre, el amarillo es el niño) y describe la luz, los gestos y el polvo. La posición del sol se calcula a partir de la toma real, para que las sombras caigan donde deben.",
+"s5.p2":"Arrastra la barra de cada imagen. A la izquierda, lo que se rodó en VR; a la derecha, el mismo fotograma del clip generado.",
+"t.block":"Maqueta","t.final":"Plano final","t.gen":"Tal como se generó","t.look":"Corto terminado",
+"s5.c1":"Escena 1. La caminata hasta la roca.","s5.c2":"Escena 2. El patio, desde la ventana redonda.","s5.c3":"Escena 3. Cruzando la nave.",
+"s5.c4":"Escena 3. El dron, dentro. En la maqueta es rojo solo para localizarlo; en el corto es gris mate.",
+"s5.h3a":"Un plano, capa a capa",
+"s5.p3":"Un plano empieza siendo dos cilindros en un patio gris. El encuadre, la farola, el muro del fondo y el sitio de cada figura ya están ahí. Las personas, el hormigón, la arena y las sombras largas llegan en la segunda capa. La tercera es el fotograma tal como sale en el corto terminado: etalonado y con su grano.",
+"l.1":"Maqueta","l.2":"Seedance 2.5","l.3":"Etalonaje final + grano","l.4":"Look de cámara + interfaz","l.play":"▶ Pasar las capas",
+"s5.h3b":"Lo que salió mal y lo que enseñó",
+"k1.h":"Sin imagen inicial generada","k1.p":"Generar una imagen fija para empezar cada clip rompía una y otra vez la continuidad: otro encuadre, otra luz. La solución fue dejar de hacerlo y usar como referencia de cada clip nuevo fotogramas del corto ya montado.",
+"k2.h":"Primero el coste; dos intentos","k2.p":"Cada generación enseña su coste y espera el sí del director. Como mucho, dos intentos por plano; si el segundo falla, se corrige el prompt o la maqueta antes de gastar más.",
+"k3.h":"Arreglar solo lo que falla","k3.p":"Cuando un tramo de un clip largo está mal, solo se regenera ese tramo. Si el problema es de ritmo, antes de generar nada se hace una prueba de velocidad gratis en el montaje.",
+"s6.h":"Sonido: el dron siempre está ahí",
+"s6.p1":"Los personajes no hablan nunca, así que el miedo lo lleva la banda sonora. El dron se oye incluso cuando no está en el plano. Es un solo zumbido, hecho con ElevenLabs, afinado en la misma nota y colocado a cuatro distancias según dónde esté el dron en la historia.",
+"d1.h":"Lejos","d1.p":"No se ve, muy arriba. Apenas se oye, nunca se va.",
+"d2.h":"Media distancia","d2.p":"Cerca, pero fuera de plano: tras un muro, a su espalda.",
+"d3.h":"Cerca","d3.p":"En el plano. Fuerte, con el eco de la fábrica.",
+"d4.h":"A bordo","d4.p":"El punto de vista del propio dron.",
+"s6.p2":"Alrededor: un ambiente para el interior de la fábrica y otro para el desierto abierto, pisadas ajustadas a la imagen y a la superficie que pisan, y respiraciones. Y silencios, colocados donde más pesan.",
+"s7.h":"Montaje, color y acabado",
+"s7.p1":"El corto se montó en DaVinci Resolve mientras todavía se rodaba. La línea de tiempo del director pasó a ser el contexto de cada clip nuevo: antes de escribir un prompt se sacaban del montaje los fotogramas de los dos lados del hueco, y el plano nuevo tenía que encajar con su luz y su lugar.",
+"s7.p2":"El etalonaje toma <em>Dune</em> como referencia: negros algo levantados, contraste suave y una saturación baja que respeta el ocre y la piel. Se hizo siempre en una línea de tiempo duplicada, guardando cada versión anterior, de modo que el montaje del director nunca corrió peligro.",
+"s7.c1":"El mismo fotograma tal como se generó y tal como sale en el corto terminado, con el etalonaje y el grano, hechos los dos en DaVinci Resolve.",
+"s7.h3":"El ojo del dron",
+"s7.p3":"El punto de vista del dron también se construye por capas. Una cámara pegada al dron en Blender da la trayectoria de vuelo; Seedance la convierte en un plano aéreo; el montaje añade un tratamiento de cámara de acción (ojo de pez, aberración de color, vibración, ruido de sensor) y, encima, una interfaz fría.",
+"s7.c2":"La interfaz de esta página es una ilustración redibujada; la del corto lleva los textos de la historia.",
+"s7.p4":"Los clips se generaron a 720p. El etalonaje y el grano se hicieron en DaVinci Resolve, y el corto terminado se escaló después a 1080p.",
+"s8.h":"Un equipo de sesiones de IA",
+"s8.p1":"Dirigió una sola persona, pero el trabajo se repartió como en un equipo pequeño. Doce conversaciones con Claude, cada una responsable de un único departamento y coordinadas por una sesión «ayudante de dirección»: guion, maquetas, VR, imagen, vídeo, sonido, música, montaje, cuentas de producción, redes sociales y método.",
+"s8.p2":"Lo que lo hizo seguro fue un puñado de normas cortas:",
+"r1.h":"Cada uno lo suyo","r1.p":"Una sesión solo toca sus archivos. Lo que es de otro departamento se pide, no se edita.",
+"r2.h":"Copia antes de tocar","r2.p":"Una copia de seguridad con fecha antes de cada cambio, y una nota de cómo deshacerlo.",
+"r3.h":"Un registro común","r3.p":"Cada sesión añade su entrada al final de un registro compartido. Nadie reescribe lo que ya hay.",
+"r4.h":"Ningún gasto sin un sí","r4.p":"Primero el coste, y el sí es del director, dado a la sesión que va a generar.",
+"r5.h":"Decir cuándo algo no cuadra","r5.p":"Si documentos, archivos y prompts no coinciden, la sesión lo dice y no elige por su cuenta.",
+"r6.h":"Decide el director","r6.p":"El trabajo técnico se delega. Las decisiones creativas y el guion, no.",
+"s9.h":"Lo que hemos aprendido",
+"q1.h":"La maqueta manda.","q1.p":"Lo que no está en la maqueta, la IA se lo inventa. Posición, tiempos y cámara se deciden antes de generar.",
+"q2.h":"El corto es su mejor referencia.","q2.p":"Los fotogramas del montaje aprobado mantienen la luz, la ropa y los objetos mejor que cualquier imagen nueva.",
+"q3.h":"Saber el coste antes de pulsar el botón.","q3.p":"Recortar el vídeo de referencia al tramo exacto y parar en dos intentos.",
+"q4.h":"Arreglar donde sale más barato.","q4.p":"El ritmo se arregla en el montaje y una luz algo desviada, en el etalonaje. Solo se regenera lo que no tiene arreglo.",
+"q5.h":"Guardar después de cada toma.","q5.p":"Varias tomas de VR sobrevivieron solo en archivos de autoguardado. Una toma sin guardar no existe.",
+"q6.h":"Un solo documento vigente para cada cosa.","q6.p":"Lo que se retira se aparta, nunca se borra, y todo el mundo trabaja con la misma lista de planos.",
+"s9.h3n":"El rodaje en cifras","f1":"días de producción","f2":"escenas, un archivo de Blender cada una","f3":"sesiones de IA, un director","f4":"líneas de diálogo","f5":"tomas rodadas cámara en mano en VR, todas las escenas","f6":"clips generados con IA","f7":"planos en el montaje final","f8":"intentos por plano, como mucho",
+"s9.h3":"Herramientas",
+"tl.1":"Producción virtual","tl.2":"Vídeo con IA","tl.3":"Imagen con IA","tl.4":"Sonido","tl.5":"Plataforma de generación","tl.6":"Montaje, color y grano","tl.8":"Asistente de producción",
+"pf":"Más trabajos: Raül Torres · Creative Portfolio","ct":"Contacto",
+"foot":"Una película de Raül Torres · 2026. Todas las imágenes de esta página son fotogramas de la producción."
+};
+var EN={"st.1":"Layer 2 · Seedance 2.5","st.2":"Layer 3 · Finished film"};
+var META={en:{t:"BUZZ · Making Off",d:"How the short film BUZZ was made: Blender blockouts, a handheld VR camera, AI video, sound and colour."},
+          es:{t:"BUZZ · Cómo se hizo",d:"Cómo se hizo el cortometraje BUZZ: maquetas en Blender, cámara en mano en VR, vídeo con IA, sonido y color."}};
+/* Put the film's address here when it is published */
+var FILM_URL="https://www.youtube.com/watch?v=dHo48TfIQcE";
+[].forEach.call(document.querySelectorAll("[data-watch]"),function(a){
+  if(FILM_URL){a.href=FILM_URL;a.target="_blank";a.rel="noopener";}
+  else{a.setAttribute("aria-disabled","true");a.addEventListener("click",function(e){ if(a.closest(".hero")) return; e.preventDefault(); });}
+});
+if(FILM_URL){[].forEach.call(document.querySelectorAll("[data-soon]"),function(n){n.hidden=true;});}
+var lang="en", nodes=[].slice.call(document.querySelectorAll("[data-i18n]"));
+nodes.forEach(function(n){var k=n.getAttribute("data-i18n"); if(!(k in EN)) EN[k]=n.innerHTML;});
+function t(k){return (lang==="es"&&ES[k])||EN[k]||"";}
+function setLang(l){
+  lang=l==="es"?"es":"en";
+  document.documentElement.lang=lang;
+  nodes.forEach(function(n){ if(n.id!=="heroStage") n.innerHTML=t(n.getAttribute("data-i18n")); });
+  document.title=META[lang].t;
+  var m=document.querySelector('meta[name="description"]'); if(m) m.setAttribute("content",META[lang].d);
+  [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.setAttribute("aria-pressed",String(b.getAttribute("data-lang")===lang));});
+  heroLabel();
+  try{localStorage.setItem("buzz-lang",lang);}catch(e){}
+}
+[].forEach.call(document.querySelectorAll(".lang button"),function(b){b.addEventListener("click",function(){setLang(b.getAttribute("data-lang"));});});
+
+/* compare sliders */
+[].forEach.call(document.querySelectorAll(".cmp"),function(c){
+  var r=c.querySelector("input");
+  function up(){c.style.setProperty("--p",r.value+"%");}
+  r.addEventListener("input",up); up();
+});
+
+/* layer stacks */
+var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var heroIndex=0;
+function heroLabel(){var el=document.getElementById("heroStage"); if(el) el.innerHTML=t("st."+heroIndex);}
+function Stack(root){
+  var layers=[].slice.call(root.querySelectorAll(":scope > .layer"));
+  var fig=root.closest("figure"), btns=fig?[].slice.call(fig.querySelectorAll(".steps button:not([data-play])")):[];
+  var play=fig?fig.querySelector("[data-play]"):null, idx=0, timer=null, isHero=root.getAttribute("data-auto")==="hero";
+  function show(i){
+    idx=i;
+    layers.forEach(function(l,k){
+      var on=k<=i; if(on!==l.classList.contains("on")){l.classList.add("wiping"); setTimeout(function(){l.classList.remove("wiping");},1500);}
+      l.classList.toggle("on",on);
+    });
+    btns.forEach(function(b,k){b.setAttribute("aria-pressed",String(k===i));});
+    if(isHero){heroIndex=i; heroLabel();}
+  }
+  function stop(){if(timer){clearInterval(timer); timer=null;}}
+  function start(){ if(reduce||timer) return; timer=setInterval(function(){show((idx+1)%layers.length);},isHero?3600:3000); }
+  btns.forEach(function(b,k){b.addEventListener("click",function(){stop(); show(k);});});
+  if(play) play.addEventListener("click",function(){stop(); show(0); if(reduce){return;} setTimeout(function(){timer=null; start();},400);});
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting) start(); else stop(); });},{threshold:.45}).observe(root);
+  } else start();
+  if(reduce&&isHero) show(layers.length-1);
+}
+[].forEach.call(document.querySelectorAll("[data-layers]"),function(r){Stack(r);});
+
+var saved=null; try{saved=localStorage.getItem("buzz-lang");}catch(e){}
+if(saved==="es") setLang("es");
+})();
+</script>
+</body>
+</html>
