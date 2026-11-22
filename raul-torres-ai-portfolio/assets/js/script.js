@@ -3,7 +3,7 @@ const translations = {
   en: {
     "works.eyebrow": "WORKS",
     "buzz.title": "BUZZ",
-    "buzz.description1": "A mother and her eight-year-old son cross the desert on foot and take shelter in an abandoned factory. A war-horror short with no dialogue, shot entirely in virtual reality. Making-of coming soon.",
+    "buzz.description1": "A mother and her eight-year-old son cross the desert on foot and take shelter in an abandoned factory. A war-horror short with no dialogue, shot entirely in virtual reality.",
     "buzz.watch": "WATCH VIDEO",
     "buzz.meta.type": "Virtual Production",
     "buzz.meta.duration": "4m 09s",
@@ -290,7 +290,7 @@ const translations = {
   es: {
     "works.eyebrow": "OBRAS",
     "buzz.title": "BUZZ",
-    "buzz.description1": "Una madre y su hijo de ocho años cruzan el desierto a pie y se refugian en una fábrica abandonada. Un cortometraje de terror bélico sin diálogos, rodado íntegramente en realidad virtual. Próximamente, el making of.",
+    "buzz.description1": "Una madre y su hijo de ocho años cruzan el desierto a pie y se refugian en una fábrica abandonada. Un cortometraje de terror bélico sin diálogos, rodado íntegramente en realidad virtual.",
     "buzz.watch": "VER VÍDEO",
     "buzz.meta.type": "Producción virtual",
     "buzz.meta.duration": "4m 09s",
