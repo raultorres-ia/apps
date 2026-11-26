@@ -340,9 +340,9 @@
         <input type="text" id="fTitol" maxlength="80" required placeholder="Ex.: Taules de multiplicar espacials">
       </div>
       <div class="camp">
-        <label for="fUrl">Enllaç de Gemini <span class="obligatori">*</span></label>
-        <input type="url" id="fUrl" maxlength="500" required placeholder="https://gemini.google.com/share/…" inputmode="url">
-        <span class="ajuda">A Gemini, obre la teva app (Canvas) i fes clic a <strong>Comparteix › Copia l'enllaç</strong>.</span>
+        <label for="fUrl">Enllaç de l'app <span class="obligatori">*</span> <span class="ajuda">(Gemini o Google Sites)</span></label>
+        <input type="url" id="fUrl" maxlength="500" required placeholder="https://gemini.google.com/share/… o https://sites.google.com/…" inputmode="url">
+        <span class="ajuda"><strong>Gemini:</strong> obre la teva app (Canvas) › <strong>Comparteix › Copia l'enllaç</strong>. <strong>Google Sites:</strong> copia l'adreça de la pàgina publicada i comprova que es vegi sense iniciar sessió.</span>
       </div>
       <div class="camp">
         <label for="fDesc">Què fa i com la faries servir a l'aula?</label>
@@ -389,7 +389,7 @@
     <button class="tancar" type="button" data-tanca aria-label="Tancar">✕</button>
   </div>
   <div class="dlg-cos">
-    <p style="margin-top:0;color:var(--muted)">Projecta el codi QR a la formació: els mestres l'escanegen amb el mòbil, veuen el mur i hi poden afegir la seva app de Gemini.</p>
+    <p style="margin-top:0;color:var(--muted)">Projecta el codi QR a la formació: els mestres l'escanegen amb el mòbil, veuen el mur i hi poden afegir la seva app.</p>
     <div class="qr-caixa"><div id="qr" class="qr" role="img" aria-label="Codi QR de l'enllaç del mur"></div></div>
     <div class="fila-accions" style="justify-content:center;margin:12px 0 16px">
       <button class="btn" type="button" id="btnQrGran">🖥️ Projectar en gran</button>
@@ -410,7 +410,7 @@
     <div class="qr-gran-text">
       <div id="qrGranEmoji" class="emoji-gran">🚀</div>
       <h2 id="qrGranTitol"></h2>
-      <p>Escaneja el codi, mira les apps dels companys i comparteix la teva app de Gemini.</p>
+      <p>Escaneja el codi, mira les apps dels companys i comparteix la teva app.</p>
       <p class="qr-gran-url" id="qrGranUrl"></p>
     </div>
     <div id="qrGranCodi" class="qr"></div>
@@ -427,7 +427,8 @@
   'use strict';
 
   /* ---------- Configuració ---------- */
-  // Només enllaços per compartir de Gemini (el servidor fa la mateixa comprovació).
+  // Només enllaços de Gemini o de Google Sites (el servidor fa la mateixa comprovació).
+  const REGEX_SITES = /^https:\/\/sites\.google\.com\/[^\s<>"']+$/i;
   const REGEX_GEMINI = /^https:\/\/(gemini\.google\.com|g\.co\/gemini)\/[^\s<>"']*$/i;
   const ETAPES = ['Infantil', 'Primària', 'ESO', 'Batxillerat', 'FP', 'Formació docent', 'Totes les etapes'];
   const EMOJIS = ['🧩', '🎮', '📚', '🧪', '🔢', '🌍', '🎨', '🎵', '🗣️', '🧠', '🤖', '📝', '🌱', '🚀', '⏱️', '🏆'];
@@ -444,6 +445,10 @@
   function hash(s) { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.codePointAt(0)) >>> 0; return h; }
   function urlSegura(u) { return typeof u === 'string' && /^https:\/\/[^\s<>"']+$/i.test(u.trim()); }
   function esGemini(u) { return typeof u === 'string' && REGEX_GEMINI.test(u.trim()); }
+  function esSites(u) { return typeof u === 'string' && REGEX_SITES.test(u.trim()); }
+  function enllacPermes(u) { return esGemini(u) || esSites(u); }
+  function einaDe(u) { return esSites(u) ? 'Google Sites' : 'Gemini'; }
+  const MISSATGE_ENLLAC = 'Ha de ser un enllaç de Gemini (https://gemini.google.com/share/… o https://g.co/gemini/share/…) o de Google Sites (https://sites.google.com/…).';
   function domini(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
   function dataCurta(iso) {
     const d = new Date(iso); if (isNaN(d)) return '';
@@ -524,8 +529,8 @@
       dades: () => espera(Object.assign(JSON.parse(JSON.stringify(llegeix())), { url: '' })),
       afegeix: d => {
         const db = llegeix();
-        if (!esGemini(d.url)) return Promise.reject(new Error('Ha de ser l\'enllaç per compartir de Gemini.'));
-        const item = Object.assign({}, d, { eina: 'Gemini', id: 'l' + Date.now().toString(36), data: new Date().toISOString(), likes: 0 });
+        if (!enllacPermes(d.url)) return Promise.reject(new Error(MISSATGE_ENLLAC));
+        const item = Object.assign({}, d, { eina: einaDe(d.url), id: 'l' + Date.now().toString(36), data: new Date().toISOString(), likes: 0 });
         db.apps.push(item); guarda.escriu(CLAU, db); return espera(Object.assign({}, item));
       },
       like: (id, delta) => {
@@ -633,7 +638,7 @@
       el('h1', {}, col.titol),
       col.descripcio ? el('p', {}, col.descripcio) : null,
       el('div', { class: 'meta' },
-        el('span', { class: 'pastilla' }, '✦ Apps fetes amb Gemini'),
+        el('span', { class: 'pastilla' }, '✦ Apps de Gemini i Google Sites'),
         el('span', { class: 'pastilla' }, '📱 ' + totes.length + (totes.length === 1 ? ' app' : ' apps')),
         persones ? el('span', { class: 'pastilla' }, '👥 ' + persones + (persones === 1 ? ' persona' : ' persones')) : null,
         el('span', { class: 'pastilla' }, col.oberta ? '✍️ Oberta a aportacions' : '🔒 Col·lecció tancada'),
@@ -773,11 +778,11 @@
       miniatura(a, 'detall-mini'),
       liniaDomini(a),
       el('h2', {}, a.titol),
-      el('div', { class: 'xips' }, el('span', { class: 'xip' }, '✦ Gemini'), a.etapa ? el('span', { class: 'xip' }, '🎒 ' + a.etapa) : null),
+      el('div', { class: 'xips' }, el('span', { class: 'xip' }, (esSites(a.url) ? '🌐 ' : '✦ ') + einaDe(a.url)), a.etapa ? el('span', { class: 'xip' }, '🎒 ' + a.etapa) : null),
       a.descripcio ? el('p', { class: 'desc', style: 'margin-top:12px' }, a.descripcio) : null,
       el('p', { class: 'autor', style: 'margin:12px 0 0' }, 'Compartida per ', a.autor ? el('strong', {}, a.autor) : 'una persona anònima', a.data ? ' · ' + dataCurta(a.data) : ''),
       el('div', { class: 'fila-accions' },
-        el('a', { class: 'btn', href: a.url, target: '_blank', rel: 'noopener noreferrer' }, '🚀 Obrir l\'app a Gemini'),
+        el('a', { class: 'btn', href: a.url, target: '_blank', rel: 'noopener noreferrer' }, '🚀 Obrir l\'app'),
         el('button', { class: 'btn suau', type: 'button', onclick: () => copia(a.url, 'Enllaç copiat 📋') }, '🔗 Copiar l\'enllaç'),
         botoCor(a)),
       blocPrompt
@@ -813,14 +818,14 @@
       titol: $('#fTitol').value.trim(),
       url: url,
       descripcio: $('#fDesc').value.trim(),
-      eina: 'Gemini',
+      eina: einaDe(url),
       etapa: $('#fEtapa').value,
       emoji: S.emoji,
       prompt: $('#fPrompt').value.trim(),
       autor: $('#fAutor').value.trim()
     };
     if (!d.titol) { err.textContent = 'Posa un nom a la teva app.'; $('#fTitol').focus(); return; }
-    if (!esGemini(d.url)) { err.textContent = 'Ha de ser l\'enllaç per compartir de Gemini (comença per https://gemini.google.com/share/ o https://g.co/gemini/share/).'; $('#fUrl').focus(); return; }
+    if (!enllacPermes(d.url)) { err.textContent = MISSATGE_ENLLAC; $('#fUrl').focus(); return; }
     const boto = $('#fEnvia'); boto.disabled = true; boto.textContent = 'Publicant…';
     try {
       const item = await API.afegeix(d);
