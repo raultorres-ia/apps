@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mur d'apps · Vibe Coding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3fb;
+    --paper: #ffffff;
+    --ink: #1e1a2e;
+    --muted: #6d6884;
+    --line: #e7e3f2;
+    --accent: #6c4cf1;
+    --accent-ink: #ffffff;
+    --accent-soft: #efeafe;
+    --heart: #e8457c;
+    --radius: 18px;
+    --shadow: 0 1px 2px rgba(30, 26, 46, .06), 0 6px 20px rgba(30, 26, 46, .07);
+    --shadow-hover: 0 2px 4px rgba(30, 26, 46, .08), 0 14px 34px rgba(30, 26, 46, .13);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
+
+  /* Barra superior */
+  .barra {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px clamp(16px, 4vw, 40px);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .marca {
+    display: flex; align-items: center; gap: 10px;
+    background: none; border: 0; padding: 0;
+    font-weight: 800; font-size: 1.1rem; letter-spacing: -.01em;
+  }
+  .marca .logo {
+    width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+    background: linear-gradient(135deg, #6c4cf1, #ef5da8); color: #fff; font-size: 1.1rem;
+  }
+  .barra-dreta { display: flex; align-items: center; gap: 10px; }
+  .estat {
+    font-size: .78rem; font-weight: 600; color: #8a5a00; background: #fff3d6;
+    padding: 5px 10px; border-radius: 999px;
+  }
+  .estat:empty { display: none; }
+
+  /* Botons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 0; border-radius: 12px; padding: 10px 16px;
+    font-weight: 700; font-size: .92rem; text-decoration: none;
+    background: var(--accent); color: var(--accent-ink);
+    transition: transform .12s ease, filter .12s ease, background .12s ease;
+  }
+  .btn:hover { filter: brightness(1.07); }
+  .btn:active { transform: translateY(1px); }
+  .btn.suau { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .btn.suau:hover { background: var(--accent-soft); filter: none; }
+  .btn.petit { padding: 7px 12px; font-size: .84rem; border-radius: 10px; }
+  .btn[disabled] { opacity: .6; cursor: progress; }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 120px; }
+
+  /* Portada d'una col·lecció */
+  .hero {
+    position: relative; overflow: hidden;
+    border-radius: 26px; padding: clamp(24px, 5vw, 48px);
+    color: #fff; margin-bottom: 22px;
+    background: linear-gradient(130deg, var(--c1), var(--c2));
+    box-shadow: var(--shadow);
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: auto -60px -90px auto; width: 300px; height: 300px;
+    border-radius: 50%; background: rgba(255, 255, 255, .13);
+  }
+  .hero .emoji-gran { font-size: clamp(2.4rem, 6vw, 3.4rem); line-height: 1; }
+  .hero h1 { margin: 12px 0 6px; font-size: clamp(1.7rem, 4.5vw, 2.6rem); letter-spacing: -.02em; line-height: 1.1; }
+  .hero p { margin: 0; max-width: 640px; font-size: 1.02rem; opacity: .95; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; position: relative; z-index: 1; }
+  .pastilla {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255, 255, 255, .2); padding: 6px 12px; border-radius: 999px;
+    font-size: .85rem; font-weight: 600;
+  }
+  .tornar { margin-bottom: 14px; }
+
+  /* Barra d'eines */
+  .eines {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 20px;
+  }
+  .cerca {
+    flex: 1 1 240px; display: flex; align-items: center; gap: 8px;
+    background: var(--paper); border-radius: 12px; padding: 0 12px;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .cerca input { border: 0; outline: 0; background: none; padding: 10px 0; width: 100%; }
+  .eines select {
+    border: 0; border-radius: 12px; padding: 10px 12px; background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; font-size: .9rem;
+  }
+  .commutador { display: inline-flex; background: var(--paper); border-radius: 12px; padding: 3px; box-shadow: inset 0 0 0 1px var(--line); }
+  .commutador button {
+    border: 0; background: none; border-radius: 9px; padding: 7px 10px; font-size: .9rem; font-weight: 700; color: var(--muted);
+  }
+  .commutador button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+
+  /* Graella de targetes */
+  .graella { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .targeta {
+    display: flex; flex-direction: column;
+    background: var(--paper); border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease;
+    animation: entra .35s ease both;
+  }
+  .targeta:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  @keyframes entra { from { opacity: 0; transform: translateY(8px); } }
+  .miniatura {
+    position: relative; aspect-ratio: 16 / 8; display: grid; place-items: center;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.35), transparent 45%),
+      linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #ffffff));
+  }
+  .miniatura .emoji { font-size: 3rem; filter: drop-shadow(0 6px 10px rgba(0,0,0,.15)); }
+  .miniatura .eina-etiqueta {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(255,255,255,.92); color: var(--ink);
+    font-size: .74rem; font-weight: 700; padding: 4px 9px; border-radius: 999px;
+  }
+  .cos { padding: 14px 16px 6px; flex: 1; }
+  .domini { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--muted); font-weight: 600; }
+  .domini img { width: 16px; height: 16px; border-radius: 4px; }
+  .targeta h3 { margin: 6px 0 6px; font-size: 1.07rem; line-height: 1.25; letter-spacing: -.01em; }
+  .desc {
+    margin: 0; color: var(--muted); font-size: .9rem;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .xips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .xip { font-size: .74rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .xip.prompt { background: #e6f7f1; color: #0f7a5c; }
+  .peu {
+    display: flex; align-items: center; gap: 8px; padding: 10px 16px 14px;
+  }
+  .autor { flex: 1; min-width: 0; font-size: .82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .autor strong { color: var(--ink); font-weight: 700; }
+  .cor {
+    display: inline-flex; align-items: center; gap: 5px; border: 0; background: none;
+    font-weight: 700; font-size: .86rem; color: var(--muted); padding: 6px 8px; border-radius: 10px;
+  }
+  .cor:hover { background: #fdecf2; color: var(--heart); }
+  .cor .icona { font-size: 1.05rem; transition: transform .2s ease; }
+  .cor[aria-pressed="true"] { color: var(--heart); }
+  .cor[aria-pressed="true"] .icona { transform: scale(1.15); }
+
+  /* Vista de llista */
+  .graella.llista { grid-template-columns: 1fr; gap: 12px; }
+  .llista .targeta { flex-direction: row; align-items: stretch; }
+  .llista .miniatura { aspect-ratio: auto; width: 130px; flex: none; }
+  .llista .miniatura .emoji { font-size: 2.3rem; }
+  .llista .miniatura .eina-etiqueta { display: none; }
+  .llista .cos { padding: 12px 14px; }
+  .llista .desc { -webkit-line-clamp: 2; }
+  .llista .peu { flex-direction: column; justify-content: center; align-items: flex-end; padding: 12px 14px; }
+  .llista .autor { flex: none; }
+
+  /* Portada amb diverses col·leccions */
+  .titol-inici { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: 6px 0 4px; letter-spacing: -.02em; }
+  .subtitol-inici { margin: 0 0 22px; color: var(--muted); }
+  .col-targeta { color: #fff; padding: 22px; min-height: 180px; justify-content: space-between; background: linear-gradient(130deg, var(--c1), var(--c2)); }
+  .col-targeta h3 { font-size: 1.3rem; margin: 10px 0 4px; }
+  .col-targeta p { margin: 0; opacity: .92; font-size: .92rem; }
+  .col-targeta .pastilla { align-self: flex-start; margin-top: 14px; }
+
+  /* Estats */
+  .buit {
+    text-align: center; padding: 56px 20px; background: var(--paper); border-radius: var(--radius);
+    box-shadow: var(--shadow); color: var(--muted);
+  }
+  .buit .gran { font-size: 3rem; }
+  .buit h3 { color: var(--ink); margin: 10px 0 6px; }
+  .esquelet { height: 290px; border-radius: var(--radius); background: linear-gradient(90deg, #ece8f6, #f6f4fb, #ece8f6); background-size: 200% 100%; animation: brilla 1.3s infinite linear; }
+  @keyframes brilla { to { background-position: -200% 0; } }
+  .avis { background: #fff3d6; color: #6b4700; padding: 12px 16px; border-radius: 14px; margin-bottom: 18px; font-weight: 600; font-size: .92rem; }
+
+  /* Botó flotant */
+  .fab {
+    position: fixed; right: clamp(16px, 4vw, 36px); bottom: clamp(16px, 4vw, 32px); z-index: 30;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 0; border-radius: 999px; padding: 15px 22px;
+    background: linear-gradient(135deg, #6c4cf1, #a24cf1); color: #fff;
+    font-weight: 800; font-size: 1rem;
+    box-shadow: 0 10px 28px rgba(108, 76, 241, .45);
+    transition: transform .15s ease;
+  }
+  .fab:hover { transform: translateY(-2px) scale(1.02); }
+  .fab .mes { font-size: 1.3rem; line-height: 1; }
+  .fab[hidden] { display: none; }
+
+  /* Finestres */
+  dialog {
+    border: 0; padding: 0; border-radius: 24px; width: min(640px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px); background: var(--paper); color: var(--ink);
+    box-shadow: 0 30px 80px rgba(20, 16, 40, .35);
+  }
+  dialog::backdrop { background: rgba(26, 20, 48, .5); backdrop-filter: blur(3px); }
+  dialog.ample { width: min(900px, calc(100vw - 24px)); }
+  .dlg-cap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px 6px; }
+  .dlg-cap h2 { margin: 0; font-size: 1.3rem; letter-spacing: -.01em; }
+  .tancar { border: 0; background: var(--bg); width: 38px; height: 38px; border-radius: 50%; font-size: 1.2rem; flex: none; }
+  .tancar:hover { background: var(--accent-soft); }
+  .dlg-cos { padding: 10px 24px 24px; }
+
+  form .camp { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  form label { font-weight: 700; font-size: .9rem; }
+  form .ajuda { font-size: .8rem; color: var(--muted); font-weight: 500; }
+  form input[type="text"], form input[type="url"], form textarea, form select {
+    border: 0; border-radius: 12px; padding: 11px 13px; background: var(--bg);
+    box-shadow: inset 0 0 0 1px var(--line); width: 100%;
+  }
+  form input:focus, form textarea:focus, form select:focus { outline: 0; box-shadow: inset 0 0 0 2px var(--accent); background: #fff; }
+  form textarea { resize: vertical; min-height: 84px; }
+  .dues { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .emojis { display: flex; flex-wrap: wrap; gap: 6px; }
+  .emojis button {
+    width: 42px; height: 42px; border-radius: 12px; border: 0; background: var(--bg); font-size: 1.3rem;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .emojis button[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+  .accions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+  .error { color: #b3261e; font-weight: 600; font-size: .88rem; min-height: 1.2em; margin: 0 0 6px; }
+  .obligatori { color: var(--heart); }
+
+  /* Detall */
+  .detall-mini { border-radius: 18px; aspect-ratio: auto; height: 150px; }
+  .detall-mini .emoji { font-size: 4rem; }
+  .detall h2 { margin: 16px 0 6px; font-size: 1.5rem; letter-spacing: -.02em; line-height: 1.2; }
+  .detall .autor { white-space: normal; }
+  .detall .desc { -webkit-line-clamp: unset; display: block; font-size: .98rem; white-space: pre-wrap; }
+  .detall .fila-accions { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 6px; }
+  .bloc-prompt { margin-top: 18px; background: #f1fbf7; border-radius: 14px; padding: 14px 16px; }
+  .bloc-prompt .cap { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .bloc-prompt strong { color: #0f7a5c; }
+  .bloc-prompt pre {
+    margin: 0; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: .85rem; max-height: 240px; overflow: auto; color: #20352e;
+  }
+  .previsualitzacio { margin-top: 16px; }
+  .previsualitzacio iframe { width: 100%; height: min(60vh, 520px); border: 0; border-radius: 14px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
+  .previsualitzacio p { font-size: .8rem; color: var(--muted); margin: 6px 2px 0; }
+  .camp-enllac { display: flex; gap: 8px; }
+  .camp-enllac input { flex: 1; border: 0; border-radius: 12px; padding: 11px 13px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); }
+
+  /* Codi QR */
+  .qr-caixa { display: grid; place-items: center; background: var(--bg); border-radius: 18px; padding: 18px; }
+  .qr { background: #fff; border-radius: 14px; padding: 10px; line-height: 0; }
+  .qr svg, .qr img { display: block; width: 220px; height: 220px; }
+  .qr .sense-qr { line-height: 1.4; width: 220px; padding: 20px; text-align: center; color: var(--muted); font-size: .85rem; }
+  .qr-gran {
+    position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px;
+    background: linear-gradient(130deg, var(--c1, #6c4cf1), var(--c2, #ef5da8)); color: #fff;
+  }
+  .qr-gran[hidden] { display: none; }
+  .qr-gran .tancar { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,.25); color: #fff; }
+  .qr-gran-cos { display: flex; align-items: center; justify-content: center; gap: clamp(24px, 5vw, 64px); flex-wrap: wrap; max-width: 1100px; }
+  .qr-gran-text { max-width: 440px; }
+  .qr-gran-text .emoji-gran { font-size: clamp(2.6rem, 6vw, 4rem); line-height: 1; }
+  .qr-gran-text h2 { font-size: clamp(1.8rem, 4.5vw, 3rem); line-height: 1.1; margin: 12px 0; letter-spacing: -.02em; }
+  .qr-gran-text p { font-size: clamp(1rem, 2vw, 1.3rem); opacity: .95; margin: 0 0 10px; }
+  .qr-gran-url { font-size: .9rem !important; opacity: .8 !important; word-break: break-all; }
+  .qr-gran .qr { padding: 18px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .qr-gran .qr svg, .qr-gran .qr img { width: min(62vh, 80vw); height: min(62vh, 80vw); }
+  .gemini { background: rgba(255,255,255,.2); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 30px); z-index: 60;
+    background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 14px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25); opacity: 0; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease; max-width: calc(100vw - 32px);
+  }
+  .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 640px) {
+    .marca .text-llarg, .estat { display: none; }
+    .fab .text { display: none; }
+    .fab { padding: 16px 18px; }
+    .dues { grid-template-columns: 1fr; }
+    .llista .miniatura { width: 86px; }
+    .llista .peu { display: none; }
+    .eines select { flex: 1 1 40%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="barra">
+  <button class="marca" id="anarInici" type="button" aria-label="Anar a l'inici">
+    <span class="logo">🧩</span><span>Mur d'apps <span class="text-llarg">· Vibe Coding</span></span>
+  </button>
+  <div class="barra-dreta">
+    <span id="estat" class="estat"></span>
+    <button class="btn suau petit" id="btnCompartir" type="button">🔗 Compartir</button>
+  </div>
+</header>
+
+<main id="app" aria-live="polite"></main>
+
+<button class="fab" id="fab" type="button" hidden><span class="mes">＋</span><span class="text">Afegeix la teva app</span></button>
+
+<!-- Formulari per afegir una app -->
+<dialog id="dlgForm" aria-labelledby="titolForm">
+  <div class="dlg-cap">
+    <h2 id="titolForm">✨ Comparteix la teva app</h2>
+    <button class="tancar" type="button" data-tanca aria-label="Tancar">✕</button>
+  </div>
+  <div class="dlg-cos">
+    <form id="formApp" novalidate>
+      <div class="camp">
+        <label for="fTitol">Nom de l'app <span class="obligatori">*</span></label>
+        <input type="text" id="fTitol" maxlength="80" required placeholder="Ex.: Taules de multiplicar espacials">
+      </div>
+      <div class="camp">
+        <label for="fUrl">Enllaç de l'app <span class="obligatori">*</span> <span class="ajuda">(Gemini, Google Sites, GitHub o ja.cat)</span></label>
+        <input type="url" id="fUrl" maxlength="500" required placeholder="https://…" inputmode="url">
+        <span class="ajuda"><strong>Gemini:</strong> obre la teva app (Canvas) › <strong>Comparteix › Copia l'enllaç</strong>. <strong>Google Sites, GitHub o ja.cat:</strong> copia l'adreça de la pàgina publicada i comprova que es vegi sense iniciar sessió.</span>
+      </div>
+      <div class="camp">
+        <label for="fDesc">Què fa i com la faries servir a l'aula?</label>
+        <textarea id="fDesc" maxlength="400" placeholder="Una o dues frases: objectiu, curs, com l'has provada…"></textarea>
+      </div>
+      <div class="camp">
+        <label for="fEtapa">Etapa</label>
+        <select id="fEtapa"></select>
+      </div>
+      <div class="camp">
+        <label>Tria una icona</label>
+        <div class="emojis" id="fEmojis" role="group" aria-label="Icona de l'app"></div>
+      </div>
+      <div class="camp">
+        <label for="fPrompt">Prompt inicial <span class="ajuda">(opcional, però ajuda molt els companys)</span></label>
+        <textarea id="fPrompt" maxlength="2000" placeholder="Enganxa el primer prompt que vas fer servir"></textarea>
+      </div>
+      <div class="camp">
+        <label for="fAutor">Nom o àlies <span class="ajuda">(opcional · no hi posis noms d'alumnes ni del centre)</span></label>
+        <input type="text" id="fAutor" maxlength="40" placeholder="Ex.: Marta G. o «La mestra de 4t»">
+      </div>
+      <p class="error" id="fError" role="alert"></p>
+      <div class="accions">
+        <button class="btn suau" type="button" data-tanca>Cancel·lar</button>
+        <button class="btn" type="submit" id="fEnvia">Publicar al mur</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- Detall d'una app -->
+<dialog id="dlgDetall" class="ample" aria-label="Detall de l'app">
+  <div class="dlg-cap">
+    <span></span>
+    <button class="tancar" type="button" data-tanca aria-label="Tancar">✕</button>
+  </div>
+  <div class="dlg-cos detall" id="detallCos"></div>
+</dialog>
+
+<!-- Compartir -->
+<dialog id="dlgCompartir" aria-labelledby="titolCompartir">
+  <div class="dlg-cap">
+    <h2 id="titolCompartir">🔗 Convida els participants</h2>
+    <button class="tancar" type="button" data-tanca aria-label="Tancar">✕</button>
+  </div>
+  <div class="dlg-cos">
+    <p style="margin-top:0;color:var(--muted)">Projecta el codi QR a la formació: els mestres l'escanegen amb el mòbil, veuen el mur i hi poden afegir la seva app.</p>
+    <div class="qr-caixa"><div id="qr" class="qr" role="img" aria-label="Codi QR de l'enllaç del mur"></div></div>
+    <div class="fila-accions" style="justify-content:center;margin:12px 0 16px">
+      <button class="btn" type="button" id="btnQrGran">🖥️ Projectar en gran</button>
+      <button class="btn suau" type="button" id="btnQrDesa">⬇️ Desar el QR</button>
+    </div>
+    <p class="ajuda" id="avisEnllac" style="margin:0 0 8px;color:var(--muted);font-size:.82rem"></p>
+    <div class="camp-enllac">
+      <input type="text" id="enllacCompartir" readonly aria-label="Enllaç per compartir">
+      <button class="btn" type="button" id="btnCopiaEnllac">Copiar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- QR a pantalla completa per projectar -->
+<div id="qrGran" class="qr-gran" hidden>
+  <button class="tancar" type="button" id="tancaQrGran" aria-label="Tancar">✕</button>
+  <div class="qr-gran-cos">
+    <div class="qr-gran-text">
+      <div id="qrGranEmoji" class="emoji-gran">🚀</div>
+      <h2 id="qrGranTitol"></h2>
+      <p>Escaneja el codi, mira les apps dels companys i comparteix la teva app.</p>
+      <p class="qr-gran-url" id="qrGranUrl"></p>
+    </div>
+    <div id="qrGranCodi" class="qr"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<!-- Llibreria per generar el codi QR (amb un segon servidor de reserva) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"
+  onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';document.head.appendChild(s);"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Configuració ---------- */
+  // Només enllaços de llocs acceptats (el servidor fa la mateixa comprovació).
+  // Llocs acceptats (ha de coincidir amb ENLLACOS de Codi.gs).
+  const ENLLACOS = [
+    { eina: 'Gemini', icona: '✦', re: /^https:\/\/(gemini\.google\.com|g\.co\/gemini)\/[^\s<>"']*$/i },
+    { eina: 'Google Sites', icona: '🌐', re: /^https:\/\/sites\.google\.com\/[^\s<>"']+$/i },
+    { eina: 'GitHub', icona: '🐙', re: /^https:\/\/([a-z0-9-]+\.github\.io(\/[^\s<>"']*)?|github\.com\/[^\s<>"']+)$/i },
+    { eina: 'ja.cat', icona: '🔗', re: /^https:\/\/ja\.cat\/[^\s<>"']+$/i }
+  ];
+  const ETAPES = ['Infantil', 'Primària', 'ESO', 'Batxillerat', 'FP', 'Formació docent', 'Totes les etapes'];
+  const EMOJIS = ['🧩', '🎮', '📚', '🧪', '🔢', '🌍', '🎨', '🎵', '🗣️', '🧠', '🤖', '📝', '🌱', '🚀', '⏱️', '🏆'];
+  const COLORS = ['#6c4cf1', '#ef5da8', '#ff8a3d', '#17b890', '#2f80ed', '#e0a800', '#9b51e0', '#eb5757', '#00a3c4'];
+  const DEGRADATS = [['#6c4cf1', '#ef5da8'], ['#2f80ed', '#17b890'], ['#ff8a3d', '#eb5757'], ['#9b51e0', '#2f80ed'], ['#17b890', '#e0a800']];
+  const REFRESC_MS = 45000;
+
+  /* ---------- Utilitats ---------- */
+  const $ = s => document.querySelector(s);
+  const guarda = {
+    llegeix(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
+    escriu(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sense emmagatzematge */ } }
+  };
+  function hash(s) { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.codePointAt(0)) >>> 0; return h; }
+  function urlSegura(u) { return typeof u === 'string' && /^https:\/\/[^\s<>"']+$/i.test(u.trim()); }
+  function llocDe(u) { return typeof u === 'string' ? (ENLLACOS.find(l => l.re.test(u.trim())) || null) : null; }
+  function enllacPermes(u) { return !!llocDe(u); }
+  function einaDe(u) { const l = llocDe(u); return l ? l.eina : ''; }
+  function iconaDe(u) { const l = llocDe(u); return l ? l.icona : '🔗'; }
+  const MISSATGE_ENLLAC = 'L\'enllaç ha de ser de Gemini, Google Sites, GitHub (github.com o …github.io) o ja.cat, i començar per https://';
+  function domini(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
+  function dataCurta(iso) {
+    const d = new Date(iso); if (isNaN(d)) return '';
+    return d.toLocaleDateString('ca-ES', { day: 'numeric', month: 'short' });
+  }
+
+  /** Crea elements sense fer servir mai innerHTML amb dades. */
+  function el(tag, attrs, ...fills) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
+      else if (k === 'class') n.className = v;
+      else if (k === 'style') n.style.cssText = v;
+      else if ((k === 'href' || k === 'src') && !urlSegura(v)) continue;
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    for (const f of fills.flat()) {
+      if (f == null || f === false) continue;
+      n.append(f instanceof Node ? f : document.createTextNode(String(f)));
+    }
+    return n;
+  }
+
+  /** Com replaceChildren, però ignorant els elements buits (null/false). */
+  function posa(node, ...fills) {
+    node.replaceChildren(...fills.flat().filter(f => f != null && f !== false));
+  }
+
+  let toastTimer;
+  function avisa(text) {
+    const t = $('#toast'); t.textContent = text; t.classList.add('visible');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('visible'), 2800);
+  }
+
+  /* ---------- Connexió amb les dades ---------- */
+  /*
+   * URL de l'aplicació web d'Apps Script (acaba en /exec).
+   * Si és buida, la pàgina funciona en mode de prova (dades només en aquest navegador).
+   */
+  const URL_API = 'https://script.google.com/macros/s/AKfycbzhP-JM02bGSJlIo3GZkax1bZ1C--5MWJqCwhsgRY-TxITb3yFHYWUhInaXQmrYLsO-/exec';
+  const REMOT = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(URL_API);
+
+  async function crida(metode, cos) {
+    let resp;
+    try {
+      resp = metode === 'GET'
+        ? await fetch(URL_API, { method: 'GET' })
+        // text/plain evita la consulta prèvia CORS, que Apps Script no admet.
+        : await fetch(URL_API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(cos) });
+    } catch (e) {
+      throw new Error('No s\'ha pogut connectar amb el mur. Revisa la connexió a Internet.');
+    }
+    let r;
+    try { r = await resp.json(); }
+    catch (e) { throw new Error('El servidor del mur no respon bé. Comprova que l\'aplicació web estigui implementada per a «Qualsevol persona».'); }
+    if (!r || !r.ok) throw new Error((r && r.error) || 'Error desconegut.');
+    return r;
+  }
+
+  function apiDemo() {
+    const CLAU = 'mur-demo-v1';
+    const llavor = {
+      colleccions: [
+        { id: 'vibe-coding-1', titol: 'Curs de Vibe Coding', descripcio: 'Compartim les apps que hem creat durant el curs.', emoji: '🚀', oberta: true },
+        { id: 'vibe-coding-2', titol: 'Sessió 2 · Jocs per a l\'aula', descripcio: 'Petits jocs per repassar continguts.', emoji: '🎮', oberta: true }
+      ],
+      apps: [
+        { id: 'd1', data: new Date(Date.now() - 864e5 * 2).toISOString(), colleccio: 'vibe-coding-1', titol: 'Rellotge de la calma', url: 'https://gemini.google.com/share/exemple1', descripcio: 'Temporitzador visual per a les transicions a classe. Funciona molt bé a infantil.', autor: 'Mestra d\'infantil', eina: 'Gemini', etapa: 'Infantil', emoji: '⏱️', prompt: 'Crea una pàgina HTML amb un temporitzador visual de colors per a infants de 4 anys…', likes: 5 },
+        { id: 'd2', data: new Date(Date.now() - 864e5).toISOString(), colleccio: 'vibe-coding-1', titol: 'Taules de multiplicar espacials', url: 'https://gemini.google.com/share/exemple2', descripcio: 'Joc de naus per practicar les taules del 2 al 9.', autor: 'Jordi', eina: 'Gemini', etapa: 'Primària', emoji: '🔢', prompt: '', likes: 3 },
+        { id: 'd3', data: new Date().toISOString(), colleccio: 'vibe-coding-1', titol: 'Mapa de les comarques', url: 'https://g.co/gemini/share/exemple3', descripcio: 'Clica la comarca i descobreix-ne la capital.', autor: '', eina: 'Gemini', etapa: 'Primària', emoji: '🌍', prompt: '', likes: 0 }
+      ]
+    };
+    let memoria = null;
+    const llegeix = () => memoria || (memoria = guarda.llegeix(CLAU, null) || JSON.parse(JSON.stringify(llavor)));
+    const espera = v => new Promise(r => setTimeout(() => r(v), 250));
+    return {
+      dades: () => espera(Object.assign(JSON.parse(JSON.stringify(llegeix())), { url: '' })),
+      afegeix: d => {
+        const db = llegeix();
+        if (!enllacPermes(d.url)) return Promise.reject(new Error(MISSATGE_ENLLAC));
+        const item = Object.assign({}, d, { eina: einaDe(d.url), id: 'l' + Date.now().toString(36), data: new Date().toISOString(), likes: 0 });
+        db.apps.push(item); guarda.escriu(CLAU, db); return espera(Object.assign({}, item));
+      },
+      like: (id, delta) => {
+        const db = llegeix(); const a = db.apps.find(x => x.id === id);
+        if (!a) return Promise.reject(new Error('No s\'ha trobat l\'app.'));
+        a.likes = Math.max(0, (a.likes || 0) + (delta < 0 ? -1 : 1)); guarda.escriu(CLAU, db); return espera(a.likes);
+      }
+    };
+  }
+
+  const API = REMOT
+    ? {
+        dades: () => crida('GET').then(r => r.dades),
+        afegeix: d => crida('POST', { accio: 'afegeix', dades: d }).then(r => r.item),
+        like: (id, delta) => crida('POST', { accio: 'like', id: id, delta: delta }).then(r => r.likes)
+      }
+    : apiDemo();
+
+  /* ---------- Estat ---------- */
+  const S = {
+    cols: [], apps: [], url: '', colId: null, carregat: false, error: '',
+    q: '', eina: '', etapa: '', ordre: 'recent',
+    vista: guarda.llegeix('mur-vista', 'graella'),
+    emoji: EMOJIS[0]
+  };
+  const likes = new Set(guarda.llegeix('mur-likes', []));
+
+  function colActual() { return S.cols.find(c => c.id === S.colId) || null; }
+  function degradat(id) { return DEGRADATS[hash(id) % DEGRADATS.length]; }
+
+  /* ---------- Navegació ---------- */
+  // La col·lecció va a l'adreça com a ?c=id (p. ex. …/mur_vibe_coding/?c=vibe-coding-1).
+  function llegeixParametre(cb) {
+    cb(new URLSearchParams(location.search).get('c') || null);
+  }
+  function adrecaBase() { return location.href.split('#')[0].split('?')[0]; }
+  function vesA(id) {
+    S.colId = id; S.q = ''; S.eina = ''; S.etapa = '';
+    try { history.replaceState(null, '', id ? '?c=' + encodeURIComponent(id) : location.pathname); } catch (e) { /* res */ }
+    render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function enllacCompartir() {
+    // Si la col·lecció té l'enllaç d'una pàgina de Google Sites, el QR porta allà.
+    const col = colActual();
+    if (col && col.enllac && urlSegura(col.enllac)) return col.enllac;
+    return adrecaBase() + (S.colId ? '?c=' + encodeURIComponent(S.colId) : '');
+  }
+
+  /* ---------- Càrrega ---------- */
+  async function carrega(silenci) {
+    try {
+      const d = await API.dades();
+      S.cols = d.colleccions || []; S.apps = d.apps || []; S.error = ''; S.carregat = true;
+      if (S.colId && !colActual()) S.colId = null;
+    } catch (e) {
+      if (!silenci) { S.error = (e && e.message) || 'No s\'han pogut carregar les dades.'; S.carregat = true; }
+    }
+    if (!silenci || !algunDialegObert()) render();
+  }
+  function algunDialegObert() { return [...document.querySelectorAll('dialog')].some(d => d.open); }
+
+  /* ---------- Pintar ---------- */
+  function render() {
+    const app = $('#app');
+    $('#estat').textContent = REMOT ? '' : 'Mode de prova · dades només en aquest navegador';
+    if (!S.carregat) {
+      posa(app, el('div', { class: 'graella' }, [1, 2, 3, 4, 5, 6].map(() => el('div', { class: 'esquelet' }))));
+      $('#fab').hidden = true; return;
+    }
+    if (S.error) {
+      posa(app, el('div', { class: 'buit' }, el('div', { class: 'gran' }, '😕'), el('h3', {}, 'Alguna cosa no ha anat bé'), el('p', {}, S.error),
+        el('button', { class: 'btn', type: 'button', onclick: () => { S.carregat = false; render(); carrega(); } }, 'Tornar-ho a provar')));
+      $('#fab').hidden = true; return;
+    }
+    if (!S.colId && S.cols.length === 1) S.colId = S.cols[0].id;
+    const col = colActual();
+    if (!col) return renderInici(app);
+    renderColleccio(app, col);
+  }
+
+  function renderInici(app) {
+    $('#fab').hidden = true;
+    const recompte = id => S.apps.filter(a => a.colleccio === id).length;
+    posa(app, 
+      el('h1', { class: 'titol-inici' }, 'Col·leccions dels cursos'),
+      el('p', { class: 'subtitol-inici' }, 'Tria el curs o la sessió per veure i compartir apps.'),
+      S.cols.length ? el('div', { class: 'graella' }, S.cols.map(c => {
+        const [c1, c2] = degradat(c.id);
+        return el('article', { class: 'targeta col-targeta', tabindex: '0', role: 'button', style: `--c1:${c1};--c2:${c2}`,
+          onclick: () => vesA(c.id), onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); vesA(c.id); } } },
+          el('div', {}, el('div', { class: 'emoji-gran', style: 'font-size:2.4rem' }, c.emoji), el('h3', {}, c.titol), el('p', {}, c.descripcio)),
+          el('span', { class: 'pastilla' }, '📱 ' + recompte(c.id) + (recompte(c.id) === 1 ? ' app' : ' apps'), c.oberta ? '' : ' · 🔒 tancada'));
+      })) : el('div', { class: 'buit' }, el('div', { class: 'gran' }, '📁'), el('h3', {}, 'Encara no hi ha cap col·lecció'), el('p', {}, 'Crea-la a la pestanya «Col·leccions» del full de càlcul.'))
+    );
+  }
+
+  function renderColleccio(app, col) {
+    const [c1, c2] = degradat(col.id);
+    const totes = S.apps.filter(a => a.colleccio === col.id);
+    const persones = new Set(totes.map(a => a.autor.trim().toLowerCase()).filter(Boolean)).size;
+    $('#fab').hidden = !col.oberta;
+
+    const hero = el('section', { class: 'hero', style: `--c1:${c1};--c2:${c2}` },
+      el('div', { class: 'emoji-gran' }, col.emoji),
+      el('h1', {}, col.titol),
+      col.descripcio ? el('p', {}, col.descripcio) : null,
+      el('div', { class: 'meta' },
+        el('span', { class: 'pastilla' }, '✦ Apps creades pels docents'),
+        el('span', { class: 'pastilla' }, '📱 ' + totes.length + (totes.length === 1 ? ' app' : ' apps')),
+        persones ? el('span', { class: 'pastilla' }, '👥 ' + persones + (persones === 1 ? ' persona' : ' persones')) : null,
+        el('span', { class: 'pastilla' }, col.oberta ? '✍️ Oberta a aportacions' : '🔒 Col·lecció tancada'),
+        el('button', { class: 'pastilla', type: 'button', style: 'border:0;cursor:pointer;color:#fff', onclick: obreQrGran }, '🔳 Mostrar el QR'))
+    );
+
+    const cerca = el('input', { type: 'search', placeholder: 'Cerca per nom, descripció o prompt…', value: S.q, 'aria-label': 'Cerca' });
+    cerca.addEventListener('input', () => { S.q = cerca.value; pintaGraella(); });
+    const selEtapa = selector('Totes les etapes', ETAPES, S.etapa, v => { S.etapa = v; pintaGraella(); }, 'Filtra per etapa');
+    const selOrdre = el('select', { 'aria-label': 'Ordena', onchange: e => { S.ordre = e.target.value; pintaGraella(); } },
+      el('option', { value: 'recent' }, '🕒 Més recents'), el('option', { value: 'populars' }, '❤️ Més valorades'), el('option', { value: 'az' }, '🔤 A–Z'));
+    selOrdre.value = S.ordre;
+    const commuta = el('div', { class: 'commutador', role: 'group', 'aria-label': 'Vista' },
+      el('button', { type: 'button', 'aria-pressed': String(S.vista === 'graella'), title: 'Graella', onclick: () => canviaVista('graella') }, '▦'),
+      el('button', { type: 'button', 'aria-pressed': String(S.vista === 'llista'), title: 'Llista', onclick: () => canviaVista('llista') }, '☰'));
+
+    const graella = el('div', { id: 'graella' });
+    posa(app, 
+      S.cols.length > 1 ? el('button', { class: 'btn suau petit tornar', type: 'button', onclick: () => vesA(null) }, '← Totes les col·leccions') : null,
+      hero,
+      el('div', { class: 'eines' }, el('label', { class: 'cerca' }, '🔎', cerca), selEtapa, selOrdre, commuta),
+      graella
+    );
+    pintaGraella();
+  }
+
+  function selector(totes, opcions, valor, onchange, etiqueta) {
+    const s = el('select', { 'aria-label': etiqueta, onchange: e => onchange(e.target.value) },
+      el('option', { value: '' }, totes), opcions.map(o => el('option', { value: o }, o)));
+    s.value = valor; return s;
+  }
+
+  function canviaVista(v) { S.vista = v; guarda.escriu('mur-vista', v); render(); }
+
+  function filtrades() {
+    const q = S.q.trim().toLowerCase();
+    let ll = S.apps.filter(a => a.colleccio === S.colId)
+      .filter(a => !S.etapa || a.etapa === S.etapa)
+      .filter(a => !q || [a.titol, a.descripcio, a.prompt, a.autor, a.eina, a.etapa].join(' ').toLowerCase().includes(q));
+    if (S.ordre === 'populars') ll.sort((a, b) => b.likes - a.likes || (b.data > a.data ? 1 : -1));
+    else if (S.ordre === 'az') ll.sort((a, b) => a.titol.localeCompare(b.titol, 'ca'));
+    else ll.sort((a, b) => (b.data > a.data ? 1 : b.data < a.data ? -1 : 0));
+    return ll;
+  }
+
+  function pintaGraella() {
+    const g = $('#graella'); if (!g) return;
+    const col = colActual();
+    const ll = filtrades();
+    const hiHa = S.apps.some(a => a.colleccio === S.colId);
+    if (!ll.length) {
+      g.className = '';
+      posa(g, hiHa
+        ? el('div', { class: 'buit' }, el('div', { class: 'gran' }, '🔍'), el('h3', {}, 'Cap app coincideix amb la cerca'), el('p', {}, 'Prova amb altres paraules o treu els filtres.'))
+        : el('div', { class: 'buit' }, el('div', { class: 'gran' }, '🌱'), el('h3', {}, 'El mur encara és buit'),
+            el('p', {}, col && col.oberta ? 'Comparteix la primera app i inspira la resta del grup!' : 'Aquesta col·lecció no té cap app.'),
+            col && col.oberta ? el('button', { class: 'btn', type: 'button', onclick: obreFormulari }, '＋ Afegeix la teva app') : null));
+      return;
+    }
+    g.className = 'graella' + (S.vista === 'llista' ? ' llista' : '');
+    g.replaceChildren(...ll.map(targeta));
+  }
+
+  function miniatura(a, extra) {
+    const c = COLORS[hash(a.id + a.titol) % COLORS.length];
+    return el('div', { class: 'miniatura' + (extra ? ' ' + extra : ''), style: `--c:${c}` },
+      el('span', { class: 'emoji', 'aria-hidden': 'true' }, a.emoji || '🧩'));
+  }
+
+  function liniaDomini(a) {
+    const d = domini(a.url);
+    return el('div', { class: 'domini' },
+      d ? el('img', { src: 'https://www.google.com/s2/favicons?sz=32&domain=' + encodeURIComponent(d), alt: '', loading: 'lazy', onerror: e => e.target.remove() }) : null,
+      d);
+  }
+
+  function botoCor(a) {
+    const b = el('button', { class: 'cor', type: 'button', 'aria-pressed': String(likes.has(a.id)), 'aria-label': 'M\'agrada', title: 'M\'agrada' },
+      el('span', { class: 'icona' }, likes.has(a.id) ? '❤️' : '🤍'), el('span', { class: 'n' }, a.likes));
+    b.addEventListener('click', e => { e.stopPropagation(); commutaLike(a); });
+    return b;
+  }
+
+  function targeta(a) {
+    const obre = () => obreDetall(a);
+    return el('article', { class: 'targeta', tabindex: '0', 'aria-label': a.titol, 'data-id': a.id, onclick: obre,
+        onkeydown: e => { if (e.key === 'Enter') obre(); } },
+      miniatura(a),
+      el('div', { class: 'cos' },
+        liniaDomini(a),
+        el('h3', {}, a.titol),
+        a.descripcio ? el('p', { class: 'desc' }, a.descripcio) : null,
+        el('div', { class: 'xips' },
+          a.etapa ? el('span', { class: 'xip' }, a.etapa) : null,
+          a.prompt ? el('span', { class: 'xip prompt' }, '💬 Amb prompt') : null)),
+      el('div', { class: 'peu' },
+        el('span', { class: 'autor' }, a.autor ? el('strong', {}, a.autor) : 'Anònim', a.data ? ' · ' + dataCurta(a.data) : ''),
+        botoCor(a),
+        el('a', { class: 'btn petit', href: a.url, target: '_blank', rel: 'noopener noreferrer', onclick: e => e.stopPropagation() }, 'Obrir ↗'))
+    );
+  }
+
+  /* ---------- M'agrada ---------- */
+  let likeEnCurs = false;
+  async function commutaLike(a) {
+    if (likeEnCurs) return;
+    likeEnCurs = true;
+    const ara = likes.has(a.id);
+    const delta = ara ? -1 : 1;
+    ara ? likes.delete(a.id) : likes.add(a.id);
+    a.likes = Math.max(0, a.likes + delta);
+    guarda.escriu('mur-likes', [...likes]);
+    refrescaCors(a);
+    try { a.likes = await API.like(a.id, delta); refrescaCors(a); }
+    catch (e) {
+      ara ? likes.add(a.id) : likes.delete(a.id); a.likes = Math.max(0, a.likes - delta);
+      guarda.escriu('mur-likes', [...likes]); refrescaCors(a); avisa('No s\'ha pogut desar el «m\'agrada».');
+    } finally { likeEnCurs = false; }
+  }
+  function refrescaCors(a) {
+    if (S.ordre === 'populars') pintaGraella();
+    else document.querySelectorAll('.targeta').forEach(t => {
+      if (t.dataset.id === a.id) { const v = t.querySelector('.cor'); if (v) v.replaceWith(botoCor(a)); }
+    });
+    const d = $('#detallCos .cor'); if (d && $('#dlgDetall').open && $('#dlgDetall').dataset.id === a.id) d.replaceWith(botoCor(a));
+  }
+
+  /* ---------- Detall ---------- */
+  function obreDetall(a) {
+    const dlg = $('#dlgDetall'); dlg.dataset.id = a.id;
+    const blocPrompt = a.prompt ? el('div', { class: 'bloc-prompt' },
+      el('div', { class: 'cap' }, el('strong', {}, '💬 Prompt inicial'),
+        el('button', { class: 'btn suau petit', type: 'button', onclick: () => copia(a.prompt, 'Prompt copiat 📋') }, 'Copiar')),
+      el('pre', {}, a.prompt)) : null;
+
+    posa($('#detallCos'),
+      miniatura(a, 'detall-mini'),
+      liniaDomini(a),
+      el('h2', {}, a.titol),
+      el('div', { class: 'xips' }, el('span', { class: 'xip' }, iconaDe(a.url) + ' ' + (einaDe(a.url) || a.eina || 'Enllaç')), a.etapa ? el('span', { class: 'xip' }, '🎒 ' + a.etapa) : null),
+      a.descripcio ? el('p', { class: 'desc', style: 'margin-top:12px' }, a.descripcio) : null,
+      el('p', { class: 'autor', style: 'margin:12px 0 0' }, 'Compartida per ', a.autor ? el('strong', {}, a.autor) : 'una persona anònima', a.data ? ' · ' + dataCurta(a.data) : ''),
+      el('div', { class: 'fila-accions' },
+        el('a', { class: 'btn', href: a.url, target: '_blank', rel: 'noopener noreferrer' }, '🚀 Obrir l\'app'),
+        el('button', { class: 'btn suau', type: 'button', onclick: () => copia(a.url, 'Enllaç copiat 📋') }, '🔗 Copiar l\'enllaç'),
+        botoCor(a)),
+      blocPrompt
+    );
+    dlg.showModal();
+  }
+
+  /* ---------- Formulari ---------- */
+  function preparaFormulari() {
+    posa($('#fEtapa'), el('option', { value: '' }, 'Tria…'), ETAPES.map(e => el('option', { value: e }, e)));
+    pintaEmojis();
+    $('#fAutor').value = guarda.llegeix('mur-autor', '');
+    $('#formApp').addEventListener('submit', envia);
+  }
+  function pintaEmojis() {
+    $('#fEmojis').replaceChildren(...EMOJIS.map(e => el('button', { type: 'button', 'aria-pressed': String(e === S.emoji), 'aria-label': 'Icona ' + e,
+      onclick: () => { S.emoji = e; pintaEmojis(); } }, e)));
+  }
+  function obreFormulari() {
+    const col = colActual();
+    if (!col || !col.oberta) return;
+    $('#fError').textContent = '';
+    $('#dlgForm').showModal();
+    setTimeout(() => $('#fTitol').focus(), 50);
+  }
+  async function envia(ev) {
+    ev.preventDefault();
+    const err = $('#fError'); err.textContent = '';
+    let url = $('#fUrl').value.trim();
+    if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+    const d = {
+      colleccio: S.colId,
+      titol: $('#fTitol').value.trim(),
+      url: url,
+      descripcio: $('#fDesc').value.trim(),
+      eina: einaDe(url),
+      etapa: $('#fEtapa').value,
+      emoji: S.emoji,
+      prompt: $('#fPrompt').value.trim(),
+      autor: $('#fAutor').value.trim()
+    };
+    if (!d.titol) { err.textContent = 'Posa un nom a la teva app.'; $('#fTitol').focus(); return; }
+    if (!enllacPermes(d.url)) { err.textContent = MISSATGE_ENLLAC; $('#fUrl').focus(); return; }
+    const boto = $('#fEnvia'); boto.disabled = true; boto.textContent = 'Publicant…';
+    try {
+      const item = await API.afegeix(d);
+      S.apps.push(item);
+      guarda.escriu('mur-autor', d.autor);
+      ['#fTitol', '#fUrl', '#fDesc', '#fPrompt'].forEach(s => { $(s).value = ''; });
+      $('#fEtapa').value = '';
+      $('#dlgForm').close();
+      S.q = ''; S.eina = ''; S.etapa = ''; S.ordre = 'recent';
+      render();
+      avisa('Gràcies! La teva app ja és al mur 🎉');
+    } catch (e) {
+      err.textContent = (e && e.message) || 'No s\'ha pogut publicar. Torna-ho a provar.';
+    } finally {
+      boto.disabled = false; boto.textContent = 'Publicar al mur';
+    }
+  }
+
+  /* ---------- Copiar i compartir ---------- */
+  async function copia(text, missatge) {
+    try { await navigator.clipboard.writeText(text); avisa(missatge); }
+    catch (e) {
+      const t = el('textarea', { style: 'position:fixed;opacity:0' }); t.value = text; document.body.append(t); t.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (x) { /* res */ }
+      t.remove(); avisa(ok ? missatge : 'No s\'ha pogut copiar. Selecciona el text i copia\'l a mà.');
+    }
+  }
+  /* ---------- Codi QR ---------- */
+  /** Retorna una imatge PNG (data URL) del QR del text, o null si la llibreria no s'ha pogut carregar. */
+  function qrPng(text, mida) {
+    if (typeof qrcode !== 'function') return null;
+    const qr = qrcode(0, 'M'); qr.addData(text, 'Byte'); qr.make();
+    const n = qr.getModuleCount(), marge = 2, cel = Math.max(4, Math.floor(mida / (n + marge * 2)));
+    const c = document.createElement('canvas'); c.width = c.height = (n + marge * 2) * cel;
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.fillStyle = '#1e1a2e';
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) ctx.fillRect((k + marge) * cel, (r + marge) * cel, cel, cel);
+    return c.toDataURL('image/png');
+  }
+  function pintaQr(caixa, text, mida) {
+    const png = qrPng(text, mida);
+    if (!png) { posa(caixa, el('div', { class: 'sense-qr' }, 'No s\'ha pogut generar el QR (cal connexió a Internet). Pots copiar l\'enllaç de sota.')); return null; }
+    const img = document.createElement('img'); img.src = png; img.alt = 'Codi QR per obrir el mur';
+    posa(caixa, img); return png;
+  }
+  function obreCompartir() {
+    const enllac = enllacCompartir();
+    const col = colActual();
+    $('#enllacCompartir').value = enllac;
+    $('#avisEnllac').textContent = !REMOT
+      ? 'Mode de prova: aquest enllaç només funciona en aquest ordinador.'
+      : (col && col.enllac)
+        ? 'El QR porta a la pàgina de Google Sites d\'aquesta col·lecció.'
+        : 'Comparteix aquest enllaç al xat de la sessió en línia o projecta el QR.';
+    S.qrPng = pintaQr($('#qr'), enllac, 440);
+    $('#dlgCompartir').showModal();
+  }
+  function obreQrGran() {
+    const col = colActual(); const enllac = enllacCompartir();
+    const [c1, c2] = col ? degradat(col.id) : DEGRADATS[0];
+    const capa = $('#qrGran'); capa.style.setProperty('--c1', c1); capa.style.setProperty('--c2', c2);
+    $('#qrGranEmoji').textContent = col ? col.emoji : '🧩';
+    $('#qrGranTitol').textContent = col ? col.titol : 'Mur d\'apps';
+    $('#qrGranUrl').textContent = enllac.length <= 120 ? enllac : '';
+    pintaQr($('#qrGranCodi'), enllac, 900);
+    if ($('#dlgCompartir').open) $('#dlgCompartir').close();
+    capa.hidden = false; $('#tancaQrGran').focus();
+  }
+  function tancaQrGran() { $('#qrGran').hidden = true; }
+  function desaQr() {
+    const png = S.qrPng || qrPng(enllacCompartir(), 900);
+    if (!png) { avisa('No s\'ha pogut generar el QR.'); return; }
+    const col = colActual();
+    const a = document.createElement('a'); a.href = png; a.download = 'QR-' + (col ? col.id : 'mur-apps') + '.png';
+    document.body.append(a); a.click(); a.remove();
+    avisa('Si no s\'ha descarregat, fes clic dret sobre el QR › Desa la imatge.');
+  }
+
+  /* ---------- Inici ---------- */
+  document.querySelectorAll('dialog').forEach(d => {
+    d.addEventListener('click', e => { if (e.target === d) d.close(); });
+    d.querySelectorAll('[data-tanca]').forEach(b => b.addEventListener('click', () => d.close()));
+  });
+  $('#dlgDetall').addEventListener('close', () => { $('#detallCos').replaceChildren(); });
+  $('#fab').addEventListener('click', obreFormulari);
+  $('#btnCompartir').addEventListener('click', obreCompartir);
+  $('#btnCopiaEnllac').addEventListener('click', () => copia($('#enllacCompartir').value, 'Enllaç copiat 📋'));
+  $('#btnQrGran').addEventListener('click', obreQrGran);
+  $('#btnQrDesa').addEventListener('click', desaQr);
+  $('#tancaQrGran').addEventListener('click', tancaQrGran);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#qrGran').hidden) tancaQrGran(); });
+  $('#anarInici').addEventListener('click', () => vesA(S.cols.length > 1 ? null : S.colId));
+
+  preparaFormulari();
+  render();
+  llegeixParametre(c => { S.colId = c; carrega(); });
+  setInterval(() => { if (!document.hidden && S.carregat && !S.error) carrega(true); }, REFRESC_MS);
+})();
+</script>
+</body>
+</html>
